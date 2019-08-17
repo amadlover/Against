@@ -1,7 +1,9 @@
 #include "Game.h"
 #include "Graphics.h"
 #include "GUI.h"
-#include "Scene.h"
+#include "SplashScreen.h"
+#include "MainMenu.h"
+#include "MainGame.h"
 #include "Sound.hpp"
 
 #include <stdio.h>

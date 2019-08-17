@@ -1,15 +1,2 @@
-#include "Scene.h"
+#include "SplashScreen.h"
 #include "Graphics.h"
-
-void DrawSplashScreen ()
-{
-}
-
-void DrawMainMenu ()
-{
-
-}
-
-void DrawMainGame ()
-{
-}
