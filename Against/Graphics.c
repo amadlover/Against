@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_win32.h>
 
 bool IsValidationNeeded;
 
@@ -15,13 +16,30 @@ uint32_t RequestedInstanceLayerCount;
 const char* RequestedInstanceExtensions[16];
 uint32_t RequestedInstanceExtensionCount;
 
+const char* RequestedDeviceExtensions[16];
+uint32_t RequestedDeviceExtensionCount;
+
 uint32_t GraphicsQueueFamilyIndex;
+
+VkImage* SwapchainImages;
+VkImageView* SwapchainImageViews;
+uint32_t SwapchainImageCount;
 
 VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
 
 VkInstance Instance;
 VkDebugUtilsMessengerEXT DebugUtilsMessenger;
 VkPhysicalDevice PhysicalDevice;
+VkSurfaceKHR Surface;
+VkDevice GraphicsDevice;
+VkQueue GraphicsQueue;
+VkSurfaceFormatKHR ChosenSurfaceFormat;
+VkPresentModeKHR ChosenPresentMode;
+VkExtent2D SurfaceExtent;
+VkSwapchainKHR Swapchain;
+VkDescriptorSetLayout DescriptorSetLayout;
+VkDescriptorPool DescriptorPool;
+VkDescriptorSet DescriptorSet;
 
 
 VkResult CreateDebugUtilsMessenger (VkInstance Instance, const VkDebugUtilsMessengerCreateInfoEXT* DebugUtilsMessengerCreateInfo, const VkAllocationCallbacks* AllocationCallbacks, VkDebugUtilsMessengerEXT* DebugUtilsMessenger)
@@ -167,7 +185,7 @@ int SetupDebugUtilsMessenger ()
 	memset (&CreateInfo, 0, sizeof (VkDebugUtilsMessengerCreateInfoEXT));
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	CreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	CreateInfo.messageSeverity = /*VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |*/ VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	CreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	CreateInfo.pfnUserCallback = DebugMessengerCallback;
 	CreateInfo.flags = 0;
@@ -189,6 +207,11 @@ int GetPhysicalDevice ()
 
 	VkPhysicalDevice* PhysicalDevices = (VkPhysicalDevice*)malloc (sizeof (VkPhysicalDevice) * PhysicalDeviceCount);
 	vkEnumeratePhysicalDevices (Instance, &PhysicalDeviceCount, PhysicalDevices);
+
+	if (PhysicalDeviceCount == 0)
+	{
+		return AGAINST_ERROR_GRAPHICS_GET_PHYSICAL_DEVICE;
+	}
 
 	PhysicalDevice = PhysicalDevices[0];
 
@@ -220,8 +243,311 @@ int GetPhysicalDevice ()
 	return 0;
 }
 
+int CreateSurface (HINSTANCE HInstance, HWND HWnd)
+{
+	OutputDebugString (L"CreateSurface\n");
+
+	VkWin32SurfaceCreateInfoKHR CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkWin32SurfaceCreateInfoKHR));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	CreateInfo.hinstance = HInstance;
+	CreateInfo.hwnd = HWnd;
+
+	if (vkCreateWin32SurfaceKHR (Instance, &CreateInfo, NULL, &Surface) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_SURFACE;
+	}
+
+	return 0;
+}
+
+int PopulateGraphicsDeviceExtensions ()
+{
+	OutputDebugString (L"PopulateGraphicsDeviceExtensions\n");
+
+	uint32_t ExtensionCount = 0;
+	vkEnumerateDeviceExtensionProperties (PhysicalDevice, NULL, &ExtensionCount, NULL);
+
+	VkExtensionProperties* ExtensionProperties = (VkExtensionProperties*)malloc (sizeof (VkExtensionProperties) * ExtensionCount);
+	vkEnumerateDeviceExtensionProperties (PhysicalDevice, NULL, &ExtensionCount, ExtensionProperties);
+
+	for (uint32_t e = 0; e < ExtensionCount; e++)
+	{
+		if (strcmp (ExtensionProperties[e].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
+		{
+			RequestedDeviceExtensions[RequestedDeviceExtensionCount++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+			break;
+		}
+	}
+
+	free (ExtensionProperties);
+
+	return 0;
+}
+
+int CreateGraphicsDevice ()
+{
+	OutputDebugString (L"CreateGraphicsDevice\n");
+
+	float Priorities = 1.f;
+
+	VkDeviceQueueCreateInfo QueueCreateInfo;
+	memset (&QueueCreateInfo, 0, sizeof (VkDeviceQueueCreateInfo));
+
+	QueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	QueueCreateInfo.pNext = NULL;
+	QueueCreateInfo.pQueuePriorities = &Priorities;
+	QueueCreateInfo.queueCount = 1;
+	QueueCreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+	QueueCreateInfo.flags = 0;
+
+	VkDeviceCreateInfo CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkDeviceCreateInfo));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	CreateInfo.pNext = NULL;
+	CreateInfo.enabledExtensionCount = RequestedDeviceExtensionCount;
+	CreateInfo.ppEnabledExtensionNames = RequestedDeviceExtensions;
+	CreateInfo.enabledLayerCount = 0;
+	CreateInfo.ppEnabledLayerNames = NULL;
+	CreateInfo.queueCreateInfoCount = 1;
+	CreateInfo.pQueueCreateInfos = &QueueCreateInfo;
+	CreateInfo.flags = 0;
+
+	if (vkCreateDevice (PhysicalDevice, &CreateInfo, NULL, &GraphicsDevice) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_GRAPHICS_DEVICE;
+	}
+
+	vkGetDeviceQueue (GraphicsDevice, GraphicsQueueFamilyIndex, 0, &GraphicsQueue);
+
+	return 0;
+}
+
+int CreateSwapChain ()
+{
+	OutputDebugString (L"CreateSwapChain\n");
+
+	VkBool32 IsSurfaceSupported = false;
+	vkGetPhysicalDeviceSurfaceSupportKHR (PhysicalDevice, GraphicsQueueFamilyIndex, Surface, &IsSurfaceSupported);
+
+	if (!IsSurfaceSupported)
+	{
+		return AGAINST_ERROR_GRAPHICS_SURFACE_SUPPORT;
+	}
+
+	VkSurfaceCapabilitiesKHR SurfaceCapabilites;
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR (PhysicalDevice, Surface, &SurfaceCapabilites);
+
+	uint32_t SurfaceFormatCount = 0;
+	vkGetPhysicalDeviceSurfaceFormatsKHR (PhysicalDevice, Surface, &SurfaceFormatCount, NULL);
+
+	VkSurfaceFormatKHR* SurfaceFormats = (VkSurfaceFormatKHR*)malloc (sizeof (VkSurfaceFormatKHR) * SurfaceFormatCount);
+	vkGetPhysicalDeviceSurfaceFormatsKHR (PhysicalDevice, Surface, &SurfaceFormatCount, SurfaceFormats);
+
+	for (uint32_t s = 0; s < SurfaceFormatCount; s++)
+	{
+		if (SurfaceFormats[s].format == VK_FORMAT_B8G8R8A8_UNORM)
+		{
+			ChosenSurfaceFormat = SurfaceFormats[s];
+			break;
+		}
+	}
+
+	uint32_t PresentModeCount = 0;
+	vkGetPhysicalDeviceSurfacePresentModesKHR (PhysicalDevice, Surface, &PresentModeCount, NULL);
+
+	VkPresentModeKHR* PresentModes = (VkPresentModeKHR*)malloc (sizeof (VkPresentModeKHR) * PresentModeCount);
+	vkGetPhysicalDeviceSurfacePresentModesKHR (PhysicalDevice, Surface, &PresentModeCount, PresentModes);
+
+	for (uint32_t p = 0; p < PresentModeCount; p++)
+	{
+		if (PresentModes[p] == VK_PRESENT_MODE_MAILBOX_KHR)
+		{
+			ChosenPresentMode = PresentModes[p];
+			break;
+		}
+	}
+
+	SurfaceExtent = SurfaceCapabilites.currentExtent;
+
+	VkSwapchainCreateInfoKHR CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkSwapchainCreateInfoKHR));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	CreateInfo.surface = Surface;
+
+	CreateInfo.clipped = VK_TRUE;
+	CreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	CreateInfo.imageArrayLayers = 1;
+	CreateInfo.imageColorSpace = ChosenSurfaceFormat.colorSpace;
+	CreateInfo.imageExtent = SurfaceCapabilites.currentExtent;
+	CreateInfo.imageFormat = ChosenSurfaceFormat.format;
+	CreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	CreateInfo.imageUsage = SurfaceCapabilites.supportedUsageFlags;
+	CreateInfo.minImageCount = SurfaceCapabilites.minImageCount + 1;
+	CreateInfo.oldSwapchain = VK_NULL_HANDLE;
+	CreateInfo.presentMode = ChosenPresentMode;
+	CreateInfo.preTransform = SurfaceCapabilites.currentTransform;
+
+	if (vkCreateSwapchainKHR (GraphicsDevice, &CreateInfo, NULL, &Swapchain) != VK_SUCCESS)
+	{
+		free (SurfaceFormats);
+		free (PresentModes);
+
+		return AGAINST_ERROR_GRAPHICS_CREATE_SWAPCHAIN;
+	}
+
+	vkGetSwapchainImagesKHR (GraphicsDevice, Swapchain, &SwapchainImageCount, NULL);
+	SwapchainImages = (VkImage*)malloc (sizeof (VkImage) * SwapchainImageCount);
+
+	vkGetSwapchainImagesKHR (GraphicsDevice, Swapchain, &SwapchainImageCount, SwapchainImages);
+
+	SwapchainImageViews = (VkImageView*)malloc (sizeof (VkImageView) * SwapchainImageCount);
+
+	return 0;
+}
+
+int CreateImageViews ()
+{
+	OutputDebugString (L"CreateImageViews\n");
+
+	for (uint32_t i = 0; i < SwapchainImageCount; i++)
+	{
+		VkImageViewCreateInfo CreateInfo;
+		memset (&CreateInfo, 0, sizeof (VkImageViewCreateInfo));
+
+		VkComponentMapping Components;
+
+		Components.a = VK_COMPONENT_SWIZZLE_A;
+		Components.b = VK_COMPONENT_SWIZZLE_B;
+		Components.g = VK_COMPONENT_SWIZZLE_G;
+		Components.r = VK_COMPONENT_SWIZZLE_R;
+
+		VkImageSubresourceRange SubresourceRange;
+
+		SubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		SubresourceRange.baseMipLevel = 0;
+		SubresourceRange.levelCount = 1;
+
+		SubresourceRange.baseArrayLayer = 0;
+		SubresourceRange.layerCount = 1;
+
+		CreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		CreateInfo.image = SwapchainImages[i];
+		CreateInfo.format = ChosenSurfaceFormat.format;
+		CreateInfo.components = Components;
+		CreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		CreateInfo.subresourceRange = SubresourceRange;
+
+		if (vkCreateImageView (GraphicsDevice, &CreateInfo, NULL, &SwapchainImageViews[i]) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
+		}
+	}
+
+	return 0;
+}
+
+int CreateDescriptorSetLayout ()
+{
+	OutputDebugString (L"CreateDescriptorSetLayout\n");
+
+	VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding;
+	memset (&DescriptorSetLayoutBinding, 0, sizeof (VkDescriptorSetLayoutBinding));
+
+	DescriptorSetLayoutBinding.binding = 0;
+	DescriptorSetLayoutBinding.descriptorCount = 1;
+	DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	DescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo;
+	memset (&DescriptorSetLayoutCreateInfo, 0, sizeof (VkDescriptorSetLayoutCreateInfo));
+
+	DescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	DescriptorSetLayoutCreateInfo.bindingCount = 1;
+	DescriptorSetLayoutCreateInfo.pBindings = &DescriptorSetLayoutBinding;
+
+	if (vkCreateDescriptorSetLayout (GraphicsDevice, &DescriptorSetLayoutCreateInfo, NULL, &DescriptorSetLayout) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT;
+	}
+
+	return 0;
+}
+
+int CreateDescriptorPool ()
+{
+	OutputDebugString (L"CreateDescriptorPool\n");
+
+	VkDescriptorPoolSize DescriptorPoolSize;
+	memset (&DescriptorPoolSize, 0, sizeof (VkDescriptorPoolSize));
+
+	DescriptorPoolSize.descriptorCount = 1;
+	DescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+	VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo;
+	memset (&DescriptorPoolCreateInfo, 0, sizeof (VkDescriptorPoolCreateInfo));
+
+	DescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	DescriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	DescriptorPoolCreateInfo.poolSizeCount = 1;
+	DescriptorPoolCreateInfo.pPoolSizes = &DescriptorPoolSize;
+	DescriptorPoolCreateInfo.maxSets = 1;
+
+	if (vkCreateDescriptorPool (GraphicsDevice, &DescriptorPoolCreateInfo, NULL, &DescriptorPool) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_POOL;
+	}
+
+	return 0;
+}
+
+/*int CreateDescriptorSet ()
+{
+	OutputDebugString (L"CreateDescriptorSet\n");
+
+	VkDescriptorSetAllocateInfo DescriptorSetAllocateInfo;
+	memset (&DescriptorSetAllocateInfo, 0, sizeof (VkDescriptorSetAllocateInfo));
+
+	DescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	DescriptorSetAllocateInfo.descriptorPool = DescriptorPool;
+	DescriptorSetAllocateInfo.descriptorSetCount = 1;
+	DescriptorSetAllocateInfo.pSetLayouts = &DescriptorSetLayout;
+
+	if (vkAllocateDescriptorSets (GraphicsDevice, &DescriptorSetAllocateInfo, &DescriptorSet) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SET;
+	}
+
+	VkDescriptorBufferInfo BufferInfo;
+	memset (&BufferInfo, 0, sizeof (VkDescriptorBufferInfo));
+
+	BufferInfo.buffer = UniformBuffer
+	BufferInfo.offset = 0;
+	BufferInfo.range = VK_WHOLE_SIZE;
+
+	VkWriteDescriptorSet WriteDescriptorSet;
+	memset (&WriteDescriptorSet, 0, sizeof (VkWriteDescriptorSet));
+
+	WriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	WriteDescriptorSet.dstSet = DescriptorSet;
+	WriteDescriptorSet.dstBinding = 0;
+	WriteDescriptorSet.dstArrayElement = 0;
+	WriteDescriptorSet.descriptorCount = 1;
+	WriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	WriteDescriptorSet.pBufferInfo = &BufferInfo;
+
+	vkUpdateDescriptorSets (GraphicsDevice, 1, &WriteDescriptorSet, 0, NULL);
+
+	return 0;
+}*/
+
 int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 {
+	OutputDebugString (L"GraphicsInit\n");
+
 #ifdef _DEBUG
 	IsValidationNeeded = true;
 #else
@@ -259,12 +585,88 @@ int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 		return Result;
 	}
 
+	Result = CreateSurface (HInstance, HWnd);
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = PopulateGraphicsDeviceExtensions ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateGraphicsDevice ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSwapChain ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateImageViews ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateDescriptorSetLayout ();
+
+	if (Result != 0)
+
+	{
+		return Result;
+	}
+
+	Result = CreateDescriptorPool ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 	return 0;
 }
 
 void GraphicsShutdown ()
 {
 	OutputDebugString (L"GraphicsShutdown\n");
+
+	vkFreeDescriptorSets (GraphicsDevice, DescriptorPool, 1, &DescriptorSet);
+
+	vkDestroyDescriptorPool (GraphicsDevice, DescriptorPool, NULL);
+	vkDestroyDescriptorSetLayout (GraphicsDevice, DescriptorSetLayout, NULL);
+
+	for (uint32_t i = 0; i < SwapchainImageCount; i++)
+	{
+		vkDestroyImageView (GraphicsDevice, SwapchainImageViews[i], NULL);
+	}
+
+	if (SwapchainImages)
+	{
+		free (SwapchainImages);
+	}
+
+	if (SwapchainImageViews)
+	{
+		free (SwapchainImageViews);
+	}
+
+	vkDestroySwapchainKHR (GraphicsDevice, Swapchain, NULL);
+
+	vkDestroyDevice (GraphicsDevice, NULL);
+
+	vkDestroySurfaceKHR (Instance, Surface, NULL);
 
 	if (IsValidationNeeded)
 	{

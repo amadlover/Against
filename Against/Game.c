@@ -203,5 +203,6 @@ int GameMainLoop ()
 
 void GameShutdown ()
 {
+	OutputDebugString (L"GameShutdown\n");
 	GraphicsShutdown ();
 }
