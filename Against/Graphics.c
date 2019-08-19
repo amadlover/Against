@@ -22,24 +22,16 @@ uint32_t RequestedInstanceExtensionCount;
 const char* RequestedDeviceExtensions[16];
 uint32_t RequestedDeviceExtensionCount;
 
-uint32_t GraphicsQueueFamilyIndex;
-
-VkImage* SwapchainImages;
-VkImageView* SwapchainImageViews;
-uint32_t SwapchainImageCount;
-
 VkInstance Instance;
 VkDebugUtilsMessengerEXT DebugUtilsMessenger;
 VkPhysicalDevice PhysicalDevice;
 VkSurfaceKHR Surface;
 VkQueue GraphicsQueue;
 VkPresentModeKHR ChosenPresentMode;
-VkExtent2D SurfaceExtent;
 VkSwapchainKHR Swapchain;
 VkDescriptorSetLayout DescriptorSetLayout;
 VkDescriptorPool DescriptorPool;
 VkDescriptorSet DescriptorSet;
-
 
 VkResult CreateDebugUtilsMessenger (VkInstance Instance, const VkDebugUtilsMessengerCreateInfoEXT* DebugUtilsMessengerCreateInfo, const VkAllocationCallbacks* AllocationCallbacks, VkDebugUtilsMessengerEXT* DebugUtilsMessenger)
 {
@@ -410,7 +402,7 @@ int CreateSwapChain ()
 
 int CreateSwapchainImageViews ()
 {
-	OutputDebugString (L"CreateImageViews\n");
+	OutputDebugString (L"CreateSwapchainImageViews\n");
 
 	for (uint32_t i = 0; i < SwapchainImageCount; i++)
 	{

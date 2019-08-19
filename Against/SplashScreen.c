@@ -3,6 +3,9 @@
 #include "Error.h"
 #include "UBO.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <vulkan/vulkan.h>
 
 VkBuffer UniformBuffer;
@@ -11,6 +14,13 @@ VkDescriptorSetLayout DescriptorSetLayout;
 VkDescriptorPool DescriptorPool;
 VkDescriptorSet DescriptorSet;
 VkRenderPass RenderPass;
+VkShaderModule VertexShaderModule;
+VkShaderModule FragmentShaderModule;
+VkPipelineShaderStageCreateInfo PipelineShaderStages[2];
+VkFramebuffer* SwapchainFramebuffers;
+VkCommandPool GraphicsDeviceCommandPool;
+VkCommandBuffer* SwapchainCommandBuffers;
+VkPipelineLayout GraphicsPipelineLayout;
 
 int CreateSplashScreenUniformBuffer ()
 {
@@ -223,6 +233,179 @@ int CreateSplashScreenRenderPass ()
 	return 0;
 }
 
+int CreateSplashScreenShaders ()
+{
+	OutputDebugString (L"CreateSplashScreenShaders\n");
+
+	FILE* VertFile = NULL;
+	errno_t Err = fopen_s (&VertFile, "C:/Users/Nihal Kenkre/Documents/VisualStudio2019/NTKApps/Against/Shaders/vert.spv", "rb");
+
+	if (Err != 0)
+	{
+		return Err;
+	}
+
+	fseek (VertFile, 0, SEEK_END);
+
+	uint32_t  FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
+	rewind (VertFile);
+
+	char* Buffer = (char*)malloc (sizeof (uint32_t) * FileSize);
+	fread (Buffer, sizeof (uint32_t), FileSize, VertFile);
+	fclose (VertFile);
+
+	VkShaderModuleCreateInfo VertexShaderModuleCreateInfo;
+	memset (&VertexShaderModuleCreateInfo, 0, sizeof (VkShaderModuleCreateInfo));
+
+	VertexShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	VertexShaderModuleCreateInfo.pCode = (uint32_t*)Buffer;
+	VertexShaderModuleCreateInfo.codeSize = sizeof (uint32_t) * FileSize;
+
+	if (vkCreateShaderModule (GraphicsDevice, &VertexShaderModuleCreateInfo, NULL, &VertexShaderModule) != VK_SUCCESS)
+	{
+		free (Buffer);
+		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
+	}
+
+	free (Buffer);
+
+	FILE* FragFile = NULL;
+	Err = fopen_s (&FragFile, "C:/Users/Nihal Kenkre/Documents/VisualStudio2019/NTKApps/Against/Shaders/frag.spv", "rb");
+
+	if (Err != 0)
+	{
+		return Err;
+	}
+
+	fseek (FragFile, 0, SEEK_END);
+
+	FileSize = (uint32_t)ftell (FragFile) / sizeof (uint32_t);
+	rewind (FragFile);
+
+	Buffer = (char*)malloc (sizeof (uint32_t) * FileSize);
+	fread (Buffer, sizeof (uint32_t), FileSize, FragFile);
+	fclose (FragFile);
+
+	VkShaderModuleCreateInfo FragmentShaderModuleCreateInfo;
+	memset (&FragmentShaderModuleCreateInfo, 0, sizeof (VkShaderModuleCreateInfo));
+
+	FragmentShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	FragmentShaderModuleCreateInfo.pCode = (uint32_t*)Buffer;
+	FragmentShaderModuleCreateInfo.codeSize = sizeof (uint32_t) * FileSize;
+
+	if (vkCreateShaderModule (GraphicsDevice, &FragmentShaderModuleCreateInfo, NULL, &FragmentShaderModule) != VK_SUCCESS)
+	{
+		free (Buffer);
+		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
+	}
+
+	free (Buffer);
+
+	VkPipelineShaderStageCreateInfo VertexShaderStageCreateInfo;
+	memset (&VertexShaderStageCreateInfo, 0, sizeof (VkPipelineShaderStageCreateInfo));
+
+	VertexShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	VertexShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	VertexShaderStageCreateInfo.module = VertexShaderModule;
+	VertexShaderStageCreateInfo.pName = "main";
+
+	VkPipelineShaderStageCreateInfo FragmentShaderStageCreateInfo;
+	memset (&FragmentShaderStageCreateInfo, 0, sizeof (VkPipelineShaderStageCreateInfo));
+
+	FragmentShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	FragmentShaderStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	FragmentShaderStageCreateInfo.module = FragmentShaderModule;
+	FragmentShaderStageCreateInfo.pName = "main";
+
+	PipelineShaderStages[0] = VertexShaderStageCreateInfo;
+	PipelineShaderStages[1] = FragmentShaderStageCreateInfo;
+
+	return 0;
+}
+
+int CreateSplashScreenFramebuffers ()
+{
+	OutputDebugString (L"CreateSplashScreenFramebuffers\n");
+
+	VkFramebufferCreateInfo CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkFramebufferCreateInfo));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	CreateInfo.renderPass = RenderPass;
+	CreateInfo.attachmentCount = 1;
+	CreateInfo.width = SurfaceExtent.width;
+	CreateInfo.height = SurfaceExtent.height;
+	CreateInfo.layers = 1;
+
+	SwapchainFramebuffers = (VkFramebuffer*)malloc (sizeof (VkFramebuffer) * SwapchainImageCount);
+
+	VkImageView Attachment;
+	for (uint32_t i = 0; i < SwapchainImageCount; i++)
+	{
+		Attachment = SwapchainImageViews[i];
+		CreateInfo.pAttachments = &Attachment;
+
+		if (vkCreateFramebuffer (GraphicsDevice, &CreateInfo, NULL, &SwapchainFramebuffers[i]) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_CREATE_FRAMEBUFFER;
+		}
+	}
+
+	return 0;
+}
+
+int CreateSplashScreenCommandPool ()
+{
+	OutputDebugString (L"CreateSplashScreenCommandPool\n");
+
+	VkCommandPoolCreateInfo CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkCommandPoolCreateInfo));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	CreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+
+	if (vkCreateCommandPool (GraphicsDevice, &CreateInfo, NULL, &GraphicsDeviceCommandPool) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
+	}
+
+	VkCommandBufferAllocateInfo AllocateInfo;
+	memset (&AllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
+
+	AllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	AllocateInfo.commandPool = GraphicsDeviceCommandPool;
+	AllocateInfo.commandBufferCount = SwapchainImageCount;
+	AllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+	SwapchainCommandBuffers = (VkCommandBuffer*)malloc (sizeof (VkCommandBuffer) * SwapchainImageCount);
+
+	if (vkAllocateCommandBuffers (GraphicsDevice, &AllocateInfo, SwapchainCommandBuffers) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
+	}
+
+	return 0;
+}
+
+int CreateSplashScreenGraphicsPipelineLayout ()
+{
+	OutputDebugString (L"CreateSplashScreenGraphicsPipelineLayout\n");
+
+	VkPipelineLayoutCreateInfo PipelineCreateInfo;
+	memset (&PipelineCreateInfo, 0, sizeof (VkPipelineLayoutCreateInfo));
+
+	PipelineCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	PipelineCreateInfo.setLayoutCount = 1;
+	PipelineCreateInfo.pSetLayouts = &DescriptorSetLayout;
+
+	if (vkCreatePipelineLayout (GraphicsDevice, &PipelineCreateInfo, NULL, &GraphicsPipelineLayout) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_PIPELINE_LAYOUT;
+	}
+
+	return 0;
+}
+
 int SetupSplashScreen ()
 {
 	OutputDebugString (L"SetupSplashScreen\n");
@@ -262,6 +445,34 @@ int SetupSplashScreen ()
 		return Result;
 	}
 
+	Result = CreateSplashScreenShaders ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenFramebuffers ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenCommandPool ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenGraphicsPipelineLayout ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 	return 0;
 }
 
@@ -274,6 +485,20 @@ void DestroySplashScreen ()
 {
 	OutputDebugString (L"DestroySplashScreen\n");
 
+	vkDestroyPipelineLayout (GraphicsDevice, GraphicsPipelineLayout, NULL);
+
+	vkFreeCommandBuffers (GraphicsDevice, GraphicsDeviceCommandPool, SwapchainImageCount, SwapchainCommandBuffers);
+
+	vkDestroyCommandPool (GraphicsDevice, GraphicsDeviceCommandPool, NULL);
+
+	vkDestroyShaderModule (GraphicsDevice, VertexShaderModule, NULL);
+	vkDestroyShaderModule (GraphicsDevice, FragmentShaderModule, NULL);
+
+	for (uint8_t i = 0; i < SwapchainImageCount; i++)
+	{
+		vkDestroyFramebuffer (GraphicsDevice, SwapchainFramebuffers[i], NULL);
+	}
+
 	vkDestroyRenderPass (GraphicsDevice, RenderPass, NULL);
 
 	vkFreeDescriptorSets (GraphicsDevice, DescriptorPool, 1, &DescriptorSet);
@@ -282,5 +507,4 @@ void DestroySplashScreen ()
 
 	vkFreeMemory (GraphicsDevice, UniformBufferMemory, NULL);
 	vkDestroyBuffer (GraphicsDevice, UniformBuffer, NULL);
-
 }

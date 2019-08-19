@@ -31,7 +31,13 @@ ULONGLONG SplashScreenThresholdTimeMS = 3000;
 
 int GameInit (HINSTANCE HInstance, HWND HWnd)
 {
-	GraphicsInit (HInstance, HWnd);
+	int Result = GraphicsInit (HInstance, HWnd);
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 	StartupTickCount = GetTickCount64 ();
 
 	return 0;
