@@ -210,7 +210,7 @@ int CreateSplashScreenRenderPass ()
 	CreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	CreateInfo.subpassCount = 1;
 	CreateInfo.pSubpasses = &SubpassDescription;
-	CreateInfo.attachmentCount = 2;
+	CreateInfo.attachmentCount = 1;
 	CreateInfo.pAttachments = &AttachmentDescription;
 	CreateInfo.dependencyCount = 2;
 	CreateInfo.pDependencies = SubpassDependencies;
