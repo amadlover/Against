@@ -9,3 +9,8 @@ int DrawMainGame ()
 {
 	return 0;
 }
+
+void DestroyMainGame ()
+{
+
+}

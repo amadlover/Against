@@ -43,6 +43,7 @@
     <ClInclude Include="Maths.h" />
     <ClInclude Include="SplashScreen.h" />
     <ClInclude Include="Sound.hpp" />
+    <ClInclude Include="UBO.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

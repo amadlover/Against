@@ -9,3 +9,8 @@ int DrawMainMenu ()
 {
 	return 0;
 }
+
+void DestroyMainMenu ()
+{
+
+}

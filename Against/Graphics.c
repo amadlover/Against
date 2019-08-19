@@ -1,11 +1,14 @@
 #include "Graphics.h"
 #include "Error.h"
 
+#include "SplashScreen.h"
+#include "MainMenu.h"
+#include "MainGame.h"
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <vulkan/vulkan.h>
 #include <vulkan/vulkan_win32.h>
 
 bool IsValidationNeeded;
@@ -25,15 +28,11 @@ VkImage* SwapchainImages;
 VkImageView* SwapchainImageViews;
 uint32_t SwapchainImageCount;
 
-VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
-
 VkInstance Instance;
 VkDebugUtilsMessengerEXT DebugUtilsMessenger;
 VkPhysicalDevice PhysicalDevice;
 VkSurfaceKHR Surface;
-VkDevice GraphicsDevice;
 VkQueue GraphicsQueue;
-VkSurfaceFormatKHR ChosenSurfaceFormat;
 VkPresentModeKHR ChosenPresentMode;
 VkExtent2D SurfaceExtent;
 VkSwapchainKHR Swapchain;
@@ -409,7 +408,7 @@ int CreateSwapChain ()
 	return 0;
 }
 
-int CreateImageViews ()
+int CreateSwapchainImageViews ()
 {
 	OutputDebugString (L"CreateImageViews\n");
 
@@ -476,73 +475,6 @@ int CreateDescriptorSetLayout ()
 
 	return 0;
 }
-
-int CreateDescriptorPool ()
-{
-	OutputDebugString (L"CreateDescriptorPool\n");
-
-	VkDescriptorPoolSize DescriptorPoolSize;
-	memset (&DescriptorPoolSize, 0, sizeof (VkDescriptorPoolSize));
-
-	DescriptorPoolSize.descriptorCount = 1;
-	DescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-
-	VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo;
-	memset (&DescriptorPoolCreateInfo, 0, sizeof (VkDescriptorPoolCreateInfo));
-
-	DescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	DescriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	DescriptorPoolCreateInfo.poolSizeCount = 1;
-	DescriptorPoolCreateInfo.pPoolSizes = &DescriptorPoolSize;
-	DescriptorPoolCreateInfo.maxSets = 1;
-
-	if (vkCreateDescriptorPool (GraphicsDevice, &DescriptorPoolCreateInfo, NULL, &DescriptorPool) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_POOL;
-	}
-
-	return 0;
-}
-
-/*int CreateDescriptorSet ()
-{
-	OutputDebugString (L"CreateDescriptorSet\n");
-
-	VkDescriptorSetAllocateInfo DescriptorSetAllocateInfo;
-	memset (&DescriptorSetAllocateInfo, 0, sizeof (VkDescriptorSetAllocateInfo));
-
-	DescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	DescriptorSetAllocateInfo.descriptorPool = DescriptorPool;
-	DescriptorSetAllocateInfo.descriptorSetCount = 1;
-	DescriptorSetAllocateInfo.pSetLayouts = &DescriptorSetLayout;
-
-	if (vkAllocateDescriptorSets (GraphicsDevice, &DescriptorSetAllocateInfo, &DescriptorSet) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SET;
-	}
-
-	VkDescriptorBufferInfo BufferInfo;
-	memset (&BufferInfo, 0, sizeof (VkDescriptorBufferInfo));
-
-	BufferInfo.buffer = UniformBuffer
-	BufferInfo.offset = 0;
-	BufferInfo.range = VK_WHOLE_SIZE;
-
-	VkWriteDescriptorSet WriteDescriptorSet;
-	memset (&WriteDescriptorSet, 0, sizeof (VkWriteDescriptorSet));
-
-	WriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	WriteDescriptorSet.dstSet = DescriptorSet;
-	WriteDescriptorSet.dstBinding = 0;
-	WriteDescriptorSet.dstArrayElement = 0;
-	WriteDescriptorSet.descriptorCount = 1;
-	WriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	WriteDescriptorSet.pBufferInfo = &BufferInfo;
-
-	vkUpdateDescriptorSets (GraphicsDevice, 1, &WriteDescriptorSet, 0, NULL);
-
-	return 0;
-}*/
 
 int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 {
@@ -613,22 +545,28 @@ int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 		return Result;
 	}
 
-	Result = CreateImageViews ();
+	Result = CreateSwapchainImageViews ();
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = CreateDescriptorSetLayout ();
-
+	Result = SetupSplashScreen ();
+	
 	if (Result != 0)
-
 	{
 		return Result;
 	}
 
-	Result = CreateDescriptorPool ();
+	Result = SetupMainMenu ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = SetupMainGame ();
 
 	if (Result != 0)
 	{
@@ -641,11 +579,10 @@ int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 void GraphicsShutdown ()
 {
 	OutputDebugString (L"GraphicsShutdown\n");
-
-	vkFreeDescriptorSets (GraphicsDevice, DescriptorPool, 1, &DescriptorSet);
-
-	vkDestroyDescriptorPool (GraphicsDevice, DescriptorPool, NULL);
-	vkDestroyDescriptorSetLayout (GraphicsDevice, DescriptorSetLayout, NULL);
+	
+	DestroyMainGame ();
+	DestroyMainMenu ();
+	DestroySplashScreen ();
 
 	for (uint32_t i = 0; i < SwapchainImageCount; i++)
 	{
