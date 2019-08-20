@@ -168,6 +168,7 @@ int IsLoadingScreenToBeShown ()
 int GameMainLoop ()
 {
 	int Result = 0;
+
 	switch (SceneState)
 	{
 	case SplashScreen:

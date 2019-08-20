@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "Error.h"
 #include "UBO.h"
+#include "Assets.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,6 +26,32 @@ VkPipeline GraphicsPipeline;
 VkFence* SwapchainFences;
 VkSemaphore WaitSemaphore;
 VkSemaphore SignalSemaphore;
+
+Mesh SplashScreenMesh;
+
+int CreateSplashScreenMesh ()
+{
+	OutputDebugString (L"CreateSplashScreenMesh\n");
+
+	memset (&SplashScreenMesh, 0, sizeof (Mesh));
+
+	SplashScreenMesh.ID = 0;
+	SplashScreenMesh.VertexCount = 4;
+	SplashScreenMesh.IndexCount = 6;
+	SplashScreenMesh.IndicesType = AGAINST_ASSET_INDEX_TYPE_16;
+
+	SplashScreenMesh.VertexPositions = (float*)malloc (sizeof (float) * SplashScreenMesh.VertexCount * 3);
+
+	SplashScreenMesh.VertexPositions[0] = 2; SplashScreenMesh.VertexPositions[1] = 2; SplashScreenMesh.VertexPositions[2] = 0;
+	SplashScreenMesh.VertexPositions[3] = -2; SplashScreenMesh.VertexPositions[4] = 2; SplashScreenMesh.VertexPositions[5] = 0;
+	SplashScreenMesh.VertexPositions[6] = -2; SplashScreenMesh.VertexPositions[7] = -2; SplashScreenMesh.VertexPositions[8] = 0;
+
+	SplashScreenMesh.Indices16 = (uint16_t*)malloc (sizeof (uint16_t) * SplashScreenMesh.IndexCount);
+	SplashScreenMesh.Indices16[0] = 0; SplashScreenMesh.Indices16[1] = 1; SplashScreenMesh.Indices16[2] = 2;
+	SplashScreenMesh.Indices16[3] = 2; SplashScreenMesh.Indices16[4] = 1; SplashScreenMesh.Indices16[5] = 3;
+
+	return 0;
+}
 
 int CreateSplashScreenUniformBuffer ()
 {
@@ -242,7 +269,7 @@ int CreateSplashScreenShaders ()
 	OutputDebugString (L"CreateSplashScreenShaders\n");
 
 	FILE* VertFile = NULL;
-	errno_t Err = fopen_s (&VertFile, "C:/Users/Nihal Kenkre/Documents/VisualStudio2019/NTKApps/Against/Shaders/vert.spv", "rb");
+	errno_t Err = fopen_s (&VertFile, "C:/Users/Nihal Kenkre/Documents/Visual Studio 2019/NTKApps/Against/Shaders/vert.spv", "rb");
 
 	if (Err != 0)
 	{
@@ -274,7 +301,7 @@ int CreateSplashScreenShaders ()
 	free (Buffer);
 
 	FILE* FragFile = NULL;
-	Err = fopen_s (&FragFile, "C:/Users/Nihal Kenkre/Documents/VisualStudio2019/NTKApps/Against/Shaders/frag.spv", "rb");
+	Err = fopen_s (&FragFile, "C:/Users/Nihal Kenkre/Documents/Visual Studio 2019/NTKApps/Against/Shaders/frag.spv", "rb");
 
 	if (Err != 0)
 	{
@@ -604,6 +631,10 @@ int CreateSplashScreenCommandBuffer ()
 
 		vkCmdEndRenderPass (SwapchainCommandBuffers[i]);
 
+		//vkCmdBindVertexBuffers()
+		//vkBindindexbuffers()
+		//vkCmdDrawIndexed()
+
 		if (vkEndCommandBuffer (SwapchainCommandBuffers[i]) != VK_SUCCESS)
 		{
 			return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
@@ -651,11 +682,39 @@ int CreateSplashScreenSyncObjects ()
 	return 0;
 }
 
+int CreateSplashScreenHostVertexBuffer ()
+{
+	OutputDebugString (L"CreateSplashScreenHostVertexBuffer\n");
+
+	return 0;
+}
+
+int CreateSplashScreenHostIndexBuffer ()
+{
+	OutputDebugString (L"CreateSplashScreenHostIndexBuffer\n");
+
+	return 0;
+}
+
+int CreateSplashScreenHostTextureBuffer ()
+{
+	OutputDebugString (L"CreateSplashScreenHostIndexBuffer\n");
+
+	return 0;
+}
+
 int SetupSplashScreen ()
 {
 	OutputDebugString (L"SetupSplashScreen\n");
 
-	int Result = CreateSplashScreenUniformBuffer ();
+	int Result = CreateSplashScreenMesh ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenUniformBuffer ();
 
 	if (Result != 0)
 	{
@@ -733,6 +792,27 @@ int SetupSplashScreen ()
 	}
 
 	Result = CreateSplashScreenSyncObjects ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenHostVertexBuffer ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenHostIndexBuffer ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenHostTextureBuffer ();
 
 	if (Result != 0)
 	{
