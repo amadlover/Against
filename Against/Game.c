@@ -167,6 +167,7 @@ int IsLoadingScreenToBeShown ()
 
 int GameMainLoop ()
 {
+	int Result = 0;
 	switch (SceneState)
 	{
 	case SplashScreen:
@@ -176,16 +177,34 @@ int GameMainLoop ()
 		}
 		else
 		{
-			DrawSplashScreen ();
+			Result = DrawSplashScreen ();
+
+			if (Result != 0)
+			{
+				return Result;
+			}
 		}
 
 		break;
 
 	case MainMenu:
-		DrawMainGame ();
+		Result = DrawMainMenu ();
+
+		if (Result != 0)
+		{
+			return Result;
+		}
+
 		break;
 
 	case MainGame:
+		Result = DrawMainGame ();
+
+		if (Result != 0)
+		{
+			return Result;
+		}
+
 		break;
 
 	default:
@@ -197,10 +216,22 @@ int GameMainLoop ()
 	case NoMenu:
 		break;
 	case QuitMenu:
-		DrawQuitMenu ();
+		Result = DrawQuitMenu ();
+
+		if (Result != 0)
+		{
+			return Result;
+		}
+
 		break;
 	case PauseMenu:
-		DrawPauseMenu ();
+		Result = DrawPauseMenu ();
+
+		if (Result != 0)
+		{
+			return Result;
+		}
+
 		break;
 	default:
 		break;

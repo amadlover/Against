@@ -74,7 +74,7 @@ void MatrixCreatePerspectiveProjection (float FOVDegrees, float AspectRatio, flo
 void MatrixCreateViewFromLookAt (Vector3 Eye, Vector3 Target, Vector3 Up, Matrix4x4* Result);
 void MatrixCreateViewFromModel (Matrix4x4 M, Matrix4x4* Result);
 void MatrixCreateViewFPS (Vector3 Eye, float Pitch, float Yaw, Matrix4x4* Result);
-void MatrixCreateOrthographicProjection (Matrix4x4* Result);
+void MatrixCreateOrthographicProjection (float Left, float Right, float Bottom, float Top, float Near, float Far, Matrix4x4* Result);
 
 void MatrixTranslate (Matrix4x4 M, Vector3 Translation, Matrix4x4* Result);
 void MatrixRotateEuler (Matrix4x4 M, Vector3 Rotation, Matrix4x4* Result);

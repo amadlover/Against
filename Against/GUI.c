@@ -2,10 +2,12 @@
 
 #include "Graphics.h"
 
-void DrawQuitMenu ()
+int DrawQuitMenu ()
 {
+	return 0;
 }
 
-void DrawPauseMenu ()
+int DrawPauseMenu ()
 {
+	return 0;
 }

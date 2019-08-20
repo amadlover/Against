@@ -83,6 +83,8 @@ void VectorCrossProduct (Vector3 V1, Vector3 V2, Vector3* Result)
 
 void MatrixCreatePerspectiveProjection (float FOVDegrees, float AspectRatio, float NearPlane, float FarPlane, Matrix4x4* Result)
 {
+	memset (Result, 0, sizeof (Matrix4x4));
+
 	float FOVRadians;
 	DegreesToRadians (FOVDegrees * 0.5f, &FOVRadians);
 
@@ -98,6 +100,8 @@ void MatrixCreatePerspectiveProjection (float FOVDegrees, float AspectRatio, flo
 
 void MatrixCreateViewFromLookAt (Vector3 Eye, Vector3 Target, Vector3 Up, Matrix4x4* Result)
 {
+	memset (Result, 0, sizeof (Matrix4x4));
+
 	Vector3 Forward;
 	Forward.x = Target.x - Eye.x;
 	Forward.y = Target.y - Eye.y;
@@ -308,6 +312,8 @@ void MatrixMultiplyVector (Matrix4x4 M, Vector4 V, Vector4* Result)
 
 void MatrixCreateModelFromEuler (Vector3 Translation, Vector3 Rotation, Vector3 Scale, Matrix4x4* Result)
 {
+	memset (Result, 0, sizeof (Result));
+
 	Matrix4x4 TranslationMatrix = MatrixGetIdentity ();
 
 	TranslationMatrix.m[12] = Translation.x;
@@ -361,6 +367,8 @@ void MatrixCreateModelFromEuler (Vector3 Translation, Vector3 Rotation, Vector3 
 
 void MatrixCreateModelFromQuaternion (Vector3 Translation, Vector4 Rotation, Vector3 Scale, Matrix4x4* Result)
 {
+	memset (Result, 0, sizeof (Result));
+
 	Matrix4x4 TranslationMatrix = MatrixGetIdentity ();
 
 	TranslationMatrix.m[12] = Translation.x;
@@ -406,6 +414,8 @@ void MatrixCreateModelFromQuaternion (Vector3 Translation, Vector4 Rotation, Vec
 
 void MatrixCreateViewFPS (Vector3 Eye, float Pitch, float Yaw, Matrix4x4* Result)
 {
+	memset (Result, 0, sizeof (Matrix4x4));
+
 	float PitchRadians;
 	DegreesToRadians (Pitch, &PitchRadians);
 
@@ -446,12 +456,22 @@ void MatrixCreateViewFPS (Vector3 Eye, float Pitch, float Yaw, Matrix4x4* Result
 
 void MatrixCreateViewFromModel (Matrix4x4 M, Matrix4x4* Result)
 {
+	memset (Result, 0, sizeof (Matrix4x4));
 
 }
 
-void MatrixCreateOrthographicProjection (Matrix4x4* Result)
+void MatrixCreateOrthographicProjection (float Left, float Right, float Bottom, float Top, float Near, float Far, Matrix4x4* Result)
 {
+	memset (Result, 0, sizeof (Matrix4x4));
 
+	Result->m[0] = 2.f / (Right - Left);
+	Result->m[5] = 2.f / (Bottom - Top);
+	Result->m[10] = 2.f / (Near - Far);
+
+	Result->m[12] = -(Right + Left) / (Right - Left);
+	Result->m[13] = -(Bottom + Top) / (Bottom - Top);
+	Result->m[14] = Near / (Near - Far);
+	Result->m[15] = 1.f;
 }
 
 void MatrixTranslate (Matrix4x4 M, Vector3 Translation, Matrix4x4* Result)
