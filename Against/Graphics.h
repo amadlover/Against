@@ -10,9 +10,11 @@ VkDevice GraphicsDevice;
 VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
 VkSurfaceFormatKHR ChosenSurfaceFormat;
 VkExtent2D SurfaceExtent;
+VkSwapchainKHR Swapchain;
 VkImage* SwapchainImages;
 VkImageView* SwapchainImageViews;
 uint32_t SwapchainImageCount;
+VkQueue GraphicsQueue;
 
 int GraphicsInit (HINSTANCE HInstance, HWND HWnd);
 void GraphicsShutdown ();

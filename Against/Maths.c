@@ -81,7 +81,7 @@ void VectorCrossProduct (Vector3 V1, Vector3 V2, Vector3* Result)
 	Result->z = (V1.x * V2.y) - (V1.y * V2.x);
 }
 
-void MatrixCreateProjection (float FOVDegrees, float AspectRatio, float NearPlane, float FarPlane, Matrix4x4* Result)
+void MatrixCreatePerspectiveProjection (float FOVDegrees, float AspectRatio, float NearPlane, float FarPlane, Matrix4x4* Result)
 {
 	float FOVRadians;
 	DegreesToRadians (FOVDegrees * 0.5f, &FOVRadians);
@@ -306,7 +306,7 @@ void MatrixMultiplyVector (Matrix4x4 M, Vector4 V, Vector4* Result)
 	Result->w = RM.m[3];
 }
 
-void MatrixCreateModelEuler (Vector3 Translation, Vector3 Rotation, Vector3 Scale, Matrix4x4* Result)
+void MatrixCreateModelFromEuler (Vector3 Translation, Vector3 Rotation, Vector3 Scale, Matrix4x4* Result)
 {
 	Matrix4x4 TranslationMatrix = MatrixGetIdentity ();
 
@@ -359,7 +359,7 @@ void MatrixCreateModelEuler (Vector3 Translation, Vector3 Rotation, Vector3 Scal
 	MatrixMultiplyMatrix (TransRotMatrix, ScaleMatrix, Result);
 }
 
-void MatrixCreateModelQuaternion (Vector3 Translation, Vector4 Rotation, Vector3 Scale, Matrix4x4* Result)
+void MatrixCreateModelFromQuaternion (Vector3 Translation, Vector4 Rotation, Vector3 Scale, Matrix4x4* Result)
 {
 	Matrix4x4 TranslationMatrix = MatrixGetIdentity ();
 
@@ -445,6 +445,11 @@ void MatrixCreateViewFPS (Vector3 Eye, float Pitch, float Yaw, Matrix4x4* Result
 }
 
 void MatrixCreateViewFromModel (Matrix4x4 M, Matrix4x4* Result)
+{
+
+}
+
+void MatrixCreateOrthographicProjection (Matrix4x4* Result)
 {
 
 }

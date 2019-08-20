@@ -67,13 +67,14 @@ void MatrixMultiplyVector (Matrix4x4 M, Vector4 V, Vector4* Result);
 void MatrixInverse (Matrix4x4 M, Matrix4x4 *Result);
 
 
-void MatrixCreateModelEuler (Vector3 Translation, Vector3 Rotation, Vector3 Scale, Matrix4x4* Result);
-void MatrixCreateModelQuaternion (Vector3 Translation, Vector4 Rotation, Vector3 Scale, Matrix4x4* Result);
+void MatrixCreateModelFromEuler (Vector3 Translation, Vector3 Rotation, Vector3 Scale, Matrix4x4* Result);
+void MatrixCreateModelFromQuaternion (Vector3 Translation, Vector4 Rotation, Vector3 Scale, Matrix4x4* Result);
 
-void MatrixCreateProjection (float FOVDegrees, float AspectRatio, float NearPlane, float FarPlane, Matrix4x4* Result);
+void MatrixCreatePerspectiveProjection (float FOVDegrees, float AspectRatio, float NearPlane, float FarPlane, Matrix4x4* Result);
 void MatrixCreateViewFromLookAt (Vector3 Eye, Vector3 Target, Vector3 Up, Matrix4x4* Result);
 void MatrixCreateViewFromModel (Matrix4x4 M, Matrix4x4* Result);
 void MatrixCreateViewFPS (Vector3 Eye, float Pitch, float Yaw, Matrix4x4* Result);
+void MatrixCreateOrthographicProjection (Matrix4x4* Result);
 
 void MatrixTranslate (Matrix4x4 M, Vector3 Translation, Matrix4x4* Result);
 void MatrixRotateEuler (Matrix4x4 M, Vector3 Rotation, Matrix4x4* Result);
