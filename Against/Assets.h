@@ -3,12 +3,6 @@
 
 #include <stdint.h>
 
-typedef enum _IndicesType
-{
-	AGAINST_ASSET_INDEX_TYPE_32,
-	AGAINST_ASSET_INDEX_TYPE_16,
-} IndicesType;
-
 typedef struct _Mesh
 {
 	Matrix4x4 TransformationMatrix;
@@ -21,13 +15,7 @@ typedef struct _Mesh
 	float* VertexUVs;
 	float* VertexColors;
 
-	union
-	{
-		uint32_t* Indices32;
-		uint16_t* Indices16;
-	};
-
-	IndicesType IndicesType;
+	uint32_t* Indices;
 
 	const char* Name;
 	uint32_t ID;

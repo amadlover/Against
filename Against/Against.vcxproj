@@ -45,6 +45,10 @@
     <ClInclude Include="Sound.hpp" />
     <ClInclude Include="UBO.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\frag.frag" />
+    <None Include="Shaders\vert.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{EBF30A91-03D4-4F2F-AA7B-365065F918CA}</ProjectGuid>
