@@ -43,7 +43,6 @@
     <ClInclude Include="Maths.h" />
     <ClInclude Include="SplashScreen.h" />
     <ClInclude Include="Sound.hpp" />
-    <ClInclude Include="UBO.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\frag.frag" />

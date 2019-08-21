@@ -59,10 +59,11 @@ int CreateSplashScreenMesh ()
 	SplashScreenMesh.VertexPositions[0] = 2; SplashScreenMesh.VertexPositions[1] = 2; SplashScreenMesh.VertexPositions[2] = 0;
 	SplashScreenMesh.VertexPositions[3] = -2; SplashScreenMesh.VertexPositions[4] = 2; SplashScreenMesh.VertexPositions[5] = 0;
 	SplashScreenMesh.VertexPositions[6] = -2; SplashScreenMesh.VertexPositions[7] = -2; SplashScreenMesh.VertexPositions[8] = 0;
+	SplashScreenMesh.VertexPositions[9] = 2; SplashScreenMesh.VertexPositions[10] = -2; SplashScreenMesh.VertexPositions[11] = 0;
 
 	SplashScreenMesh.Indices = (uint32_t*)malloc (sizeof (uint32_t) * SplashScreenMesh.IndexCount);
 	SplashScreenMesh.Indices[0] = 0; SplashScreenMesh.Indices[1] = 1; SplashScreenMesh.Indices[2] = 2;
-	SplashScreenMesh.Indices[3] = 2; SplashScreenMesh.Indices[4] = 1; SplashScreenMesh.Indices[5] = 3;
+	SplashScreenMesh.Indices[3] = 0; SplashScreenMesh.Indices[4] = 2; SplashScreenMesh.Indices[5] = 3;
 
 	return 0;
 }
@@ -703,7 +704,7 @@ int CreateSplashScreenHostVertexBuffer ()
 	memset (&CreateInfo, 0, sizeof (VkBufferCreateInfo));
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	CreateInfo.size = sizeof (float) * 3 * SplashScreenMesh.VertexCount;
+	CreateInfo.size = (uint64_t)sizeof (float) * 3 * SplashScreenMesh.VertexCount;
 	CreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
 	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &HostVertexBuffer) != VK_SUCCESS)
@@ -763,7 +764,7 @@ int CreateSplashScreenHostIndexBuffer ()
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	CreateInfo.size = sizeof (uint32_t) * SplashScreenMesh.IndexCount;
+	CreateInfo.size = (uint64_t)sizeof (uint32_t) * SplashScreenMesh.IndexCount;
 	CreateInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
 	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &HostIndexBuffer) != VK_SUCCESS)
