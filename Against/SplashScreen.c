@@ -824,14 +824,28 @@ int CreateSplashScreenHostTextureImage ()
 {
 	OutputDebugString (L"CreateSplashScreenHostTextureBuffer\n");
 
+	const char* Filename = "C:/Users/Nihal Kenkre/Documents/Visual Studio 2019/NTKApps/Debug/RawImages/bcci.tga.ntk";
+	
+	int Width, Height, BPP;
+	
+	FILE* TextureFile;
+	fopen_s (&TextureFile, Filename, "rb");
+	fread (&Width, sizeof (int), 1, TextureFile);
+	fread (&Height, sizeof (int), 1, TextureFile);
+	fread (&BPP, sizeof (int), 1, TextureFile);
+
+	uint8_t* Pixels = (uint8_t*)malloc (Width * Height * BPP * sizeof (uint8_t));
+	size_t BytesRead = fread (Pixels, sizeof (uint8_t), Width * Height * BPP, TextureFile);
+	fclose (TextureFile);
+
 	VkImageCreateInfo CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkImageCreateInfo));
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	CreateInfo.arrayLayers = 1;
 
-	CreateInfo.extent.width = 800;
-	CreateInfo.extent.height = 800;
+	CreateInfo.extent.width = Width;
+	CreateInfo.extent.height = Height;
 	CreateInfo.extent.depth = 1;
 
 	CreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -880,19 +894,43 @@ int CreateSplashScreenHostTextureImage ()
 		return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
 	}
 
-	const char* Filename = "C:/Users/Nihal Kenkre/Documents/Visual Studio 2019/NTKApps/Debug/RawImages/bcci.tga.ntk";
-	
-	int Width, Height, BPP;
-	
-	FILE* TextureFile;
-	fopen_s (&TextureFile, Filename, "rb");
-	fread (&Width, sizeof (int), 1, TextureFile);
-	fread (&Height, sizeof (int), 1, TextureFile);
-	fread (&BPP, sizeof (int), 1, TextureFile);
+	void* Data = NULL;
+	if (vkMapMemory (GraphicsDevice, TextureImageMemory, 0, MemoryRequirements.size, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_IMAGE_MEMORY;
+	}
+	memcpy_s (Data, (const rsize_t)MemoryRequirements.size, Pixels, Width * Height * BPP * sizeof (uint8_t));
 
-	uint8_t* Pixels = (uint8_t*)malloc (Width * Height * BPP * sizeof (uint8_t));
-	fread (Pixels, sizeof (uint8_t), Width * Height * BPP, TextureFile);
-	fclose (TextureFile);
+	vkUnmapMemory (GraphicsDevice, TextureImageMemory);
+
+	free (Pixels);
+
+	VkCommandBuffer DataCopyCmdBuffer;
+
+	VkCommandBufferAllocateInfo CommandBufferAllocateInfo;
+	memset (&CommandBufferAllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
+
+	CommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	CommandBufferAllocateInfo.commandPool = GraphicsDeviceCommandPool;
+	CommandBufferAllocateInfo.commandBufferCount = 1;
+
+	if (vkAllocateCommandBuffers (GraphicsDevice, &CommandBufferAllocateInfo, &DataCopyCmdBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
+	}
+
+	VkCommandBufferBeginInfo DataCopyCmdBufferBeginInfo;
+	memset (&DataCopyCmdBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
+
+	DataCopyCmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	DataCopyCmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+	if (vkBeginCommandBuffer (DataCopyCmdBuffer, &DataCopyCmdBufferBeginInfo) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
+	}
+
+	vkEndCommandBuffer (DataCopyCmdBuffer);
 
 	return 0;
 }
@@ -1023,14 +1061,14 @@ int SetupSplashScreen ()
 		return Result;
 	}
 
-	Result = CreateSplashScreenHostTextureImage ();
+	Result = CreateSplashScreenCommandPool ();
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = CreateSplashScreenCommandPool ();
+	Result = CreateSplashScreenHostTextureImage ();
 
 	if (Result != 0)
 	{
