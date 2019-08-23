@@ -850,7 +850,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	CreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
 	CreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 	CreateInfo.mipLevels = 1;
 	CreateInfo.pQueueFamilyIndices = NULL;
 	CreateInfo.queueFamilyIndexCount = 0;
@@ -930,7 +930,109 @@ int CreateSplashScreenHostTextureImage ()
 		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
 	}
 
+	
+
+	VkImageSubresourceRange SubresourceRange;
+	memset (&SubresourceRange, 0, sizeof (VkImageSubresource));
+
+	SubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	SubresourceRange.baseMipLevel = 0;
+	SubresourceRange.layerCount = 1;
+	SubresourceRange.levelCount = 1;
+
+	VkImageMemoryBarrier MemoryBarrier;
+	memset (&MemoryBarrier, 0, sizeof (VkImageMemoryBarrier));
+
+	MemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	MemoryBarrier.image = TextureImage;
+	MemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+	MemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	MemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+	MemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	MemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	MemoryBarrier.subresourceRange.baseMipLevel = 0;
+	MemoryBarrier.subresourceRange.levelCount = 1;
+	MemoryBarrier.subresourceRange.layerCount = 1;
+
+	vkCmdPipelineBarrier (DataCopyCmdBuffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &MemoryBarrier);
 	vkEndCommandBuffer (DataCopyCmdBuffer);
+
+	VkSubmitInfo SubmitInfo;
+	memset (&SubmitInfo, 0, sizeof (VkSubmitInfo));
+
+	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	SubmitInfo.commandBufferCount = 1;
+	SubmitInfo.pCommandBuffers = &DataCopyCmdBuffer;
+
+	VkFence Fence;
+	VkFenceCreateInfo FenceCreateInfo;
+	memset (&FenceCreateInfo, 0, sizeof (VkFenceCreateInfo));
+
+	FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	
+	if (vkCreateFence (GraphicsDevice, &FenceCreateInfo, NULL, &Fence) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_FENCE;
+	}
+
+	if (vkQueueSubmit (GraphicsQueue, 1, &SubmitInfo, Fence) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
+	}
+
+	VkSampler Sampler;
+
+	VkSamplerCreateInfo SamplerCreateInfo;
+	memset (&SamplerCreateInfo, 0, sizeof (VkSamplerCreateInfo));
+
+	SamplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	SamplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+	SamplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+	SamplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	SamplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	SamplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	SamplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	SamplerCreateInfo.mipLodBias = 0;
+	SamplerCreateInfo.compareEnable = VK_FALSE;
+	SamplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+
+	if (vkCreateSampler (GraphicsDevice, &SamplerCreateInfo, NULL, &Sampler) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_TEXTURE_SAMPLER;
+	}
+
+	VkImageView ImageView;
+
+	VkImageViewCreateInfo ImageViewCreateInfo;
+	memset (&ImageViewCreateInfo, 0, sizeof (VkImageViewCreateInfo));
+
+	ImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	ImageViewCreateInfo.image = TextureImage;
+	ImageViewCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+	ImageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+	ImageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+	ImageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_G;
+	ImageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+	ImageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+
+	ImageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	ImageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	ImageViewCreateInfo.subresourceRange.layerCount = 1;
+	ImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	ImageViewCreateInfo.subresourceRange.levelCount = 1;
+	
+	if (vkCreateImageView (GraphicsDevice, &ImageViewCreateInfo, NULL, &ImageView) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
+	}
+
+	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
+	}
+
+	vkDestroyFence (GraphicsDevice, Fence, NULL);
 
 	return 0;
 }
