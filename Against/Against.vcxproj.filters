@@ -27,12 +27,6 @@
     <ClCompile Include="GUI.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Assets.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Maths.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Sound.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -59,13 +53,7 @@
     <ClInclude Include="GUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Error.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Maths.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Sound.hpp">

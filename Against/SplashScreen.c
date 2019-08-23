@@ -37,9 +37,13 @@ VkBuffer HostVertexBuffer;
 VkBuffer HostIndexBuffer;
 VkBuffer UniformBuffer;
 
+VkImage TextureImage;
+
 VkDeviceMemory HostVertexBufferMemory;
 VkDeviceMemory HostIndexBufferMemory;
 VkDeviceMemory UniformBufferMemory;
+
+VkDeviceMemory TextureImageMemory;
 
 Mesh SplashScreenMesh;
 CameraUBO CUBO;
@@ -816,9 +820,79 @@ int CreateSplashScreenHostIndexBuffer ()
 	return 0;
 }
 
-int CreateSplashScreenHostTextureBuffer ()
+int CreateSplashScreenHostTextureImage ()
 {
 	OutputDebugString (L"CreateSplashScreenHostTextureBuffer\n");
+
+	VkImageCreateInfo CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkImageCreateInfo));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	CreateInfo.arrayLayers = 1;
+
+	CreateInfo.extent.width = 800;
+	CreateInfo.extent.height = 800;
+	CreateInfo.extent.depth = 1;
+
+	CreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+	CreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	CreateInfo.mipLevels = 1;
+	CreateInfo.pQueueFamilyIndices = NULL;
+	CreateInfo.queueFamilyIndexCount = 0;
+	CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	CreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+	CreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+
+	if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &TextureImage) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
+	}
+
+	VkMemoryRequirements MemoryRequirements;
+	vkGetImageMemoryRequirements (GraphicsDevice, TextureImage, &MemoryRequirements);
+
+	VkMemoryAllocateInfo MemoryAllocateInfo;
+	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+
+	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
+
+	uint32_t RequiredTypes = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if (MemoryRequirements.memoryTypeBits & (1 << i) && RequiredTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
+		{
+			MemoryAllocateInfo.memoryTypeIndex = i;
+			break;
+		}
+	}
+
+	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &TextureImageMemory) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_IMAGE_MEMORY;
+	}
+
+	if (vkBindImageMemory (GraphicsDevice, TextureImage, TextureImageMemory, 0) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
+	}
+
+	const char* Filename = "C:/Users/Nihal Kenkre/Documents/Visual Studio 2019/NTKApps/Debug/RawImages/bcci.tga.ntk";
+	
+	int Width, Height, BPP;
+	
+	FILE* TextureFile;
+	fopen_s (&TextureFile, Filename, "rb");
+	fread (&Width, sizeof (int), 1, TextureFile);
+	fread (&Height, sizeof (int), 1, TextureFile);
+	fread (&BPP, sizeof (int), 1, TextureFile);
+
+	uint8_t* Pixels = (uint8_t*)malloc (Width * Height * BPP * sizeof (uint8_t));
+	fread (Pixels, sizeof (uint8_t), Width * Height * BPP, TextureFile);
+	fclose (TextureFile);
 
 	return 0;
 }
@@ -949,7 +1023,7 @@ int SetupSplashScreen ()
 		return Result;
 	}
 
-	Result = CreateSplashScreenHostTextureBuffer ();
+	Result = CreateSplashScreenHostTextureImage ();
 
 	if (Result != 0)
 	{
