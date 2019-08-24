@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Assets.c" />
     <ClCompile Include="Compute.c" />
     <ClCompile Include="Game.c" />
     <ClCompile Include="Graphics.c" />
@@ -26,10 +27,12 @@
     <ClCompile Include="Main.c" />
     <ClCompile Include="MainGame.c" />
     <ClCompile Include="MainMenu.c" />
+    <ClCompile Include="Maths.c" />
     <ClCompile Include="SplashScreen.c" />
     <ClCompile Include="Sound.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Assets.h" />
     <ClInclude Include="Compute.h" />
     <ClInclude Include="Error.h" />
     <ClInclude Include="Game.h" />
@@ -37,6 +40,7 @@
     <ClInclude Include="GUI.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MainMenu.h" />
+    <ClInclude Include="Maths.h" />
     <ClInclude Include="SplashScreen.h" />
     <ClInclude Include="Sound.hpp" />
   </ItemGroup>
@@ -117,7 +121,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions);WIN32_LEAN_AND_MEAN</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Nihal Kenkre\Documents\Visual Studio 2019\AGELibs\ImportAssets;C:\Users\Nihal Kenkre\Documents\Visual Studio 2019\AGELibs\DataTypes;C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
@@ -159,7 +163,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions);WIN32_LEAN_AND_MEAN</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Nihal Kenkre\Documents\Visual Studio 2019\AGELibs\ImportAssets;C:\Users\Nihal Kenkre\Documents\Visual Studio 2019\AGELibs\DataTypes;C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
