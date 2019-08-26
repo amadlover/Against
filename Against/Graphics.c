@@ -68,7 +68,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback (VkDebugUtilsMessageSeveri
 	if (pCallbackData)
 	{
 		wchar_t buff[2048];
-		swprintf_s (buff, 2048, L"Debug Messenger Callback %hs\n", pCallbackData->pMessage);
+		swprintf_s (buff, 2048, L"Debug Messenger Callback: %hs\n", pCallbackData->pMessage);
 		OutputDebugString (buff);
 	}
 

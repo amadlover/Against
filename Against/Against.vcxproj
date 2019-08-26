@@ -29,7 +29,6 @@
     <ClCompile Include="MainMenu.c" />
     <ClCompile Include="Maths.c" />
     <ClCompile Include="SplashScreen.c" />
-    <ClCompile Include="Sound.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Assets.h" />
@@ -42,7 +41,6 @@
     <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Maths.h" />
     <ClInclude Include="SplashScreen.h" />
-    <ClInclude Include="Sound.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\frag.frag" />

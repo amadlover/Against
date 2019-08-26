@@ -33,6 +33,8 @@ VkFence* SwapchainFences;
 VkSemaphore WaitSemaphore;
 VkSemaphore SignalSemaphore;
 
+VkSampler Sampler;
+
 VkBuffer HostVertexBuffer;
 VkBuffer HostIndexBuffer;
 VkBuffer UniformBuffer;
@@ -44,6 +46,7 @@ VkDeviceMemory HostIndexBufferMemory;
 VkDeviceMemory UniformBufferMemory;
 
 VkDeviceMemory TextureImageMemory;
+VkImageView TextureImageView;
 
 Mesh SplashScreenMesh;
 CameraUBO CUBO;
@@ -64,6 +67,13 @@ int CreateSplashScreenMesh ()
 	SplashScreenMesh.VertexPositions[3] = -2; SplashScreenMesh.VertexPositions[4] = 2; SplashScreenMesh.VertexPositions[5] = 0;
 	SplashScreenMesh.VertexPositions[6] = -2; SplashScreenMesh.VertexPositions[7] = -2; SplashScreenMesh.VertexPositions[8] = 0;
 	SplashScreenMesh.VertexPositions[9] = 2; SplashScreenMesh.VertexPositions[10] = -2; SplashScreenMesh.VertexPositions[11] = 0;
+
+	SplashScreenMesh.VertexUVs = (float*)malloc (sizeof (float) * SplashScreenMesh.VertexCount * 2);
+
+	SplashScreenMesh.VertexUVs[0] = 0; SplashScreenMesh.VertexUVs[1] = 1;
+	SplashScreenMesh.VertexUVs[2] = 0; SplashScreenMesh.VertexUVs[3] = 0;
+	SplashScreenMesh.VertexUVs[4] = 1; SplashScreenMesh.VertexUVs[5] = 0;
+	SplashScreenMesh.VertexUVs[6] = 1; SplashScreenMesh.VertexUVs[7] = 1;
 
 	SplashScreenMesh.Indices = (uint32_t*)malloc (sizeof (uint32_t) * SplashScreenMesh.IndexCount);
 	SplashScreenMesh.Indices[0] = 0; SplashScreenMesh.Indices[1] = 1; SplashScreenMesh.Indices[2] = 2;
@@ -119,8 +129,6 @@ int CreateSplashScreenUniformBuffer ()
 		return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
 	}
 
-
-
 	return 0;
 }
 
@@ -128,20 +136,25 @@ int CreateSplashScreenDescriptorSetLayout ()
 {
 	OutputDebugString (L"CreateDescriptorSetLayout\n");
 
-	VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding;
-	memset (&DescriptorSetLayoutBinding, 0, sizeof (VkDescriptorSetLayoutBinding));
+	VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding[2];
+	memset (&DescriptorSetLayoutBinding, 0, sizeof (VkDescriptorSetLayoutBinding) * 2);
 
-	DescriptorSetLayoutBinding.binding = 0;
-	DescriptorSetLayoutBinding.descriptorCount = 1;
-	DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	DescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	DescriptorSetLayoutBinding[0].binding = 0;
+	DescriptorSetLayoutBinding[0].descriptorCount = 1;
+	DescriptorSetLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	DescriptorSetLayoutBinding[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	DescriptorSetLayoutBinding[1].binding = 1;
+	DescriptorSetLayoutBinding[1].descriptorCount = 1;
+	DescriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	DescriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo;
 	memset (&DescriptorSetLayoutCreateInfo, 0, sizeof (VkDescriptorSetLayoutCreateInfo));
 
 	DescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	DescriptorSetLayoutCreateInfo.bindingCount = 1;
-	DescriptorSetLayoutCreateInfo.pBindings = &DescriptorSetLayoutBinding;
+	DescriptorSetLayoutCreateInfo.bindingCount = 2;
+	DescriptorSetLayoutCreateInfo.pBindings = DescriptorSetLayoutBinding;
 
 	if (vkCreateDescriptorSetLayout (GraphicsDevice, &DescriptorSetLayoutCreateInfo, NULL, &DescriptorSetLayout) != VK_SUCCESS)
 	{
@@ -155,20 +168,23 @@ int CreateSplashScreenDescriptorPool ()
 {
 	OutputDebugString (L"CreateSplashScreenDescriptorPool\n");
 
-	VkDescriptorPoolSize DescriptorPoolSize;
-	memset (&DescriptorPoolSize, 0, sizeof (VkDescriptorPoolSize));
+	VkDescriptorPoolSize DescriptorPoolSize[2];
+	memset (&DescriptorPoolSize, 0, sizeof (VkDescriptorPoolSize) * 2);
 
-	DescriptorPoolSize.descriptorCount = 1;
-	DescriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	DescriptorPoolSize[0].descriptorCount = SwapchainImageCount;
+	DescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+	DescriptorPoolSize[1].descriptorCount = SwapchainImageCount;
+	DescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
 	VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo;
 	memset (&DescriptorPoolCreateInfo, 0, sizeof (VkDescriptorPoolCreateInfo));
 
 	DescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	DescriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	DescriptorPoolCreateInfo.poolSizeCount = 1;
-	DescriptorPoolCreateInfo.pPoolSizes = &DescriptorPoolSize;
-	DescriptorPoolCreateInfo.maxSets = 1;
+	DescriptorPoolCreateInfo.poolSizeCount = 2;
+	DescriptorPoolCreateInfo.pPoolSizes = DescriptorPoolSize;
+	DescriptorPoolCreateInfo.maxSets = SwapchainImageCount;
 
 	if (vkCreateDescriptorPool (GraphicsDevice, &DescriptorPoolCreateInfo, NULL, &DescriptorPool) != VK_SUCCESS)
 	{
@@ -202,18 +218,31 @@ int CreateSplashScreenDescriptorSet ()
 	BufferInfo.offset = 0;
 	BufferInfo.range = VK_WHOLE_SIZE;
 
-	VkWriteDescriptorSet WriteDescriptorSet;
-	memset (&WriteDescriptorSet, 0, sizeof (VkWriteDescriptorSet));
+	VkDescriptorImageInfo ImageInfo;
+	ImageInfo.sampler = Sampler;
+	ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	ImageInfo.imageView = TextureImageView;
 
-	WriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	WriteDescriptorSet.dstSet = DescriptorSet;
-	WriteDescriptorSet.dstBinding = 0;
-	WriteDescriptorSet.dstArrayElement = 0;
-	WriteDescriptorSet.descriptorCount = 1;
-	WriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	WriteDescriptorSet.pBufferInfo = &BufferInfo;
+	VkWriteDescriptorSet WriteDescriptorSet[2];
+	memset (&WriteDescriptorSet, 0, sizeof (VkWriteDescriptorSet) * 2);
 
-	vkUpdateDescriptorSets (GraphicsDevice, 1, &WriteDescriptorSet, 0, NULL);
+	WriteDescriptorSet[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	WriteDescriptorSet[0].dstSet = DescriptorSet;
+	WriteDescriptorSet[0].dstBinding = 0;
+	WriteDescriptorSet[0].dstArrayElement = 0;
+	WriteDescriptorSet[0].descriptorCount = 1;
+	WriteDescriptorSet[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	WriteDescriptorSet[0].pBufferInfo = &BufferInfo;
+
+	WriteDescriptorSet[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	WriteDescriptorSet[1].dstSet = DescriptorSet;
+	WriteDescriptorSet[1].dstBinding = 1;
+	WriteDescriptorSet[1].dstArrayElement = 0;
+	WriteDescriptorSet[1].descriptorCount = 1;
+	WriteDescriptorSet[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	WriteDescriptorSet[1].pImageInfo = &ImageInfo;
+
+	vkUpdateDescriptorSets (GraphicsDevice, 2, WriteDescriptorSet, 0, NULL);
 
 	return 0;
 }
@@ -462,29 +491,38 @@ int CreateSplashScreenGraphicsPipeline ()
 {
 	OutputDebugString (L"CreateSplashScreenGraphicsPipeline\n");
 
-	VkVertexInputBindingDescription VertexInputBindingDescription;
-	memset (&VertexInputBindingDescription, 0, sizeof (VkVertexInputBindingDescription));
+	VkVertexInputBindingDescription VertexInputBindingDescription[2];
+	memset (&VertexInputBindingDescription, 0, sizeof (VkVertexInputBindingDescription) * 2);
 
-	VertexInputBindingDescription.binding = 0;
-	VertexInputBindingDescription.stride = sizeof (float) * 3;
-	VertexInputBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	VertexInputBindingDescription[0].binding = 0;
+	VertexInputBindingDescription[0].stride = sizeof (float) * 3;
+	VertexInputBindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	VkVertexInputAttributeDescription VertexInputAttributeDescriptions;
-	memset (&VertexInputAttributeDescriptions, 0, sizeof (VkVertexInputAttributeDescription));
+	VertexInputBindingDescription[1].binding = 1;
+	VertexInputBindingDescription[1].stride = sizeof (float) * 2;
+	VertexInputBindingDescription[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	VertexInputAttributeDescriptions.binding = 0;
-	VertexInputAttributeDescriptions.location = 0;
-	VertexInputAttributeDescriptions.format = VK_FORMAT_R32G32B32_SFLOAT;
-	VertexInputAttributeDescriptions.offset = 0;
+	VkVertexInputAttributeDescription VertexInputAttributeDescriptions[2];
+	memset (&VertexInputAttributeDescriptions, 0, sizeof (VkVertexInputAttributeDescription) * 2);
+
+	VertexInputAttributeDescriptions[0].binding = 0;
+	VertexInputAttributeDescriptions[0].location = 0;
+	VertexInputAttributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	VertexInputAttributeDescriptions[0].offset = 0;
+
+	VertexInputAttributeDescriptions[1].binding = 1;
+	VertexInputAttributeDescriptions[1].location = 1;
+	VertexInputAttributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+	VertexInputAttributeDescriptions[1].offset = 0;
 
 	VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo;
 	memset (&VertexInputStateCreateInfo, 0, sizeof (VkPipelineVertexInputStateCreateInfo));
 
 	VertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	VertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
-	VertexInputStateCreateInfo.pVertexBindingDescriptions = &VertexInputBindingDescription;
-	VertexInputStateCreateInfo.vertexAttributeDescriptionCount = 1;
-	VertexInputStateCreateInfo.pVertexAttributeDescriptions = &VertexInputAttributeDescriptions;
+	VertexInputStateCreateInfo.vertexBindingDescriptionCount = 2;
+	VertexInputStateCreateInfo.pVertexBindingDescriptions = VertexInputBindingDescription;
+	VertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2;
+	VertexInputStateCreateInfo.pVertexAttributeDescriptions = VertexInputAttributeDescriptions;
 
 	VkPipelineInputAssemblyStateCreateInfo InputAssemblyCreateInfo;
 	memset (&InputAssemblyCreateInfo, 0, sizeof (VkPipelineInputAssemblyStateCreateInfo));
@@ -562,9 +600,9 @@ int CreateSplashScreenGraphicsPipeline ()
 	memset (&DepthStencilStateCreateInfo, 0, sizeof (VkPipelineDepthStencilStateCreateInfo));
 
 	DepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	DepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
-	DepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
-	DepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	DepthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
+	DepthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
+	DepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_NEVER;
 	DepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
 	DepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
 
@@ -645,10 +683,10 @@ int CreateSplashScreenCommandBuffer ()
 		vkCmdBindDescriptorSets (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipelineLayout, 0, 1, &DescriptorSet, 0, NULL);
 		vkCmdBindPipeline (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipeline);
 
-		VkDeviceSize Offset = { 0 };
+		VkDeviceSize Offsets[2] = { 0, (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 3 };
 
-		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &HostVertexBuffer, &Offset);
-		vkCmdBindIndexBuffer (SwapchainCommandBuffers[i], HostIndexBuffer, Offset, VK_INDEX_TYPE_UINT32);
+		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &HostVertexBuffer, Offsets);
+		vkCmdBindIndexBuffer (SwapchainCommandBuffers[i], HostIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed (SwapchainCommandBuffers[i], SplashScreenMesh.IndexCount, 1, 0, 0, 0);
 
 		vkCmdEndRenderPass (SwapchainCommandBuffers[i]);
@@ -708,7 +746,7 @@ int CreateSplashScreenHostVertexBuffer ()
 	memset (&CreateInfo, 0, sizeof (VkBufferCreateInfo));
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	CreateInfo.size = (uint64_t)sizeof (float) * 3 * SplashScreenMesh.VertexCount;
+	CreateInfo.size = (uint64_t)sizeof (float) * 3 * SplashScreenMesh.VertexCount + (uint64_t) sizeof (float) * 2 * SplashScreenMesh.VertexCount;
 	CreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
 	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &HostVertexBuffer) != VK_SUCCESS)
@@ -748,12 +786,20 @@ int CreateSplashScreenHostVertexBuffer ()
 
 	void* Data;
 
-	if (vkMapMemory (GraphicsDevice, HostVertexBufferMemory, 0, MemoryRequirements.size, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, HostVertexBufferMemory, 0, (uint64_t)sizeof (float) * 3 * SplashScreenMesh.VertexCount, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
 	memcpy (Data, SplashScreenMesh.VertexPositions, sizeof (float) * SplashScreenMesh.VertexCount * 3);
+	vkUnmapMemory (GraphicsDevice, HostVertexBufferMemory);
+
+	if (vkMapMemory (GraphicsDevice, HostVertexBufferMemory, (uint64_t)sizeof (float) * 3 * SplashScreenMesh.VertexCount, (uint64_t)sizeof (float) * 2 * SplashScreenMesh.VertexCount, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+	}
+
+	memcpy (Data, SplashScreenMesh.VertexUVs, sizeof (float) * SplashScreenMesh.VertexCount * 2);
 	vkUnmapMemory (GraphicsDevice, HostVertexBufferMemory);
 
 	return 0;
@@ -930,8 +976,6 @@ int CreateSplashScreenHostTextureImage ()
 		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
 	}
 
-	
-
 	VkImageSubresourceRange SubresourceRange;
 	memset (&SubresourceRange, 0, sizeof (VkImageSubresource));
 
@@ -980,8 +1024,6 @@ int CreateSplashScreenHostTextureImage ()
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
 	}
 
-	VkSampler Sampler;
-
 	VkSamplerCreateInfo SamplerCreateInfo;
 	memset (&SamplerCreateInfo, 0, sizeof (VkSamplerCreateInfo));
 
@@ -1000,8 +1042,6 @@ int CreateSplashScreenHostTextureImage ()
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_TEXTURE_SAMPLER;
 	}
-
-	VkImageView ImageView;
 
 	VkImageViewCreateInfo ImageViewCreateInfo;
 	memset (&ImageViewCreateInfo, 0, sizeof (VkImageViewCreateInfo));
@@ -1022,7 +1062,7 @@ int CreateSplashScreenHostTextureImage ()
 	ImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	ImageViewCreateInfo.subresourceRange.levelCount = 1;
 	
-	if (vkCreateImageView (GraphicsDevice, &ImageViewCreateInfo, NULL, &ImageView) != VK_SUCCESS)
+	if (vkCreateImageView (GraphicsDevice, &ImageViewCreateInfo, NULL, &TextureImageView) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
 	}
@@ -1093,27 +1133,6 @@ int SetupSplashScreen ()
 		return Result;
 	}
 
-	Result = CreateSplashScreenDescriptorSetLayout ();
-	
-	if (Result != 0)
-	{
-		return Result;
-	}
-
-	Result = CreateSplashScreenDescriptorPool ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
-	Result = CreateSplashScreenDescriptorSet ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
 	Result = CreateSplashScreenRenderPass ();
 
 	if (Result != 0)
@@ -1129,20 +1148,6 @@ int SetupSplashScreen ()
 	}
 
 	Result = CreateSplashScreenFramebuffers ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
-	Result = CreateSplashScreenGraphicsPipelineLayout ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
-	Result = CreateSplashScreenGraphicsPipeline ();
 
 	if (Result != 0)
 	{
@@ -1171,6 +1176,41 @@ int SetupSplashScreen ()
 	}
 
 	Result = CreateSplashScreenHostTextureImage ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenDescriptorSetLayout ();
+	
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenDescriptorPool ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenDescriptorSet ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenGraphicsPipelineLayout ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenGraphicsPipeline ();
 
 	if (Result != 0)
 	{
