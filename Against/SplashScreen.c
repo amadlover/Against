@@ -8,6 +8,11 @@
 
 #include <vulkan/vulkan.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_ONLY_TGA
+#include <stb_image.h>
+#include <Shlwapi.h>
+
 typedef struct _CameraUBO
 {
 	Matrix4x4 ProjectionMatrix;
@@ -61,19 +66,17 @@ int CreateSplashScreenMesh ()
 	SplashScreenMesh.VertexCount = 4;
 	SplashScreenMesh.IndexCount = 6;
 
-	SplashScreenMesh.VertexPositions = (float*)malloc (sizeof (float) * SplashScreenMesh.VertexCount * 3);
+	SplashScreenMesh.Vertices = (Vertex*)malloc (SplashScreenMesh.VertexCount * sizeof (Vertex));
 
-	SplashScreenMesh.VertexPositions[0] = 2; SplashScreenMesh.VertexPositions[1] = 2; SplashScreenMesh.VertexPositions[2] = 0;
-	SplashScreenMesh.VertexPositions[3] = -2; SplashScreenMesh.VertexPositions[4] = 2; SplashScreenMesh.VertexPositions[5] = 0;
-	SplashScreenMesh.VertexPositions[6] = -2; SplashScreenMesh.VertexPositions[7] = -2; SplashScreenMesh.VertexPositions[8] = 0;
-	SplashScreenMesh.VertexPositions[9] = 2; SplashScreenMesh.VertexPositions[10] = -2; SplashScreenMesh.VertexPositions[11] = 0;
+	SplashScreenMesh.Vertices[0].Position.x = 2; SplashScreenMesh.Vertices[0].Position.y = 2; SplashScreenMesh.Vertices[0].Position.z = 0;
+	SplashScreenMesh.Vertices[1].Position.x = -2; SplashScreenMesh.Vertices[1].Position.y = 2; SplashScreenMesh.Vertices[2].Position.z = 0;
+	SplashScreenMesh.Vertices[2].Position.x = -2; SplashScreenMesh.Vertices[2].Position.y = -2; SplashScreenMesh.Vertices[2].Position.z = 0;
+	SplashScreenMesh.Vertices[3].Position.x = 2; SplashScreenMesh.Vertices[3].Position.y = -2; SplashScreenMesh.Vertices[3].Position.z = 0;
 
-	SplashScreenMesh.VertexUVs = (float*)malloc (sizeof (float) * SplashScreenMesh.VertexCount * 2);
-
-	SplashScreenMesh.VertexUVs[0] = 0; SplashScreenMesh.VertexUVs[1] = 1;
-	SplashScreenMesh.VertexUVs[2] = 0; SplashScreenMesh.VertexUVs[3] = 0;
-	SplashScreenMesh.VertexUVs[4] = 1; SplashScreenMesh.VertexUVs[5] = 0;
-	SplashScreenMesh.VertexUVs[6] = 1; SplashScreenMesh.VertexUVs[7] = 1;
+	SplashScreenMesh.Vertices[0].UV.x = 0; SplashScreenMesh.Vertices[0].UV.y = 1;
+	SplashScreenMesh.Vertices[1].UV.x = 0; SplashScreenMesh.Vertices[1].UV.y = 0;
+	SplashScreenMesh.Vertices[2].UV.x = 1; SplashScreenMesh.Vertices[2].UV.y = 0;
+	SplashScreenMesh.Vertices[3].UV.x = 1; SplashScreenMesh.Vertices[3].UV.y = 1;
 
 	SplashScreenMesh.Indices = (uint32_t*)malloc (sizeof (uint32_t) * SplashScreenMesh.IndexCount);
 	SplashScreenMesh.Indices[0] = 0; SplashScreenMesh.Indices[1] = 1; SplashScreenMesh.Indices[2] = 2;
@@ -491,16 +494,12 @@ int CreateSplashScreenGraphicsPipeline ()
 {
 	OutputDebugString (L"CreateSplashScreenGraphicsPipeline\n");
 
-	VkVertexInputBindingDescription VertexInputBindingDescription[2];
-	memset (&VertexInputBindingDescription, 0, sizeof (VkVertexInputBindingDescription) * 2);
+	VkVertexInputBindingDescription VertexInputBindingDescription;
+	memset (&VertexInputBindingDescription, 0, sizeof (VkVertexInputBindingDescription));
 
-	VertexInputBindingDescription[0].binding = 0;
-	VertexInputBindingDescription[0].stride = sizeof (float) * 3;
-	VertexInputBindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-	VertexInputBindingDescription[1].binding = 1;
-	VertexInputBindingDescription[1].stride = sizeof (float) * 2;
-	VertexInputBindingDescription[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	VertexInputBindingDescription.binding = 0;
+	VertexInputBindingDescription.stride = sizeof (Vertex);
+	VertexInputBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 	VkVertexInputAttributeDescription VertexInputAttributeDescriptions[2];
 	memset (&VertexInputAttributeDescriptions, 0, sizeof (VkVertexInputAttributeDescription) * 2);
@@ -508,19 +507,19 @@ int CreateSplashScreenGraphicsPipeline ()
 	VertexInputAttributeDescriptions[0].binding = 0;
 	VertexInputAttributeDescriptions[0].location = 0;
 	VertexInputAttributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-	VertexInputAttributeDescriptions[0].offset = 0;
+	VertexInputAttributeDescriptions[0].offset = offsetof (Vertex, Position);
 
-	VertexInputAttributeDescriptions[1].binding = 1;
+	VertexInputAttributeDescriptions[1].binding = 0;
 	VertexInputAttributeDescriptions[1].location = 1;
 	VertexInputAttributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-	VertexInputAttributeDescriptions[1].offset = 0;
+	VertexInputAttributeDescriptions[1].offset = offsetof (Vertex, UV);
 
 	VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo;
 	memset (&VertexInputStateCreateInfo, 0, sizeof (VkPipelineVertexInputStateCreateInfo));
 
 	VertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	VertexInputStateCreateInfo.vertexBindingDescriptionCount = 2;
-	VertexInputStateCreateInfo.pVertexBindingDescriptions = VertexInputBindingDescription;
+	VertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
+	VertexInputStateCreateInfo.pVertexBindingDescriptions = &VertexInputBindingDescription;
 	VertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2;
 	VertexInputStateCreateInfo.pVertexAttributeDescriptions = VertexInputAttributeDescriptions;
 
@@ -683,9 +682,9 @@ int CreateSplashScreenCommandBuffer ()
 		vkCmdBindDescriptorSets (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipelineLayout, 0, 1, &DescriptorSet, 0, NULL);
 		vkCmdBindPipeline (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipeline);
 
-		VkDeviceSize Offsets[2] = { 0, (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 3 };
+		VkDeviceSize Offset = { 0 };
 
-		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &HostVertexBuffer, Offsets);
+		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &HostVertexBuffer, &Offset);
 		vkCmdBindIndexBuffer (SwapchainCommandBuffers[i], HostIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed (SwapchainCommandBuffers[i], SplashScreenMesh.IndexCount, 1, 0, 0, 0);
 
@@ -746,7 +745,7 @@ int CreateSplashScreenHostVertexBuffer ()
 	memset (&CreateInfo, 0, sizeof (VkBufferCreateInfo));
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	CreateInfo.size = (uint64_t)sizeof (float) * 3 * SplashScreenMesh.VertexCount + (uint64_t) sizeof (float) * 2 * SplashScreenMesh.VertexCount;
+	CreateInfo.size = (uint64_t)sizeof (Vertex) * SplashScreenMesh.VertexCount;
 	CreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
 	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &HostVertexBuffer) != VK_SUCCESS)
@@ -786,20 +785,12 @@ int CreateSplashScreenHostVertexBuffer ()
 
 	void* Data;
 
-	if (vkMapMemory (GraphicsDevice, HostVertexBufferMemory, 0, (uint64_t)sizeof (float) * 3 * SplashScreenMesh.VertexCount, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, HostVertexBufferMemory, 0, (uint64_t)sizeof (Vertex) * SplashScreenMesh.VertexCount, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
-	memcpy (Data, SplashScreenMesh.VertexPositions, sizeof (float) * SplashScreenMesh.VertexCount * 3);
-	vkUnmapMemory (GraphicsDevice, HostVertexBufferMemory);
-
-	if (vkMapMemory (GraphicsDevice, HostVertexBufferMemory, (uint64_t)sizeof (float) * 3 * SplashScreenMesh.VertexCount, (uint64_t)sizeof (float) * 2 * SplashScreenMesh.VertexCount, 0, &Data) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
-	}
-
-	memcpy (Data, SplashScreenMesh.VertexUVs, sizeof (float) * SplashScreenMesh.VertexCount * 2);
+	memcpy (Data, SplashScreenMesh.Vertices, sizeof (Vertex) * SplashScreenMesh.VertexCount);
 	vkUnmapMemory (GraphicsDevice, HostVertexBufferMemory);
 
 	return 0;
@@ -870,7 +861,12 @@ int CreateSplashScreenHostTextureImage ()
 {
 	OutputDebugString (L"CreateSplashScreenHostTextureBuffer\n");
 
-	const char* Filename = "C:/Users/Nihal Kenkre/Documents/Visual Studio 2019/NTKApps/Debug/RawImages/bcci.tga.ntk";
+	HMODULE Module = GetModuleHandle (NULL);
+	TCHAR Path[MAX_PATH];
+	GetModuleFileName (Module, Path, MAX_PATH);
+	PathRemoveFileSpec (Path);
+
+	const char* Filename = "./TestImages/bcci.tga";
 	
 	int Width, Height, BPP;
 	

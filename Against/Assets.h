@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 
+typedef struct _Vertex
+{
+	Vector3 Position;
+	Vector2 UV;
+	Vector3 Normal;
+} Vertex;
+
 typedef struct _Mesh
 {
 	Matrix4x4 TransformationMatrix;
@@ -10,10 +17,7 @@ typedef struct _Mesh
 	uint32_t VertexCount;
 	uint32_t IndexCount;
 
-	float* VertexPositions;
-	float* VertexNormals;
-	float* VertexUVs;
-	float* VertexColors;
+	Vertex* Vertices;
 
 	uint32_t* Indices;
 
