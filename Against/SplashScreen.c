@@ -11,7 +11,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_ONLY_TGA
 #include <stb_image.h>
+
 #include <Shlwapi.h>
+#include <strsafe.h>
 
 typedef struct _CameraUBO
 {
@@ -69,7 +71,7 @@ int CreateSplashScreenMesh ()
 	SplashScreenMesh.Vertices = (Vertex*)malloc (SplashScreenMesh.VertexCount * sizeof (Vertex));
 
 	SplashScreenMesh.Vertices[0].Position.x = 2; SplashScreenMesh.Vertices[0].Position.y = 2; SplashScreenMesh.Vertices[0].Position.z = 0;
-	SplashScreenMesh.Vertices[1].Position.x = -2; SplashScreenMesh.Vertices[1].Position.y = 2; SplashScreenMesh.Vertices[2].Position.z = 0;
+	SplashScreenMesh.Vertices[1].Position.x = -2; SplashScreenMesh.Vertices[1].Position.y = 2; SplashScreenMesh.Vertices[1].Position.z = 0;
 	SplashScreenMesh.Vertices[2].Position.x = -2; SplashScreenMesh.Vertices[2].Position.y = -2; SplashScreenMesh.Vertices[2].Position.z = 0;
 	SplashScreenMesh.Vertices[3].Position.x = 2; SplashScreenMesh.Vertices[3].Position.y = -2; SplashScreenMesh.Vertices[3].Position.z = 0;
 
@@ -859,26 +861,22 @@ int CreateSplashScreenHostIndexBuffer ()
 
 int CreateSplashScreenHostTextureImage ()
 {
-	OutputDebugString (L"CreateSplashScreenHostTextureBuffer\n");
+	OutputDebugString (L"CreateSplashScreenHostTextureImage\n");
 
 	HMODULE Module = GetModuleHandle (NULL);
 	TCHAR Path[MAX_PATH];
 	GetModuleFileName (Module, Path, MAX_PATH);
 	PathRemoveFileSpec (Path);
-
-	const char* Filename = "./TestImages/bcci.tga";
 	
+	StringCchCat (Path, MAX_PATH, L"\\TestImages\\bcci.tga");
+
+	char Filename[MAX_PATH];
+
+	wcstombs_s (NULL, Filename, MAX_PATH, Path, MAX_PATH);
+
 	int Width, Height, BPP;
 	
-	FILE* TextureFile;
-	fopen_s (&TextureFile, Filename, "rb");
-	fread (&Width, sizeof (int), 1, TextureFile);
-	fread (&Height, sizeof (int), 1, TextureFile);
-	fread (&BPP, sizeof (int), 1, TextureFile);
-
-	uint8_t* Pixels = (uint8_t*)malloc (Width * Height * BPP * sizeof (uint8_t));
-	size_t BytesRead = fread (Pixels, sizeof (uint8_t), Width * Height * BPP, TextureFile);
-	fclose (TextureFile);
+	uint8_t* Pixels = stbi_load ((const char*)Filename, &Width, &Height, &BPP, 0);
 
 	VkImageCreateInfo CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkImageCreateInfo));
@@ -1299,21 +1297,27 @@ void DestroySplashScreen ()
 {
 	OutputDebugString (L"DestroySplashScreen\n");
 
-	vkWaitForFences (GraphicsDevice, SwapchainImageCount, SwapchainFences, VK_TRUE, UINT64_MAX);
-
-	for (uint32_t i = 0; i < SwapchainImageCount; i++)
+	if (SwapchainFences)
 	{
-		vkDestroyFence (GraphicsDevice, SwapchainFences[i], NULL);
-	}
+		vkWaitForFences (GraphicsDevice, SwapchainImageCount, SwapchainFences, VK_TRUE, UINT64_MAX);
 
-	free (SwapchainFences);	
+		for (uint32_t i = 0; i < SwapchainImageCount; i++)
+		{
+			vkDestroyFence (GraphicsDevice, SwapchainFences[i], NULL);
+		}
+
+		free (SwapchainFences);
+	}
 
 	vkDestroySemaphore (GraphicsDevice, WaitSemaphore, NULL);
 	vkDestroySemaphore (GraphicsDevice, SignalSemaphore, NULL);
 
-	vkFreeCommandBuffers (GraphicsDevice, GraphicsDeviceCommandPool, SwapchainImageCount, SwapchainCommandBuffers);
 
-	free (SwapchainCommandBuffers);
+	if (SwapchainCommandBuffers)
+	{
+		vkFreeCommandBuffers (GraphicsDevice, GraphicsDeviceCommandPool, SwapchainImageCount, SwapchainCommandBuffers);
+		free (SwapchainCommandBuffers);
+	}
 
 	vkDestroyCommandPool (GraphicsDevice, GraphicsDeviceCommandPool, NULL);
 
@@ -1324,12 +1328,15 @@ void DestroySplashScreen ()
 	vkDestroyShaderModule (GraphicsDevice, VertexShaderModule, NULL);
 	vkDestroyShaderModule (GraphicsDevice, FragmentShaderModule, NULL);
 
-	for (uint8_t i = 0; i < SwapchainImageCount; i++)
+	if (SwapchainFramebuffers)
 	{
-		vkDestroyFramebuffer (GraphicsDevice, SwapchainFramebuffers[i], NULL);
-	}
+		for (uint8_t i = 0; i < SwapchainImageCount; i++)
+		{
+			vkDestroyFramebuffer (GraphicsDevice, SwapchainFramebuffers[i], NULL);
+		}
 
-	free (SwapchainFramebuffers);
+		free (SwapchainFramebuffers);
+	}
 
 	vkDestroyRenderPass (GraphicsDevice, RenderPass, NULL);
 
