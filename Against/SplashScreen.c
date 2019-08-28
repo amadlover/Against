@@ -876,7 +876,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	int Width, Height, BPP;
 	
-	uint8_t* Pixels = stbi_load ((const char*)Filename, &Width, &Height, &BPP, 0);
+	uint8_t* Pixels = stbi_load ((const char*)Filename, &Width, &Height, &BPP, 4);
 
 	VkImageCreateInfo CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkImageCreateInfo));
