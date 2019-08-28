@@ -876,7 +876,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	int Width, Height, BPP;
 	
-	uint8_t* Pixels = stbi_load ((const char*)Filename, &Width, &Height, &BPP, 4);
+	uint8_t* Pixels = stbi_load ((const char*)Filename, &Width, &Height, &BPP, 0);
 
 	VkImageCreateInfo CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkImageCreateInfo));
@@ -1311,7 +1311,6 @@ void DestroySplashScreen ()
 
 	vkDestroySemaphore (GraphicsDevice, WaitSemaphore, NULL);
 	vkDestroySemaphore (GraphicsDevice, SignalSemaphore, NULL);
-
 
 	if (SwapchainCommandBuffers)
 	{

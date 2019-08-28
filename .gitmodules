@@ -1,0 +1,7 @@
+[submodule "stb"]
+	path = stb
+	url = https://github.com/nothings/stb
+[submodule "cgltf"]
+	path = cgltf
+	url = http://github.com/jkuhlmann/cgltf
+

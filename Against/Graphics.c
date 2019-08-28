@@ -574,27 +574,22 @@ void GraphicsShutdown ()
 	DestroyMainMenu ();
 	DestroySplashScreen ();
 
+	vkDestroySwapchainKHR (GraphicsDevice, Swapchain, NULL);
+
 	if (SwapchainImageViews)
 	{
 		for (uint32_t i = 0; i < SwapchainImageCount; i++)
 		{
 			vkDestroyImageView (GraphicsDevice, SwapchainImageViews[i], NULL);
 		}
-	
+
 		free (SwapchainImageViews);
 	}
-	
+
 	if (SwapchainImages)
 	{
-		for (uint32_t i = 0; i < SwapchainImageCount; i++)
-		{
-			vkDestroyImage (GraphicsDevice, SwapchainImages[i], NULL);
-		}
-
 		free (SwapchainImages);
 	}
-
-	vkDestroySwapchainKHR (GraphicsDevice, Swapchain, NULL);
 
 	vkDestroyDevice (GraphicsDevice, NULL);
 

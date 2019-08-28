@@ -48,6 +48,9 @@
     <ClCompile Include="Maths.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ImportGLTF.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Maths.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImportGLTF.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
