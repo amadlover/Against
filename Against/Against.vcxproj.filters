@@ -48,7 +48,7 @@
     <ClCompile Include="Maths.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImportGLTF.c">
+    <ClCompile Include="ImportAssets.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -83,7 +83,7 @@
     <ClInclude Include="Maths.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImportGLTF.h">
+    <ClInclude Include="ImportAssets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

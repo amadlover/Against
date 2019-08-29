@@ -466,11 +466,11 @@ void MatrixCreateOrthographicProjection (float Left, float Right, float Bottom, 
 
 	Result->m[0] = 2.f / (Right - Left);
 	Result->m[5] = 2.f / (Bottom - Top);
-	Result->m[10] = 2.f / (Near - Far);
+	Result->m[10] = -2.f / (Far - Near);
 
 	Result->m[12] = -(Right + Left) / (Right - Left);
 	Result->m[13] = -(Bottom + Top) / (Bottom - Top);
-	Result->m[14] = Near / (Near - Far);
+	Result->m[14] = -(Near + Far) / (Near - Far);
 	Result->m[15] = 1.f;
 }
 

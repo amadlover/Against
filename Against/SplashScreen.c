@@ -1076,7 +1076,7 @@ int UpdateCameraUniformBuffer ()
 	OutputDebugString (L"UpdateCameraUniformBuffer\n");
 
 	Matrix4x4 ProjectionMatrix = MatrixGetIdentity ();
-	MatrixCreatePerspectiveProjection (60, (float)SurfaceExtent.width / (float)SurfaceExtent.height, 0.1f, 100.f, &ProjectionMatrix);
+	MatrixCreatePerspectiveProjection (60, (float)SurfaceExtent.width / (float)SurfaceExtent.height, 0.1f, 50.f, &ProjectionMatrix);
 
 	CUBO.ProjectionMatrix = ProjectionMatrix;
 
@@ -1342,10 +1342,15 @@ void DestroySplashScreen ()
 	vkFreeMemory (GraphicsDevice, HostVertexBufferMemory, NULL);
 	vkFreeMemory (GraphicsDevice, HostIndexBufferMemory, NULL);
 	vkFreeMemory (GraphicsDevice, UniformBufferMemory, NULL);
-
+	
 	vkDestroyBuffer (GraphicsDevice, HostVertexBuffer, NULL);
 	vkDestroyBuffer (GraphicsDevice, HostIndexBuffer, NULL);
 	vkDestroyBuffer (GraphicsDevice, UniformBuffer, NULL);
+
+	vkFreeMemory (GraphicsDevice, TextureImageMemory, NULL);
+	vkDestroyImage (GraphicsDevice, TextureImage, NULL);
+	vkDestroySampler (GraphicsDevice, Sampler, NULL);
+	vkDestroyImageView (GraphicsDevice, TextureImageView, NULL);
 
 	vkFreeDescriptorSets (GraphicsDevice, DescriptorPool, 1, &DescriptorSet);
 	vkDestroyDescriptorPool (GraphicsDevice, DescriptorPool, NULL);

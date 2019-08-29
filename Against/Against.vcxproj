@@ -24,7 +24,7 @@
     <ClCompile Include="Game.c" />
     <ClCompile Include="Graphics.c" />
     <ClCompile Include="GUI.c" />
-    <ClCompile Include="ImportGLTF.c" />
+    <ClCompile Include="ImportAssets.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="MainGame.c" />
     <ClCompile Include="MainMenu.c" />
@@ -38,7 +38,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="GUI.h" />
-    <ClInclude Include="ImportGLTF.h" />
+    <ClInclude Include="ImportAssets.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Maths.h" />
@@ -119,9 +119,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions);WIN32_LEAN_AND_MEAN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\Projects\STB;C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories);E:\Projects\CGLTF</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\cgltf;..\stb;C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
@@ -139,9 +139,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions);WIN32_LEAN_AND_MEAN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.114.0\Include;E:\Projects\STB;%(AdditionalIncludeDirectories);E:\Projects\CGLTF</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\cgltf;..\stb;C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
@@ -161,9 +161,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions);WIN32_LEAN_AND_MEAN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\Projects\STB;C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories);E:\Projects\CGLTF</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\cgltf;..\stb;C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
@@ -185,9 +185,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;%(PreprocessorDefinitions);WIN32_LEAN_AND_MEAN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;NDEBUG;_WINDOWS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.114.0\Include;E:\Projects\STB;%(AdditionalIncludeDirectories);E:\Projects\CGLTF</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\cgltf;..\stb;C:\VulkanSDK\1.1.114.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
