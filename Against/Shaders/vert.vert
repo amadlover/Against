@@ -2,9 +2,7 @@
 
 layout (binding = 0) uniform UBO 
 {
-	mat4 ProjectionMatrix;
-	mat4 ViewMatrix;
-	mat4 ModelMatrix;
+	mat4 MVP;
 } Buffer;
 
 layout (location = 0) in vec3 InPosition;
@@ -15,27 +13,7 @@ layout (location = 1) out vec2 OutUV;
 
 void main ()
 {
-	gl_Position = Buffer.ProjectionMatrix * Buffer.ViewMatrix * Buffer.ModelMatrix * vec4 (InPosition, 1);
-
-	/*if (gl_VertexIndex == 0)
-	{
-		gl_Position = vec4(-1,-1,10,1);
-	}
-	
-	if (gl_VertexIndex == 1)
-	{
-		gl_Position = vec4(-1,1,10,1);
-	}
-	
-	if (gl_VertexIndex == 2)
-	{
-		gl_Position = vec4(1,1,10,1);
-	}
-	
-	if (gl_VertexIndex == 3)
-	{
-		gl_Position = vec4(1,-1,10,1);
-	}*/
+	gl_Position = Buffer.MVP * vec4 (InPosition, 1);
 
 	OutColor = vec4 (1, 1, 1, 1);
 	OutUV = InUV;

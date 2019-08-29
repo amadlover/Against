@@ -15,13 +15,6 @@
 #include <Shlwapi.h>
 #include <strsafe.h>
 
-typedef struct _CameraUBO
-{
-	Matrix4x4 ProjectionMatrix;
-	Matrix4x4 ViewMatrix;
-	Matrix4x4 ModelMatrix;
-} CameraUBO;
-
 VkBuffer UniformBuffer;
 VkDeviceMemory UniformBufferMemory;
 VkDescriptorSetLayout DescriptorSetLayout;
@@ -56,7 +49,7 @@ VkDeviceMemory TextureImageMemory;
 VkImageView TextureImageView;
 
 Mesh SplashScreenMesh;
-CameraUBO CUBO;
+Matrix4x4 MVP;
 
 int CreateSplashScreenMesh ()
 {
@@ -96,7 +89,7 @@ int CreateSplashScreenUniformBuffer ()
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	CreateInfo.size = sizeof (CameraUBO);
+	CreateInfo.size = sizeof (Matrix4x4);
 	CreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
 	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &UniformBuffer) != VK_SUCCESS)
@@ -1075,10 +1068,10 @@ int UpdateCameraUniformBuffer ()
 {
 	OutputDebugString (L"UpdateCameraUniformBuffer\n");
 
+	MVP = MatrixGetIdentity ();
+
 	Matrix4x4 ProjectionMatrix = MatrixGetIdentity ();
 	MatrixCreatePerspectiveProjection (60, (float)SurfaceExtent.width / (float)SurfaceExtent.height, 0.1f, 50.f, &ProjectionMatrix);
-
-	CUBO.ProjectionMatrix = ProjectionMatrix;
 
 	Matrix4x4 CameraModelMatrix = MatrixGetIdentity (); 
 	
@@ -1091,18 +1084,17 @@ int UpdateCameraUniformBuffer ()
 	Matrix4x4 ViewMatrix = MatrixGetIdentity ();
 	MatrixInverse (CameraModelMatrix, &ViewMatrix);
 
-	CUBO.ViewMatrix = ViewMatrix;
-
-	CUBO.ModelMatrix = MatrixGetIdentity ();
+	MatrixMultiplyMatrix (MVP, ProjectionMatrix, &MVP);
+	MatrixMultiplyMatrix (MVP, ViewMatrix, &MVP);
 
 	void* Data;
 
-	if (vkMapMemory (GraphicsDevice, UniformBufferMemory, 0, sizeof (CameraUBO), 0, (void**)& Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, UniformBufferMemory, 0, sizeof (Matrix4x4), 0, (void**)& Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
-	memcpy (Data, &CUBO, sizeof (CameraUBO));
+	memcpy (Data, &MVP, sizeof (Matrix4x4));
 
 	vkUnmapMemory (GraphicsDevice, UniformBufferMemory);
 
