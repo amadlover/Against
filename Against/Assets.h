@@ -19,6 +19,10 @@ typedef struct _Mesh
 
 	Vertex* Vertices;
 
+	float* Positions;
+	float* UVs;
+	float* Normals;
+
 	uint32_t* Indices;
 
 	const char* Name;

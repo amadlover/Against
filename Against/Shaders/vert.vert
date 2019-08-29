@@ -15,6 +15,36 @@ void main ()
 {
 	gl_Position = Buffer.MVP * vec4 (InPosition, 1);
 
+	/*if (gl_VertexIndex == 0)
+	{
+		gl_Position = vec4 (1,-1,9,10);
+	}
+
+	if (gl_VertexIndex == 1)
+	{
+		gl_Position = vec4 (-1,-1,9,10);
+	}
+
+	if (gl_VertexIndex == 2)
+	{
+		gl_Position = vec4 (-1,1,9,10);
+	}
+
+	if (gl_VertexIndex == 3)
+	{
+		gl_Position = vec4 (1,-1,9,10);
+	}
+
+	if (gl_VertexIndex == 4)
+	{
+		gl_Position = vec4 (-1,1,9,10);
+	}
+
+	if (gl_VertexIndex == 5)
+	{
+		gl_Position = vec4 (1,1,9,10);
+	}*/
+
 	OutColor = vec4 (1, 1, 1, 1);
 	OutUV = InUV;
 }
