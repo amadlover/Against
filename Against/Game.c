@@ -6,6 +6,7 @@
 #include "MainGame.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 
 enum _SceneState
 {
@@ -156,7 +157,7 @@ int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int IsLoadingScreenToBeShown ()
+bool IsLoadingScreenToBeShown ()
 {
 	ULONGLONG CurrentTickCount = GetTickCount64 ();
 	ULONGLONG ElapsedTime = CurrentTickCount - StartupTickCount;
@@ -171,8 +172,9 @@ int GameMainLoop ()
 	switch (SceneState)
 	{
 	case SplashScreen:
-		if (IsLoadingScreenToBeShown () == 0) 
+		if (!IsLoadingScreenToBeShown ()) 
 		{
+			OutputDebugString (L"Switching to Main Menu\n");
 			SceneState = MainMenu;
 		}
 		else

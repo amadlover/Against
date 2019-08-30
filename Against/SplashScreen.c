@@ -40,6 +40,8 @@ VkBuffer HostVertexPositionsBuffer;
 VkBuffer HostVertexUVsBuffer;
 VkBuffer HostIndexBuffer;
 VkBuffer UniformBuffer;
+VkBuffer HostVertexBuffer;
+
 
 VkImage TextureImage;
 
@@ -47,6 +49,7 @@ VkDeviceMemory HostVertexPositionsBufferMemory;
 VkDeviceMemory HostVertexUVsBufferMemory;
 VkDeviceMemory HostIndexBufferMemory;
 VkDeviceMemory UniformBufferMemory;
+VkDeviceMemory HostVertexBufferMemory;
 
 VkDeviceMemory TextureImageMemory;
 VkImageView TextureImageView;
@@ -729,10 +732,10 @@ int CreateSplashScreenCommandBuffer ()
 		vkCmdBindDescriptorSets (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipelineLayout, 0, 1, &DescriptorSet, 0, NULL);
 		vkCmdBindPipeline (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipeline);
 
-		VkDeviceSize Offset = { 0 };
+		VkDeviceSize Offset[2] = { 0, (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 3 };
 
-		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &HostVertexPositionsBuffer, &Offset);
-		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 1, 1, &HostVertexUVsBuffer, &Offset);
+		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &HostVertexBuffer, &Offset[0]);
+		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 1, 1, &HostVertexBuffer, &Offset[1]);
 		vkCmdBindIndexBuffer (SwapchainCommandBuffers[i], HostIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed (SwapchainCommandBuffers[i], SplashScreenMesh.IndexCount, 1, 0, 0, 0);
 
@@ -952,7 +955,7 @@ int CreateSplashScreenHostIndexBuffer ()
 
 	void* Data;
 
-	if (vkMapMemory (GraphicsDevice, HostIndexBufferMemory, 0, MemoryRequirements.size, 0, (void**)& Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, HostIndexBufferMemory, 0, MemoryRequirements.size, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
@@ -960,6 +963,73 @@ int CreateSplashScreenHostIndexBuffer ()
 	memcpy (Data, SplashScreenMesh.Indices, sizeof (uint32_t) * SplashScreenMesh.IndexCount);
 
 	vkUnmapMemory (GraphicsDevice, HostIndexBufferMemory);
+
+	return 0;
+}
+
+int CreateSplashScreenHostVertexBuffers ()
+{
+	OutputDebugString (L"CreateSplashScreenHostVertexBuffers\n");
+
+	VkBufferCreateInfo CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkBufferCreateInfo));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	CreateInfo.size = (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 3 + (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 2;
+	CreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &HostVertexBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
+	}
+
+	VkMemoryRequirements MemoryRequirements;
+	vkGetBufferMemoryRequirements (GraphicsDevice, HostVertexBuffer, &MemoryRequirements);
+
+	VkMemoryAllocateInfo MemoryAllocateInfo;
+	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+
+	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
+
+	uint32_t RequiredTypes = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if (MemoryRequirements.memoryTypeBits & (1 << i) && RequiredTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
+		{
+			MemoryAllocateInfo.memoryTypeIndex = i;
+			break;
+		}
+	}
+
+	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &HostVertexBufferMemory) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_BUFFER_MEMORY;
+	}
+
+	if (vkBindBufferMemory (GraphicsDevice, HostVertexBuffer, HostVertexBufferMemory, 0) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
+	}
+
+	void* Data;
+
+	if (vkMapMemory (GraphicsDevice, HostVertexBufferMemory, 0, (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 3, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+	}
+
+	memcpy (Data, SplashScreenMesh.Positions, sizeof (float) * SplashScreenMesh.VertexCount * 3);
+	vkUnmapMemory (GraphicsDevice, HostVertexBufferMemory);
+
+	if (vkMapMemory (GraphicsDevice, HostVertexBufferMemory, (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 3, (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 2, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+	}
+
+	memcpy (Data, SplashScreenMesh.UVs, sizeof (float) * SplashScreenMesh.VertexCount * 2);
+	vkUnmapMemory (GraphicsDevice, HostVertexBufferMemory);
 
 	return 0;
 }
@@ -1257,21 +1327,14 @@ int SetupSplashScreen ()
 		return Result;
 	}
 
-	Result = CreateSplashScreenHostVertexPositionsBuffer ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
-	Result = CreateSplashScreenHostVertexUVsBuffer ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
 	Result = CreateSplashScreenHostIndexBuffer ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateSplashScreenHostVertexBuffers ();
 
 	if (Result != 0)
 	{
@@ -1459,11 +1522,13 @@ void DestroySplashScreen ()
 	vkFreeMemory (GraphicsDevice, HostVertexUVsBufferMemory, NULL);
 	vkFreeMemory (GraphicsDevice, HostIndexBufferMemory, NULL);
 	vkFreeMemory (GraphicsDevice, UniformBufferMemory, NULL);
+	vkFreeMemory (GraphicsDevice, HostVertexBufferMemory, NULL);
 	
 	vkDestroyBuffer (GraphicsDevice, HostVertexPositionsBuffer, NULL);
 	vkDestroyBuffer (GraphicsDevice, HostVertexUVsBuffer, NULL);
 	vkDestroyBuffer (GraphicsDevice, HostIndexBuffer, NULL);
 	vkDestroyBuffer (GraphicsDevice, UniformBuffer, NULL);
+	vkDestroyBuffer (GraphicsDevice, HostVertexBuffer, NULL);
 
 	vkFreeMemory (GraphicsDevice, TextureImageMemory, NULL);
 	vkDestroyImage (GraphicsDevice, TextureImage, NULL);
