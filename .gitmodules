@@ -1,9 +1,11 @@
 [submodule "stb"]
 	path = stb
 	url = https://github.com/nothings/stb
+	ignore = dirty
 [submodule "cgltf"]
 	path = cgltf
 	url = http://github.com/jkuhlmann/cgltf
+	ignore = dirty
 [submodule "cglm"]
 	path = cglm
 	url= http://github.com/recp/cglm
