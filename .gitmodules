@@ -4,3 +4,6 @@
 [submodule "cgltf"]
 	path = cgltf
 	url = http://github.com/jkuhlmann/cgltf
+[submodule "cglm"]
+	path = cglm
+	url= http://github.com/recp/cglm
