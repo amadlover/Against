@@ -9,6 +9,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <cglm/cglm.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_ONLY_TGA
 #include <stb_image.h>
@@ -90,10 +92,10 @@ int CreateSplashScreenMesh ()
 
 	SplashScreenMesh.Positions = (float*)malloc (sizeof (float) * SplashScreenMesh.VertexCount * 3);
 
-	SplashScreenMesh.Positions[0] = 2; SplashScreenMesh.Positions[1] = 2; SplashScreenMesh.Positions[2] = -5;
-	SplashScreenMesh.Positions[3] = -2; SplashScreenMesh.Positions[4] = 2; SplashScreenMesh.Positions[5] = -5;
-	SplashScreenMesh.Positions[6] = -2; SplashScreenMesh.Positions[7] = -2; SplashScreenMesh.Positions[8] = -5;
-	SplashScreenMesh.Positions[9] = 2; SplashScreenMesh.Positions[10] = -2; SplashScreenMesh.Positions[11] = -5;
+	SplashScreenMesh.Positions[0] = 2; SplashScreenMesh.Positions[1] = 2; SplashScreenMesh.Positions[2] = 0;
+	SplashScreenMesh.Positions[3] = -2; SplashScreenMesh.Positions[4] = 2; SplashScreenMesh.Positions[5] = 0;
+	SplashScreenMesh.Positions[6] = -2; SplashScreenMesh.Positions[7] = -2; SplashScreenMesh.Positions[8] = 0;
+	SplashScreenMesh.Positions[9] = 2; SplashScreenMesh.Positions[10] = -2; SplashScreenMesh.Positions[11] = 0;
 
 	SplashScreenMesh.UVs = (float*)malloc (sizeof (float) * SplashScreenMesh.VertexCount * 2);
 
@@ -134,7 +136,7 @@ int CreateSplashScreenUniformBuffer ()
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	CreateInfo.size = sizeof (Matrix4x4);
+	CreateInfo.size = sizeof (mat4);
 	CreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
 	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &UniformBuffer) != VK_SUCCESS)
@@ -607,15 +609,15 @@ int CreateSplashScreenGraphicsPipeline ()
 	ColorBlendStateCreateInfo.blendConstants[2] = 1.f;
 	ColorBlendStateCreateInfo.blendConstants[3] = 1.f;
 
-	VkPipelineDepthStencilStateCreateInfo DepthStencilStateInfo;
-	memset (&DepthStencilStateInfo, 0, sizeof (VkPipelineDepthStencilStateCreateInfo));
+	VkPipelineDepthStencilStateCreateInfo DepthStencilStateCreateInfo;
+	memset (&DepthStencilStateCreateInfo, 0, sizeof (VkPipelineDepthStencilStateCreateInfo));
 
-	DepthStencilStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	DepthStencilStateInfo.depthTestEnable = VK_TRUE;
-	DepthStencilStateInfo.depthWriteEnable = VK_TRUE;
-	DepthStencilStateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
-	DepthStencilStateInfo.depthBoundsTestEnable = VK_FALSE;
-	DepthStencilStateInfo.stencilTestEnable = VK_FALSE;
+	DepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	DepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
+	DepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+	DepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+	DepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
+	DepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
 
 	VkViewport Viewport;
 	Viewport.x = 0;
@@ -638,16 +640,6 @@ int CreateSplashScreenGraphicsPipeline ()
 	ViewportStateCreateInfo.pViewports = &Viewport;
 	ViewportStateCreateInfo.scissorCount = 1;
 	ViewportStateCreateInfo.pScissors = &Scissors;
-
-	VkPipelineDepthStencilStateCreateInfo DepthStencilStateCreateInfo;
-	memset (&DepthStencilStateCreateInfo, 0, sizeof (VkPipelineDepthStencilStateCreateInfo));
-
-	DepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	DepthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
-	DepthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
-	DepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_NEVER;
-	DepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
-	DepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
 
 	VkPipelineMultisampleStateCreateInfo MultisampleStateCreateInfo;
 	memset (&MultisampleStateCreateInfo, 0, sizeof (VkPipelineMultisampleStateCreateInfo));
@@ -1095,11 +1087,13 @@ int UpdateCameraUniformBuffer ()
 	MVP = MatrixGetIdentity ();
 
 	Matrix4x4 ProjectionMatrix = MatrixGetIdentity ();
-	MatrixCreatePerspectiveProjection (90, (float)SurfaceExtent.width / (float)SurfaceExtent.height, 0.1f, 50.f, &ProjectionMatrix);
+	//MatrixCreatePerspectiveProjectionSymmetric (135, 1, 0.1f, 20, &ProjectionMatrix);
+	//MatrixCreatePerspectiveProjectionAsymmetric (-1, 1, -1, 1, 0.1f, 20, &ProjectionMatrix);
+	MatrixCreateOrthographicProjectionAsymmetric (-2, 2, -2, 2, 0.1f, 50, &ProjectionMatrix);
 
 	Matrix4x4 CameraModelMatrix = MatrixGetIdentity (); 
 	
-	Vector3 CameraTranslation = { 0,0,0 };
+	Vector3 CameraTranslation = { 0,0,10 };
 	Vector3 CameraRotation = { 0,0,0 };
 	Vector3 CameraScale = { 1,1,1 };
 
@@ -1111,14 +1105,29 @@ int UpdateCameraUniformBuffer ()
 	MatrixMultiplyMatrix (MVP, ProjectionMatrix, &MVP);
 	MatrixMultiplyMatrix (MVP, ViewMatrix, &MVP);
 
+	/*mat4 Model, Camera, View, Projection, MVP, ModelView;
+
+	glm_mat4_identity (Model);
+	glm_mat4_identity (Camera);
+	glm_mat4_identity (MVP);
+	glm_mat4_identity (ModelView);
+	glm_mat4_identity (Projection);
+	
+	glm_perspective (90, (float)SurfaceExtent.height / (float)SurfaceExtent.height, 0.1f, 30, Projection);
+	glm_translate (Camera, (vec3) { 0, 0, 10 });
+	glm_mat4_inv (Camera, View);
+
+	glm_mat4_mul (Model, View, ModelView);
+	glm_mat4_mul (ModelView, Projection, MVP);*/
+
 	void* Data;
 
-	if (vkMapMemory (GraphicsDevice, UniformBufferMemory, 0, sizeof (Matrix4x4), 0, (void**)& Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, UniformBufferMemory, 0, sizeof (mat4), 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
-	memcpy (Data, &MVP, sizeof (Matrix4x4));
+	memcpy (Data, &MVP, sizeof (mat4));
 
 	vkUnmapMemory (GraphicsDevice, UniformBufferMemory);
 

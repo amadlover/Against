@@ -1,12 +1,14 @@
 #include "Maths.h"
 
 #include <math.h>
+#include <cglm/cglm.h>
 
 #include <Windows.h>
 
+
 void DegreesToRadians (float Degrees, float* Radians)
 {
-	*Radians = Degrees * (M_PI / 180.f);
+	*Radians = Degrees * ((float)M_PI / 180.f);
 }
 
 Matrix4x4 MatrixGetIdentity ()
@@ -81,7 +83,7 @@ void VectorCrossProduct (Vector3 V1, Vector3 V2, Vector3* Result)
 	Result->z = (V1.x * V2.y) - (V1.y * V2.x);
 }
 
-void MatrixCreatePerspectiveProjection (float FOVDegrees, float AspectRatio, float NearPlane, float FarPlane, Matrix4x4* Result)
+void MatrixCreatePerspectiveProjectionSymmetric (float FOVDegrees, float AspectRatio, float NearPlane, float FarPlane, Matrix4x4* Result)
 {
 	memset (Result, 0, sizeof (Matrix4x4));
 
@@ -96,6 +98,44 @@ void MatrixCreatePerspectiveProjection (float FOVDegrees, float AspectRatio, flo
 	Result->m[14] = -FarPlane * NearPlane / (FarPlane - NearPlane);
 	Result->m[11] = -1;
 	Result->m[15] = 0;
+
+	/*float Tangent = tanf (FOVRadians / 2);
+	float Height = NearPlane * Tangent;
+	float Width = Height * AspectRatio;
+
+	MatrixCreatePerspectiveProjectionAsymmetric (-Width, Width, -Height, Height, NearPlane, FarPlane, Result);*/
+}
+
+void MatrixCreatePerspectiveProjectionAsymmetric (float Left, float Right, float Bottom, float Top, float Near, float Far, Matrix4x4* Result)
+{
+	memset (Result, 0, sizeof (Matrix4x4));
+
+	Result->m[0] = (2 * Near) / (Right - Left);
+	Result->m[2] = (Right + Left) / (Right - Left);
+	Result->m[5] = (2 * Near) / (Top - Bottom);
+	Result->m[6] = (Top + Bottom) / (Top - Bottom);
+	Result->m[10] = -(Far - Near) / (Far - Near);
+	Result->m[11] = -(2 * Far * Near) / (Far - Near);
+	Result->m[14] = -1;
+
+	MatrixTranspose (*Result, Result);
+}
+
+void MatrixCreateOrthographicProjectionAsymmetric (float Left, float Right, float Bottom, float Top, float Near, float Far, Matrix4x4* Result)
+{
+	memset (Result, 0, sizeof (Matrix4x4));
+
+	Result->m[0] = 2.f / (Right - Left);
+	Result->m[3] = -(Right + Left) / (Right - Left);
+	Result->m[5] = 2.f / (Bottom - Top);
+	Result->m[7] = -(Bottom + Top) / (Bottom - Top);
+	
+	Result->m[10] = -2.f / (Far - Near);
+	Result->m[11] = -(Near + Far) / (Near - Far);
+	
+	Result->m[15] = 1.f;
+
+	MatrixTranspose (*Result, Result);
 }
 
 void MatrixCreateViewFromLookAt (Vector3 Eye, Vector3 Target, Vector3 Up, Matrix4x4* Result)
@@ -458,20 +498,6 @@ void MatrixCreateViewFromModel (Matrix4x4 M, Matrix4x4* Result)
 {
 	memset (Result, 0, sizeof (Matrix4x4));
 
-}
-
-void MatrixCreateOrthographicProjection (float Left, float Right, float Bottom, float Top, float Near, float Far, Matrix4x4* Result)
-{
-	memset (Result, 0, sizeof (Matrix4x4));
-
-	Result->m[0] = 2.f / (Right - Left);
-	Result->m[5] = 2.f / (Bottom - Top);
-	Result->m[10] = -2.f / (Far - Near);
-
-	Result->m[12] = -(Right + Left) / (Right - Left);
-	Result->m[13] = -(Bottom + Top) / (Bottom - Top);
-	Result->m[14] = -(Near + Far) / (Near - Far);
-	Result->m[15] = 1.f;
 }
 
 void MatrixTranslate (Matrix4x4 M, Vector3 Translation, Matrix4x4* Result)
