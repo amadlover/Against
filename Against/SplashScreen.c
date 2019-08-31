@@ -90,10 +90,10 @@ int CreateSplashScreenMesh ()
 
 	SplashScreenMesh.Positions = (float*)malloc (sizeof (float) * SplashScreenMesh.VertexCount * 3);
 
-	SplashScreenMesh.Positions[0] = 2; SplashScreenMesh.Positions[1] = 2; SplashScreenMesh.Positions[2] = 5;
-	SplashScreenMesh.Positions[3] = -2; SplashScreenMesh.Positions[4] = 2; SplashScreenMesh.Positions[5] = 5;
-	SplashScreenMesh.Positions[6] = -2; SplashScreenMesh.Positions[7] = -2; SplashScreenMesh.Positions[8] = 5;
-	SplashScreenMesh.Positions[9] = 2; SplashScreenMesh.Positions[10] = -2; SplashScreenMesh.Positions[11] = 5;
+	SplashScreenMesh.Positions[0] = 2; SplashScreenMesh.Positions[1] = 2; SplashScreenMesh.Positions[2] = -5;
+	SplashScreenMesh.Positions[3] = -2; SplashScreenMesh.Positions[4] = 2; SplashScreenMesh.Positions[5] = -5;
+	SplashScreenMesh.Positions[6] = -2; SplashScreenMesh.Positions[7] = -2; SplashScreenMesh.Positions[8] = -5;
+	SplashScreenMesh.Positions[9] = 2; SplashScreenMesh.Positions[10] = -2; SplashScreenMesh.Positions[11] = -5;
 
 	SplashScreenMesh.UVs = (float*)malloc (sizeof (float) * SplashScreenMesh.VertexCount * 2);
 
@@ -1095,15 +1095,15 @@ int UpdateCameraUniformBuffer ()
 	MVP = MatrixGetIdentity ();
 
 	Matrix4x4 ProjectionMatrix = MatrixGetIdentity ();
-	MatrixCreatePerspectiveProjection (60, (float)SurfaceExtent.width / (float)SurfaceExtent.height, 0.1f, 50.f, &ProjectionMatrix);
+	MatrixCreatePerspectiveProjection (90, (float)SurfaceExtent.width / (float)SurfaceExtent.height, 0.1f, 50.f, &ProjectionMatrix);
 
 	Matrix4x4 CameraModelMatrix = MatrixGetIdentity (); 
 	
-	Vector3 CameraTranslation = { 0,0,10 };
-	Vector4 CameraRotation = { 0,0,0,1 };
+	Vector3 CameraTranslation = { 0,0,0 };
+	Vector3 CameraRotation = { 0,0,0 };
 	Vector3 CameraScale = { 1,1,1 };
 
-	MatrixCreateModelFromQuaternion (CameraTranslation, CameraRotation, CameraScale, &CameraModelMatrix);
+	MatrixCreateModelFromEuler (CameraTranslation, CameraRotation, CameraScale, &CameraModelMatrix);
 
 	Matrix4x4 ViewMatrix = MatrixGetIdentity ();
 	MatrixInverse (CameraModelMatrix, &ViewMatrix);

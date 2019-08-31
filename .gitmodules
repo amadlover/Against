@@ -5,3 +5,6 @@
 	path = cgltf
 	url = http://github.com/jkuhlmann/cgltf
 
+[submodule "cglm"]
+	path = cglm
+	url = https://github.com/recp/cglm
