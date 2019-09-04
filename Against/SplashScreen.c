@@ -55,8 +55,6 @@ Mesh SplashScreenMesh;
 Mesh* Meshes;
 size_t MeshCount;
 
-Matrix4x4 MVP;
-
 void GetApplicationFolder (TCHAR* Path)
 {
 	HMODULE Module = GetModuleHandle (NULL);
@@ -87,30 +85,10 @@ int CreateSplashScreenMesh ()
 
 	SplashScreenMesh.UVs = (float*)malloc (sizeof (float) * SplashScreenMesh.VertexCount * 2);
 
-	SplashScreenMesh.UVs[0] = 0; SplashScreenMesh.UVs[1] = 1;
-	SplashScreenMesh.UVs[2] = 0; SplashScreenMesh.UVs[3] = 0;
-	SplashScreenMesh.UVs[4] = 1; SplashScreenMesh.UVs[5] = 0;
-	SplashScreenMesh.UVs[6] = 1; SplashScreenMesh.UVs[7] = 1;
-
-	return 0;
-}
-
-int ImportSplashScreenAssets ()
-{
-	OutputDebugString (L"ImportSplashScreenAssets\n");
-
-	TCHAR Path[MAX_PATH];
-
-	GetApplicationFolder (Path);
-	StringCchCat (Path, MAX_PATH, L"\\TestModels\\SplashScreen\\Screen.gltf");
-
-	char Filename[MAX_PATH];
-	wcstombs_s (NULL, Filename, MAX_PATH, Path, MAX_PATH);
-
-	ImportGLTF ((const char*)Filename, NULL, &MeshCount);
-	Meshes = (Mesh*)malloc (sizeof (Mesh) * MeshCount);
-
-	ImportGLTF ((const char*)Filename, Meshes, &MeshCount);
+	SplashScreenMesh.UVs[0] = 1; SplashScreenMesh.UVs[1] = 1;
+	SplashScreenMesh.UVs[2] = 0; SplashScreenMesh.UVs[3] = 1;
+	SplashScreenMesh.UVs[4] = 0; SplashScreenMesh.UVs[5] = 0;
+	SplashScreenMesh.UVs[6] = 1; SplashScreenMesh.UVs[7] = 0;
 
 	return 0;
 }
@@ -335,8 +313,15 @@ int CreateSplashScreenShaders ()
 {
 	OutputDebugString (L"CreateSplashScreenShaders\n");
 
+	TCHAR VertPath[MAX_PATH];
+	GetApplicationFolder (VertPath);
+	StringCchCat (VertPath, MAX_PATH, L"\\Shaders\\SplashScreen\\vert.spv");
+	
+	char VertFilename[MAX_PATH];
+	wcstombs_s (NULL, VertFilename, MAX_PATH, VertPath, MAX_PATH);
+
 	FILE* VertFile = NULL;
-	errno_t Err = fopen_s (&VertFile, "C:/Users/Nihal Kenkre/Documents/Visual Studio 2019/NTKApps/Against/Shaders/vert.spv", "rb");
+	errno_t Err = fopen_s (&VertFile, VertFilename, "rb");
 
 	if (Err != 0)
 	{
@@ -345,7 +330,7 @@ int CreateSplashScreenShaders ()
 
 	fseek (VertFile, 0, SEEK_END);
 
-	uint32_t  FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
+	uint32_t FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
 	rewind (VertFile);
 
 	char* Buffer = (char*)malloc (sizeof (uint32_t) * FileSize);
@@ -367,8 +352,15 @@ int CreateSplashScreenShaders ()
 
 	free (Buffer);
 
+	TCHAR FragPath[MAX_PATH];
+	GetApplicationFolder (FragPath);
+	StringCchCat (FragPath, MAX_PATH, L"\\Shaders\\SplashScreen\\frag.spv");
+
+	char FragFilename[MAX_PATH];
+	wcstombs_s (NULL, FragFilename, MAX_PATH, FragPath, MAX_PATH);
+
 	FILE* FragFile = NULL;
-	Err = fopen_s (&FragFile, "C:/Users/Nihal Kenkre/Documents/Visual Studio 2019/NTKApps/Against/Shaders/frag.spv", "rb");
+	Err = fopen_s (&FragFile, FragFilename, "rb");
 
 	if (Err != 0)
 	{
@@ -554,7 +546,7 @@ int CreateSplashScreenGraphicsPipeline ()
 	RasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	RasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	RasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	RasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	RasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	RasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	RasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 	RasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
@@ -852,7 +844,6 @@ int CreateSplashScreenHostTextureImage ()
 	StringCchCat (Path, MAX_PATH, L"\\TestImages\\bcci.tga");
 
 	char Filename[MAX_PATH];
-
 	wcstombs_s (NULL, Filename, MAX_PATH, Path, MAX_PATH);
 
 	int Width, Height, BPP;
@@ -1063,13 +1054,6 @@ int SetupSplashScreen ()
 		return Result;
 	}
 
-	Result = ImportSplashScreenAssets ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
 	Result = CreateSplashScreenUniformBuffer ();
 
 	if (Result != 0)
@@ -1171,7 +1155,7 @@ int SetupSplashScreen ()
 	return 0;
 }
 
-int DrawSplashScreen ()
+int DrawSplashScreen (uint64_t ElapsedTime)
 {
 	uint32_t ImageIndex = 0;
 

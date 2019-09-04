@@ -45,8 +45,8 @@
     <ClInclude Include="SplashScreen.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\frag.frag" />
-    <None Include="Shaders\vert.vert" />
+    <None Include="..\x64\Debug\Shaders\SplashScreen\frag.frag" />
+    <None Include="..\x64\Debug\Shaders\SplashScreen\vert.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

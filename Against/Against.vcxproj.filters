@@ -16,6 +16,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{b18d28dd-b0eb-4583-b48f-24408765408a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\SplashScreen">
+      <UniqueIdentifier>{322800a3-9bcd-44f5-83ec-2a34d3510949}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.c">
@@ -88,11 +91,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\frag.frag">
-      <Filter>Shaders</Filter>
+    <None Include="..\x64\Debug\Shaders\SplashScreen\frag.frag">
+      <Filter>Shaders\SplashScreen</Filter>
     </None>
-    <None Include="Shaders\vert.vert">
-      <Filter>Shaders</Filter>
+    <None Include="..\x64\Debug\Shaders\SplashScreen\vert.vert">
+      <Filter>Shaders\SplashScreen</Filter>
     </None>
   </ItemGroup>
 </Project>

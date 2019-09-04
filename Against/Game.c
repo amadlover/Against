@@ -6,7 +6,6 @@
 #include "MainGame.h"
 
 #include <stdio.h>
-#include <stdbool.h>
 
 enum _SceneState
 {
@@ -26,8 +25,10 @@ enum _OverlayMenuState
 
 enum _OverlayMenuState OverlayMenuState = NoMenu;
 
-ULONGLONG StartupTickCount;
-ULONGLONG SplashScreenThresholdTimeMS = 3000;
+uint64_t StartupTickCount;
+uint64_t CurrentTickCount;
+uint64_t ElapsedTime;
+uint64_t SplashScreenThresholdTimeMS = 3000;
 
 int GameInit (HINSTANCE HInstance, HWND HWnd)
 {
@@ -157,29 +158,24 @@ int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-bool IsLoadingScreenToBeShown ()
-{
-	ULONGLONG CurrentTickCount = GetTickCount64 ();
-	ULONGLONG ElapsedTime = CurrentTickCount - StartupTickCount;
-
-	return ElapsedTime < SplashScreenThresholdTimeMS;		
-}
-
 int GameMainLoop ()
 {
+	CurrentTickCount = GetTickCount64 ();
+	ElapsedTime = CurrentTickCount - StartupTickCount;
+
 	int Result = 0;
 
 	switch (SceneState)
 	{
 	case SplashScreen:
-		if (!IsLoadingScreenToBeShown ()) 
+		if (ElapsedTime > SplashScreenThresholdTimeMS)
 		{
 			OutputDebugString (L"Switching to Main Menu\n");
 			SceneState = MainMenu;
 		}
 		else
 		{
-			Result = DrawSplashScreen ();
+			Result = DrawSplashScreen (ElapsedTime);
 
 			if (Result != 0)
 			{
