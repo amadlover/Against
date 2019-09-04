@@ -1,5 +1,4 @@
 cmake_minimum_required (VERSION 2.7)
 
-PROJECT ("Against")
-
-add_subdirectory ("Against")
+project ("Against")
+add_subdirectory (Against)

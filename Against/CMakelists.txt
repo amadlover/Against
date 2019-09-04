@@ -1,0 +1,10 @@
+cmake_minimum_required (VERSION 2.7)
+
+add_executable (Against.exe Assets.h Assets.c Compute.h Compute.c Game.h Game.c Graphics.h Graphics.c GUI.h GUI.c ImportAssets.h ImportAssets.c Main.c MainGame.h MainGame.c MainMenu.h MainMenu.c Maths.h Maths.c SplashScreen.h SplashScreen.c)
+
+include_directories ("../cglm/include" "../cgltf" "../stb" ${PROJECT_SOURCE_DIR} $ENV{VULKAN_SDK}/include)
+find_package(Vulkan REQUIRED)
+
+target_link_libraries (Against.exe ${Vulkan_LIBRARY} shlwapi.lib)
+
+add_compile_definitions (_CRT_SECURE_NO_WARNINGS)
