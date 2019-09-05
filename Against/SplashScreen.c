@@ -585,9 +585,9 @@ int CreateSplashScreenGraphicsPipeline ()
 
 	VkViewport Viewport;
 	Viewport.x = 0;
-	Viewport.y = 0;
+	Viewport.y = (float)SurfaceExtent.height;
 	Viewport.width = (float)SurfaceExtent.width;
-	Viewport.height = (float)SurfaceExtent.height;
+	Viewport.height = -(float)SurfaceExtent.height;
 	Viewport.minDepth = 0;
 	Viewport.maxDepth = 1;
 
