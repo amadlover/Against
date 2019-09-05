@@ -151,8 +151,6 @@ int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 		default:
 			break;
 		}
-
-		PostQuitMessage (0);
 	}
 
 	return 0;

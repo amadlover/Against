@@ -839,7 +839,7 @@ int CreateSplashScreenHostTextureImage ()
 	TCHAR Path[MAX_PATH];
 	GetApplicationFolder (Path);
 	
-	StringCchCat (Path, MAX_PATH, L"\\TestImages\\bcci.tga");
+	StringCchCat (Path, MAX_PATH, L"\\Images\\SplashScreen\\SplashScreen.tga");
 
 	char Filename[MAX_PATH];
 	wcstombs_s (NULL, Filename, MAX_PATH, Path, MAX_PATH);

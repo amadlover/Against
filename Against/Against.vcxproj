@@ -28,13 +28,12 @@
     <ClCompile Include="Main.c" />
     <ClCompile Include="MainGame.c" />
     <ClCompile Include="MainMenu.c" />
-    <ClCompile Include="MathsCPP.cpp">
+    <ClCompile Include="Maths.cpp">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="Maths.c" />
     <ClCompile Include="SplashScreen.c" />
     <ClCompile Include="Test.c" />
   </ItemGroup>
@@ -48,8 +47,7 @@
     <ClInclude Include="ImportAssets.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MainMenu.h" />
-    <ClInclude Include="Maths.h" />
-    <ClInclude Include="MathsCPP.hpp" />
+    <ClInclude Include="Maths.hpp" />
     <ClInclude Include="SplashScreen.h" />
     <ClInclude Include="Test.h" />
   </ItemGroup>
@@ -111,12 +109,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -140,6 +142,9 @@
       <AdditionalLibraryDirectories>C:\Users\Nihal Kenkre\Documents\Visual Studio 2019\AGELibs\Debug;C:\VulkanSDK\1.1.114.0\Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shlwapi.lib;DataTypes.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(ProjectDir)PostBuild.bat" "$(ProjectDir)\Images"  "$(ProjectDir)\Shaders" "$(SolutionDir)\$(Platform)\$(Configuration)\Images" "$(SolutionDir)\$(Platform)\$(Configuration)\Shaders"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -160,6 +165,9 @@
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.114.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(ProjectDir)PostBuild.bat" "$(ProjectDir)\Images"  "$(ProjectDir)\Shaders" "$(SolutionDir)\$(Platform)\$(Configuration)\Images" "$(SolutionDir)\$(Platform)\$(Configuration)\Shaders"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -184,6 +192,9 @@
       <AdditionalLibraryDirectories>C:\Users\Nihal Kenkre\Documents\Visual Studio 2019\AGELibs\Release;C:\VulkanSDK\1.1.114.0\Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shlwapi.lib;DataTypes.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(ProjectDir)PostBuild.bat" "$(ProjectDir)\Images"  "$(ProjectDir)\Shaders" "$(SolutionDir)\$(Platform)\$(Configuration)\Images" "$(SolutionDir)\$(Platform)\$(Configuration)\Shaders"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -208,6 +219,9 @@
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.114.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(ProjectDir)PostBuild.bat" "$(ProjectDir)\Images"  "$(ProjectDir)\Shaders" "$(SolutionDir)\$(Platform)\$(Configuration)\Images" "$(SolutionDir)\$(Platform)\$(Configuration)\Shaders"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

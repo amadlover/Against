@@ -12,8 +12,12 @@ GLTF used for Assets.
 
 32 bit TGA used for stand alone textures.
 
-This repo has submodule CGLTF and STB. 
+This repo has submodules CGLTF and STB and GLM.
 
 use 
 
-git submodule init and git submodule update after cloning.
+git submodule init and git submodule update 
+
+after cloning.
+
+This is a Windows only project until now.

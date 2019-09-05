@@ -48,16 +48,13 @@
     <ClCompile Include="Assets.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Maths.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ImportAssets.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MathsCPP.cpp">
+    <ClCompile Include="Test.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Test.c">
+    <ClCompile Include="Maths.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -89,16 +86,13 @@
     <ClInclude Include="Assets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Maths.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ImportAssets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MathsCPP.hpp">
+    <ClInclude Include="Test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Test.h">
+    <ClInclude Include="Maths.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

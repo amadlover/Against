@@ -29,14 +29,13 @@ void ImportGLTF (const char* Filename, Mesh* Meshes, size_t* MeshCount)
 
 				if (Result == cgltf_result_success)
 				{
-					for (int n = 0; n < Data->nodes_count; n++)
+					for (cgltf_size n = 0; n < Data->nodes_count; n++)
 					{
 						cgltf_node* Node = Data->nodes + n;
 
 						if (Node->has_matrix)
 						{
 							Mesh* Mesh = Meshes + n;
-							Mesh->TransformationMatrix = MatrixCreateF (Node->matrix);
 						}
 					}
 				}

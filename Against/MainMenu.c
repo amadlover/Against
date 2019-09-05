@@ -1,4 +1,5 @@
 #include "MainMenu.h"
+#include <Windows.h>
 
 int SetupMainMenu ()
 {
@@ -12,5 +13,6 @@ int DrawMainMenu ()
 
 void DestroyMainMenu ()
 {
+	OutputDebugString (L"DestroyMainMenu\n");
 
 }

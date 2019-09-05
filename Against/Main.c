@@ -58,7 +58,7 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 		return 0;
 	}
 
-	HWND HWnd = CreateWindow (L"Against", L"Against", WS_OVERLAPPEDWINDOW, 0, 0, 800, 600, NULL, NULL, HInstance, NULL);
+	HWND HWnd = CreateWindow (L"Against", L"Against", WS_OVERLAPPEDWINDOW, 0, 0, 1280, 720, NULL, NULL, HInstance, NULL);
 
 	if (!HWnd)
 	{
