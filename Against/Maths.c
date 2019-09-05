@@ -1,10 +1,10 @@
 #include "Maths.h"
 
 #include <math.h>
-#include <cglm/cglm.h>
 
 #include <Windows.h>
 
+#define M_PI 3.142
 
 void DegreesToRadians (float Degrees, float* Radians)
 {

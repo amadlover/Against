@@ -9,8 +9,6 @@
 
 #include <vulkan/vulkan.h>
 
-#include <cglm/cglm.h>
-
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_ONLY_TGA
 #include <stb_image.h>
@@ -102,7 +100,7 @@ int CreateSplashScreenUniformBuffer ()
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	CreateInfo.size = sizeof (mat4);
+	CreateInfo.size = sizeof (Matrix4x4);
 	CreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
 	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &UniformBuffer) != VK_SUCCESS)
