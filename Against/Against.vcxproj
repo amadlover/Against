@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Assets.c" />
     <ClCompile Include="Compute.c" />
+    <ClCompile Include="Error.c" />
     <ClCompile Include="Game.c" />
     <ClCompile Include="Graphics.c" />
     <ClCompile Include="GUI.c" />

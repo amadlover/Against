@@ -105,7 +105,7 @@ int CreateSplashScreenUniformBuffer ()
 
 	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &UniformBuffer) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_CREATE_BUFFER;
+		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
 	}
 
 	VkMemoryRequirements MemoryRequirements;
@@ -1221,14 +1221,23 @@ void DestroySplashScreen ()
 
 		for (uint32_t i = 0; i < SwapchainImageCount; i++)
 		{
-			vkDestroyFence (GraphicsDevice, SwapchainFences[i], NULL);
+			if (SwapchainFences[i] != VK_NULL_HANDLE)
+			{
+				vkDestroyFence (GraphicsDevice, SwapchainFences[i], NULL);
+			}
 		}
 
 		free (SwapchainFences);
 	}
 
-	vkDestroySemaphore (GraphicsDevice, WaitSemaphore, NULL);
-	vkDestroySemaphore (GraphicsDevice, SignalSemaphore, NULL);
+	if (WaitSemaphore != VK_NULL_HANDLE)
+	{
+		vkDestroySemaphore (GraphicsDevice, WaitSemaphore, NULL);
+	}
+	if (SignalSemaphore != VK_NULL_HANDLE)
+	{
+		vkDestroySemaphore (GraphicsDevice, SignalSemaphore, NULL);
+	}
 
 	if (SwapchainCommandBuffers)
 	{
@@ -1236,42 +1245,104 @@ void DestroySplashScreen ()
 		free (SwapchainCommandBuffers);
 	}
 
-	vkDestroyCommandPool (GraphicsDevice, GraphicsDeviceCommandPool, NULL);
+	if (GraphicsDeviceCommandPool != VK_NULL_HANDLE)
+	{
+		vkDestroyCommandPool (GraphicsDevice, GraphicsDeviceCommandPool, NULL);
+	}
 
-	vkDestroyPipeline (GraphicsDevice, GraphicsPipeline, NULL);
+	if (GraphicsPipeline != VK_NULL_HANDLE)
+	{
+		vkDestroyPipeline (GraphicsDevice, GraphicsPipeline, NULL);
+	}
 
-	vkDestroyPipelineLayout (GraphicsDevice, GraphicsPipelineLayout, NULL);
-
-	vkDestroyShaderModule (GraphicsDevice, VertexShaderModule, NULL);
-	vkDestroyShaderModule (GraphicsDevice, FragmentShaderModule, NULL);
-
+	if (GraphicsPipelineLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyPipelineLayout (GraphicsDevice, GraphicsPipelineLayout, NULL);
+	}
+	
+	if (VertexShaderModule != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule (GraphicsDevice, VertexShaderModule, NULL);
+	}
+	
+	if (FragmentShaderModule != VK_NULL_HANDLE)
+	{
+		vkDestroyShaderModule (GraphicsDevice, FragmentShaderModule, NULL);
+	}
+	
 	if (SwapchainFramebuffers)
 	{
 		for (uint8_t i = 0; i < SwapchainImageCount; i++)
 		{
-			vkDestroyFramebuffer (GraphicsDevice, SwapchainFramebuffers[i], NULL);
+			if (SwapchainFramebuffers[i] != VK_NULL_HANDLE)
+			{
+				vkDestroyFramebuffer (GraphicsDevice, SwapchainFramebuffers[i], NULL);
+			}
 		}
 
 		free (SwapchainFramebuffers);
 	}
 
-	vkDestroyRenderPass (GraphicsDevice, RenderPass, NULL);
-
-	vkFreeMemory (GraphicsDevice, UniformBufferMemory, NULL);
-	vkFreeMemory (GraphicsDevice, HostVBIBMemory, NULL);
+	if (RenderPass != VK_NULL_HANDLE)
+	{
+		vkDestroyRenderPass (GraphicsDevice, RenderPass, NULL);
+	}
 	
-	vkDestroyBuffer (GraphicsDevice, HostIB, NULL);
-	vkDestroyBuffer (GraphicsDevice, UniformBuffer, NULL);
-	vkDestroyBuffer (GraphicsDevice, HostVB, NULL);
+	if (UniformBufferMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory (GraphicsDevice, UniformBufferMemory, NULL);
+	}
+	
+	if (UniformBuffer != VK_NULL_HANDLE)
+	{
+		vkFreeMemory (GraphicsDevice, HostVBIBMemory, NULL);
+	}
+	
+	if (HostIB != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer (GraphicsDevice, HostIB, NULL);
+	}
+	
+	if (UniformBuffer != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer (GraphicsDevice, UniformBuffer, NULL);
+	}
+	
+	if (HostVB != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer (GraphicsDevice, HostVB, NULL);
+	}
+	
+	if (TextureImageMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory (GraphicsDevice, TextureImageMemory, NULL);
+	}
+	
+	if (TextureImage != VK_NULL_HANDLE)
+	{
+		vkDestroyImage (GraphicsDevice, TextureImage, NULL);
+	}
+	
+	if (Sampler != VK_NULL_HANDLE)
+	{
+		vkDestroySampler (GraphicsDevice, Sampler, NULL);
+	}
 
-	vkFreeMemory (GraphicsDevice, TextureImageMemory, NULL);
-	vkDestroyImage (GraphicsDevice, TextureImage, NULL);
-	vkDestroySampler (GraphicsDevice, Sampler, NULL);
-	vkDestroyImageView (GraphicsDevice, TextureImageView, NULL);
+	if (TextureImageView != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView (GraphicsDevice, TextureImageView, NULL);
+	}
+	
+	if (DescriptorPool != VK_NULL_HANDLE)
+	{
+		vkFreeDescriptorSets (GraphicsDevice, DescriptorPool, 1, &DescriptorSet);
+		vkDestroyDescriptorPool (GraphicsDevice, DescriptorPool, NULL);
+	}
 
-	vkFreeDescriptorSets (GraphicsDevice, DescriptorPool, 1, &DescriptorSet);
-	vkDestroyDescriptorPool (GraphicsDevice, DescriptorPool, NULL);
-	vkDestroyDescriptorSetLayout (GraphicsDevice, DescriptorSetLayout, NULL);
+	if (DescriptorSetLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyDescriptorSetLayout (GraphicsDevice, DescriptorSetLayout, NULL);
+	}
 
 	if (Meshes)
 	{
@@ -1279,4 +1350,4 @@ void DestroySplashScreen ()
 	}
 
 	free (SplashScreenMesh.Vertices);
-} 
+}

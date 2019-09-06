@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "Game.h"
+#include "Error.h"
 
 LRESULT CALLBACK WindowProc (HWND HWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
@@ -73,8 +74,11 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 	if (Result != 0)
 	{
 		wchar_t Buff[32];
-		swprintf_s (Buff, 32, L"Init Error %d\n", Result);
+		swprintf_s (Buff, 32, L"Init ");
 		OutputDebugString (Buff);
+
+		LogError (Result);
+
 		GameShutdown ();
 
 		return Result;
@@ -101,8 +105,11 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 		if (Result != 0)
 		{
 			wchar_t Buff[32];
-			swprintf_s (Buff, 32, L"Main Loop Error %d\n", Result);
+			swprintf_s (Buff, 32, L"Main Loop ");
 			OutputDebugString (Buff);
+
+			LogError (Result);
+
 			GameShutdown ();
 
 			return Result;

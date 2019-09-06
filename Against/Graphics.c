@@ -574,13 +574,19 @@ void GraphicsShutdown ()
 	DestroyMainMenu ();
 	DestroySplashScreen ();
 
-	vkDestroySwapchainKHR (GraphicsDevice, Swapchain, NULL);
-
+	if (Swapchain != VK_NULL_HANDLE)
+	{
+		vkDestroySwapchainKHR (GraphicsDevice, Swapchain, NULL);
+	}
+	
 	if (SwapchainImageViews)
 	{
 		for (uint32_t i = 0; i < SwapchainImageCount; i++)
 		{
-			vkDestroyImageView (GraphicsDevice, SwapchainImageViews[i], NULL);
+			if (SwapchainImageViews[i] != VK_NULL_HANDLE)
+			{
+				vkDestroyImageView (GraphicsDevice, SwapchainImageViews[i], NULL);
+			}
 		}
 
 		free (SwapchainImageViews);
@@ -591,14 +597,26 @@ void GraphicsShutdown ()
 		free (SwapchainImages);
 	}
 
-	vkDestroyDevice (GraphicsDevice, NULL);
-
-	vkDestroySurfaceKHR (Instance, Surface, NULL);
-
+	if (GraphicsDevice != VK_NULL_HANDLE)
+	{
+		vkDestroyDevice (GraphicsDevice, NULL);
+	}
+	
+	if (Surface != VK_NULL_HANDLE)
+	{
+		vkDestroySurfaceKHR (Instance, Surface, NULL);
+	}
+	
 	if (IsValidationNeeded)
 	{
-		DestroyDebugUtilsMessenger (Instance, DebugUtilsMessenger, NULL);
+		if (DebugUtilsMessenger != VK_NULL_HANDLE)
+		{
+			DestroyDebugUtilsMessenger (Instance, DebugUtilsMessenger, NULL);
+		}
 	}
 
-	vkDestroyInstance (Instance, NULL);
+	if (Instance != VK_NULL_HANDLE)
+	{
+		vkDestroyInstance (Instance, NULL);
+	}
 }
