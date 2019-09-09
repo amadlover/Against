@@ -232,7 +232,7 @@ int GetPhysicalDevice ()
 	return 0;
 }
 
-int CreateSurface (HINSTANCE HInstance, HWND HWnd)
+int CreateSurface (HINSTANCE HInstance, HWND WindowHandle)
 {
 	OutputDebugString (L"CreateSurface\n");
 
@@ -241,7 +241,7 @@ int CreateSurface (HINSTANCE HInstance, HWND HWnd)
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	CreateInfo.hinstance = HInstance;
-	CreateInfo.hwnd = HWnd;
+	CreateInfo.hwnd = WindowHandle;
 
 	if (vkCreateWin32SurfaceKHR (Instance, &CreateInfo, NULL, &Surface) != VK_SUCCESS)
 	{
@@ -466,7 +466,7 @@ int CreateDescriptorSetLayout ()
 	return 0;
 }
 
-int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
+int GraphicsInit (HINSTANCE HInstance, HWND WindowHandle)
 {
 	OutputDebugString (L"GraphicsInit\n");
 
@@ -507,7 +507,7 @@ int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 		return Result;
 	}
 
-	Result = CreateSurface (HInstance, HWnd);
+	Result = CreateSurface (HInstance, WindowHandle);
 
 	if (Result != 0)
 	{

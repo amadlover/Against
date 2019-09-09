@@ -16,5 +16,5 @@ VkImageView* SwapchainImageViews;
 uint32_t SwapchainImageCount;
 VkQueue GraphicsQueue;
 
-int GraphicsInit (HINSTANCE HInstance, HWND HWnd);
+int GraphicsInit (HINSTANCE HInstance, HWND WindowHandle);
 void GraphicsShutdown ();

@@ -10,12 +10,26 @@ int ImportMainMenuAssets ()
 	return 0;
 }
 
+int CreateMainScreenUniformBuffer ()
+{
+	OutputDebugString (L"CreateMainScreenUniformBuffer\n");
+	
+	return 0;
+}
+
 int SetupMainMenu ()
 {
 	OutputDebugString (L"SetupMainMenu\n");
 
 	int Result = ImportMainMenuAssets ();
 	
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateMainScreenUniformBuffer ();
+
 	if (Result != 0)
 	{
 		return Result;
@@ -32,5 +46,4 @@ int DrawMainMenu ()
 void DestroyMainMenu ()
 {
 	OutputDebugString (L"DestroyMainMenu\n");
-
 }

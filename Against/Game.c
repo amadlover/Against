@@ -7,6 +7,9 @@
 
 #include <stdio.h>
 
+#define MENU_NEW_GAME 1;
+#define MENU_EXIT_GAME 2;
+
 enum _SceneState
 {
 	SplashScreen,
@@ -30,9 +33,79 @@ uint64_t CurrentTickCount;
 uint64_t ElapsedTime;
 uint64_t SplashScreenThresholdTimeMS = 3000;
 
+HWND WindowHandle;
+
+void AddMenus ()
+{
+	HMENU MenuBar = CreateMenu ();
+	HMENU GameMenu = CreateMenu ();
+
+	AppendMenu (GameMenu, MF_STRING, (UINT_PTR)1, L"New");
+	AppendMenu (GameMenu, MF_SEPARATOR, (UINT_PTR)NULL, NULL);
+	AppendMenu (GameMenu, MF_STRING, (UINT_PTR)2, L"Exit");
+
+	AppendMenu (MenuBar, MF_POPUP, (UINT_PTR)GameMenu, L"Game");
+
+	SetMenu (WindowHandle, MenuBar);
+}
+
+LRESULT CALLBACK WindowProc (HWND WindowHandle, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (Msg)
+	{
+	case WM_COMMAND:
+		switch (wParam)
+		{
+		default:
+			break;
+		}
+		break;
+
+	case WM_QUIT:
+		PostQuitMessage (0);
+		return 0;
+
+	case WM_DESTROY:
+		PostQuitMessage (0);
+		return 0;
+
+	case WM_KEYDOWN:
+		ProcessKeyboardInput (wParam, lParam);
+
+		break;
+
+	case WM_LBUTTONDOWN:
+		ProcessMouseLeftClick ();
+
+		break;
+
+	case WM_MBUTTONDOWN:
+		ProcessMouseMiddleClick ();
+
+		break;
+
+	case WM_RBUTTONDOWN:
+		ProcessMouseRightClick ();
+
+		break;
+
+	case WM_MOUSEMOVE:
+		ProcessMouseMovement (wParam, lParam);
+
+		break;
+
+	default:
+		break;
+	}
+
+	return DefWindowProc (WindowHandle, Msg, wParam, lParam);
+}
+
 int GameInit (HINSTANCE HInstance, HWND HWnd)
 {
-	int Result = GraphicsInit (HInstance, HWnd);
+	WindowHandle = HWnd;
+
+	int Result = GraphicsInit (HInstance, WindowHandle);
 
 	if (Result != 0)
 	{
@@ -169,6 +242,7 @@ int GameMainLoop ()
 		if (ElapsedTime > SplashScreenThresholdTimeMS)
 		{
 			OutputDebugString (L"Switching to Main Menu\n");
+			AddMenus ();
 			SceneState = MainMenu;
 		}
 		else
