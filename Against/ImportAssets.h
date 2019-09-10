@@ -1,6 +1,6 @@
 #pragma once
 
 #include "Assets.h"
+#include "cgltf.h"
 
-void ImportGLTF (const char* Filename, Mesh* Meshes, size_t* MeshCount);
-void ImportGLB (const char* Filename, Mesh* Meshes, size_t* MeshCount);
+cgltf_data* ImportGLTF (const char* Filename);

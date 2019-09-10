@@ -10,6 +10,11 @@ typedef struct _Vertex
 	Vector3 Normal;
 } Vertex;
 
+typedef struct _Material
+{
+	const char* Name;
+} Material;
+
 typedef struct _Mesh
 {
 	Matrix4x4 TransformationMatrix;
@@ -27,4 +32,6 @@ typedef struct _Mesh
 
 	const char* Name;
 	uint32_t ID;
+
+	Material* Materials;
 } Mesh;

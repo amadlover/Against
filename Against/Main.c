@@ -94,8 +94,8 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 
 	if (Result != 0)
 	{
-		wchar_t Buff[32];
-		swprintf_s (Buff, 32, L"Init ");
+		wchar_t Buff[8];
+		swprintf_s (Buff, 8, L"Init ");
 		OutputDebugString (Buff);
 
 		LogError (Result);
@@ -125,8 +125,8 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 
 		if (Result != 0)
 		{
-			wchar_t Buff[32];
-			swprintf_s (Buff, 32, L"Main Loop ");
+			wchar_t Buff[16];
+			swprintf_s (Buff, 16, L"Main Loop ");
 			OutputDebugString (Buff);
 
 			LogError (Result);

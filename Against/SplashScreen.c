@@ -3,6 +3,7 @@
 #include "Error.h"
 #include "Assets.h"
 #include "ImportAssets.h"
+#include "Utility.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,13 +53,6 @@ Mesh SplashScreenMesh;
 
 Mesh* Meshes;
 size_t MeshCount;
-
-void GetApplicationFolder (TCHAR* Path)
-{
-	HMODULE Module = GetModuleHandle (NULL);
-	GetModuleFileName (Module, Path, MAX_PATH);
-	PathRemoveFileSpec (Path);
-}
 
 int CreateSplashScreenMesh ()
 {
