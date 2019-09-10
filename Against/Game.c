@@ -33,90 +33,6 @@ uint64_t CurrentTickCount;
 uint64_t ElapsedTime;
 uint64_t SplashScreenThresholdTimeMS = 3000;
 
-HWND WindowHandle;
-
-void AddMenus ()
-{
-	HMENU MenuBar = CreateMenu ();
-	HMENU GameMenu = CreateMenu ();
-
-	AppendMenu (GameMenu, MF_STRING, (UINT_PTR)1, L"New");
-	AppendMenu (GameMenu, MF_SEPARATOR, (UINT_PTR)NULL, NULL);
-	AppendMenu (GameMenu, MF_STRING, (UINT_PTR)2, L"Exit");
-
-	AppendMenu (MenuBar, MF_POPUP, (UINT_PTR)GameMenu, L"Game");
-
-	SetMenu (WindowHandle, MenuBar);
-}
-
-LRESULT CALLBACK WindowProc (HWND WindowHandle, UINT Msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (Msg)
-	{
-	case WM_COMMAND:
-		switch (wParam)
-		{
-		default:
-			break;
-		}
-		break;
-
-	case WM_QUIT:
-		PostQuitMessage (0);
-		return 0;
-
-	case WM_DESTROY:
-		PostQuitMessage (0);
-		return 0;
-
-	case WM_KEYDOWN:
-		ProcessKeyboardInput (wParam, lParam);
-
-		break;
-
-	case WM_LBUTTONDOWN:
-		ProcessMouseLeftClick ();
-
-		break;
-
-	case WM_MBUTTONDOWN:
-		ProcessMouseMiddleClick ();
-
-		break;
-
-	case WM_RBUTTONDOWN:
-		ProcessMouseRightClick ();
-
-		break;
-
-	case WM_MOUSEMOVE:
-		ProcessMouseMovement (wParam, lParam);
-
-		break;
-
-	default:
-		break;
-	}
-
-	return DefWindowProc (WindowHandle, Msg, wParam, lParam);
-}
-
-int GameInit (HINSTANCE HInstance, HWND HWnd)
-{
-	WindowHandle = HWnd;
-
-	int Result = GraphicsInit (HInstance, WindowHandle);
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
-	StartupTickCount = GetTickCount64 ();
-
-	return 0;
-}
-
 int ProcessMouseLeftClick ()
 {
 	switch (OverlayMenuState)
@@ -166,28 +82,25 @@ int ProcessMouseMovement (WPARAM wParam, LPARAM lParam)
 
 int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 {
-	if (wParam == 0x57)
+	switch (wParam)
 	{
+	case 0x57:
 		OutputDebugString (L"W\n");
-	}
+		break;
 
-	if (wParam == 0x41)
-	{
+	case 0x41:
 		OutputDebugString (L"A\n");
-	}
+		break;
 
-	if (wParam == 0x53)
-	{
+	case 0x53:
 		OutputDebugString (L"S\n");
-	}
+		break;
 
-	if (wParam == 0x44)
-	{
+	case 0x44:
 		OutputDebugString (L"D\n");
-	}
+		break;
 
-	if (wParam == VK_ESCAPE)
-	{
+	case VK_ESCAPE:
 		OutputDebugString (L"ESC\n");
 
 		switch (SceneState)
@@ -224,7 +137,24 @@ int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 		default:
 			break;
 		}
+
+	default:
+		break;
 	}
+
+	return 0;
+}
+
+int GameInit (HINSTANCE HInstance, HWND HWnd)
+{
+	int Result = GraphicsInit (HInstance, HWnd);
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	StartupTickCount = GetTickCount64 ();
 
 	return 0;
 }
@@ -242,7 +172,6 @@ int GameMainLoop ()
 		if (ElapsedTime > SplashScreenThresholdTimeMS)
 		{
 			OutputDebugString (L"Switching to Main Menu\n");
-			AddMenus ();
 			SceneState = MainMenu;
 		}
 		else
@@ -285,6 +214,7 @@ int GameMainLoop ()
 	{
 	case NoMenu:
 		break;
+
 	case QuitMenu:
 		Result = DrawQuitMenu ();
 
@@ -303,6 +233,7 @@ int GameMainLoop ()
 		}
 
 		break;
+
 	default:
 		break;
 	}

@@ -5,6 +5,66 @@
 #include "Game.h"
 #include "Error.h"
 
+LRESULT CALLBACK WindowProc (HWND WindowHandle, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (Msg)
+	{
+	case WM_COMMAND:
+		switch (wParam)
+		{
+		case 1:
+			OutputDebugString (L"New Game\n");
+			break;
+
+		case 2:
+			PostQuitMessage (0);
+			break;
+
+		default:
+			break;
+		}
+		break;
+
+	case WM_QUIT:
+		PostQuitMessage (0);
+		return 0;
+
+	case WM_DESTROY:
+		PostQuitMessage (0);
+		return 0;
+
+	case WM_KEYDOWN:
+		ProcessKeyboardInput (wParam, lParam);
+
+		break;
+
+	case WM_LBUTTONDOWN:
+		ProcessMouseLeftClick ();
+
+		break;
+
+	case WM_MBUTTONDOWN:
+		ProcessMouseMiddleClick ();
+
+		break;
+
+	case WM_RBUTTONDOWN:
+		ProcessMouseRightClick ();
+
+		break;
+
+	case WM_MOUSEMOVE:
+		ProcessMouseMovement (wParam, lParam);
+
+		break;
+
+	default:
+		break;
+	}
+
+	return DefWindowProc (WindowHandle, Msg, wParam, lParam);
+}
+
 int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInstance, _In_ PWSTR CmdLine, _In_ int CmdShow)
 {
 	WNDCLASS WC = { 0 };
@@ -20,11 +80,11 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 		return 0;
 	}
 
-	HWND WindowHandle = CreateWindow (L"Against", L"Against", WS_OVERLAPPEDWINDOW, 0, 0, 1280, 720, NULL, NULL, HInstance, NULL);
+	HWND WindowHandle = CreateWindow (L"Against", L"Against", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, NULL, NULL, HInstance, NULL);
 
 	if (!WindowHandle)
 	{
-		return 0;
+		return -1;
 	}
 
 	ShowWindow (WindowHandle, CmdShow);
