@@ -542,14 +542,14 @@ int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 		return Result;
 	}
 
-	Result = SetupSplashScreen ();
+	Result = CreateSplashScreenGraphics ();
 	
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = SetupMainMenu ();
+	Result = CreateMainMenuGraphics ();
 
 	if (Result != 0)
 	{
@@ -571,8 +571,8 @@ void GraphicsShutdown ()
 	OutputDebugString (L"GraphicsShutdown\n");
 	
 	DestroyMainGame ();
-	DestroyMainMenu ();
-	DestroySplashScreen ();
+	DestroyMainMenuGraphics ();
+	DestroySplashScreenGraphics ();
 
 	if (Swapchain != VK_NULL_HANDLE)
 	{

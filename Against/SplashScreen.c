@@ -741,6 +741,8 @@ int CreateSplashScreenHostVBIB ()
 	VBCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	VBCreateInfo.size = (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 3 + (uint64_t)sizeof (float) * SplashScreenMesh.VertexCount * 2;
 	VBCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	VBCreateInfo.queueFamilyIndexCount = 1;
+	VBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 
 	if (vkCreateBuffer (GraphicsDevice, &VBCreateInfo, NULL, &HostVB) != VK_SUCCESS)
 	{
@@ -753,6 +755,8 @@ int CreateSplashScreenHostVBIB ()
 	IBCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	IBCreateInfo.size = (uint64_t)sizeof (uint32_t) * SplashScreenMesh.IndexCount;
 	IBCreateInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+	IBCreateInfo.queueFamilyIndexCount = 1;
+	IBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 
 	if (vkCreateBuffer (GraphicsDevice, &IBCreateInfo, NULL, &HostIB) != VK_SUCCESS)
 	{
@@ -1035,7 +1039,7 @@ int CreateSplashScreenHostTextureImage ()
 	return 0;
 }
 
-int SetupSplashScreen ()
+int CreateSplashScreenGraphics ()
 {
 	OutputDebugString (L"SetupSplashScreen\n");
 
@@ -1205,7 +1209,7 @@ int DrawSplashScreen (uint64_t ElapsedTime)
 	return 0;
 }
 
-void DestroySplashScreen ()
+void DestroySplashScreenGraphics ()
 {
 	OutputDebugString (L"DestroySplashScreen\n");
 
@@ -1228,6 +1232,7 @@ void DestroySplashScreen ()
 	{
 		vkDestroySemaphore (GraphicsDevice, WaitSemaphore, NULL);
 	}
+
 	if (SignalSemaphore != VK_NULL_HANDLE)
 	{
 		vkDestroySemaphore (GraphicsDevice, SignalSemaphore, NULL);

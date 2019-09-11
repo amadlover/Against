@@ -1,5 +1,5 @@
 #pragma once
 
-int SetupMainMenu ();
+int CreateMainMenuGraphics ();
 int DrawMainMenu ();
-void DestroyMainMenu ();
+void DestroyMainMenuGraphics ();

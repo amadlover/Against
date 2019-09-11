@@ -147,6 +147,8 @@ int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 
 int GameInit (HINSTANCE HInstance, HWND HWnd)
 {
+	OutputDebugString (L"GameInit\n");
+
 	int Result = GraphicsInit (HInstance, HWnd);
 
 	if (Result != 0)
