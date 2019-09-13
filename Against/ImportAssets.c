@@ -25,3 +25,73 @@ cgltf_data* ImportGLTF (const char* Filename)
 
 	return Data;
 }
+
+int ImportMainMenuGLTF (const char* Filename, Mesh* Meshes)
+{
+	cgltf_options Options = { 0 };
+	cgltf_data* Data = NULL;
+
+	cgltf_result Result = cgltf_parse_file (&Options, Filename, &Data);
+
+	if (Result == cgltf_result_success)
+	{
+		Result = cgltf_load_buffers (&Options, Data, Filename);
+
+		if (Result == cgltf_result_success)
+		{
+			Result = cgltf_validate (Data);
+
+			if (Result == cgltf_result_success)
+			{
+				for (cgltf_size m = 0; m < Data->meshes_count; m++)
+				{
+					uint64_t BufferSize = 0;
+					cgltf_mesh* Mesh = Data->meshes + m;
+
+					for (cgltf_size p = 0; p < Mesh->primitives_count; p++)
+					{
+						cgltf_primitive* Primitive = Mesh->primitives + p;
+
+						for (cgltf_size a = 0; a < Primitive->attributes_count; a++)
+						{
+							cgltf_attribute* Attribute = Primitive->attributes + a;
+
+							if (strcmp (Attribute->name, "POSITION") == 0)
+							{
+								cgltf_accessor* Accessor = Attribute->data;
+								Meshes[m].VertexCount = Accessor->count;
+								Meshes[m].Positions = (float*)malloc (Accessor->buffer_view->buffer->size);
+								memcpy_s (Meshes[m].Positions, Accessor->buffer_view->buffer->size, Accessor->buffer_view->buffer->data, Accessor->buffer_view->buffer->size);
+							}
+							else if (strcmp (Attribute->name, "TEXCOORD_0") == 0)
+							{
+								cgltf_accessor* Accessor = Attribute->data;
+								Meshes[m].UVs = (float*)malloc (Accessor->buffer_view->buffer->size);
+								memcpy_s (Meshes[m].Positions, Accessor->buffer_view->buffer->size, Accessor->buffer_view->buffer->data, Accessor->buffer_view->buffer->size);
+							}
+						}
+					}
+
+					Meshes[m].Name = (char*)malloc (strlen (Mesh->name));
+					memcpy_s (Meshes[m].Name, strlen (Mesh->name), Mesh->name, strlen (Mesh->name));
+				}
+			}
+			else
+			{
+				return AGAINST_ERROR_GLTF_COULD_NOT_IMPORT;
+			}
+		}
+		else
+		{
+			return AGAINST_ERROR_GLTF_COULD_NOT_IMPORT;
+		}
+	}
+	else
+	{
+		return AGAINST_ERROR_GLTF_COULD_NOT_IMPORT;
+	}
+
+	cgltf_free (Data);
+
+	return 0;
+}

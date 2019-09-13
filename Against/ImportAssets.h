@@ -4,3 +4,4 @@
 #include <cgltf.h>
 
 cgltf_data* ImportGLTF (const char* Filename);
+int ImportMainMenuGLTF (const char* Filename, Mesh* Meshes);

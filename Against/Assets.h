@@ -12,7 +12,7 @@ typedef struct _Vertex
 
 typedef struct _Material
 {
-	const char* Name;
+	char* Name;
 } Material;
 
 typedef struct _Mesh
@@ -30,7 +30,7 @@ typedef struct _Mesh
 
 	uint32_t* Indices;
 
-	const char* Name;
+	char* Name;
 	uint32_t ID;
 
 	Material* Materials;

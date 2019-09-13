@@ -10,11 +10,10 @@
 
 #include <stdlib.h>
 
-#include <cgltf.h>
-
 #include <vulkan/vulkan.h>
 
-cgltf_data* MainMenuData = NULL;
+Mesh* Meshes;
+uint32_t MeshCount = 2;
 
 VkBuffer BGVertexBuffer;
 VkBuffer UIVertexBuffer;
@@ -35,11 +34,21 @@ int ImportMainMenuAssets ()
 	char UIElementFile[MAX_PATH];
 	wcstombs_s (NULL, UIElementFile, MAX_PATH, UIElementPath, MAX_PATH);
 
-	MainMenuData = ImportGLTF (UIElementFile);
+	Meshes = (Mesh*)malloc (sizeof (Mesh) * MeshCount);
 
-	if (MainMenuData == NULL)
+	if (Meshes != NULL)
 	{
-		return AGAINST_ERROR_GLTF_COULD_NOT_IMPORT;
+		int Result = ImportMainMenuGLTF (UIElementFile, Meshes);
+
+		wchar_t Buff[32];
+		swprintf_s (Buff, 32, L"%hs\n", Meshes[1].Name);
+
+		OutputDebugString (Buff);
+
+		if (Result != 0)
+		{
+			return Result;
+		}
 	}
 
 	return 0;
@@ -71,85 +80,7 @@ int CreateMainMenuHostVBs ()
 	uint64_t BGIndexBufferSize = 0;
 	uint64_t UIIndexBufferSize = 0;
 
-	for (cgltf_size m = 0; m < MainMenuData->meshes_count; m++)
-	{
-		uint64_t BufferSize = 0;
-		cgltf_mesh* Mesh = MainMenuData->meshes + m;
-		
-		for (cgltf_size p = 0; p < Mesh->primitives_count; p++)
-		{
-			cgltf_primitive* Primitive = Mesh->primitives + p;
 
-			for (cgltf_size a = 0; a < Primitive->attributes_count; a++)
-			{
-				cgltf_attribute* Attribute = Primitive->attributes + a;
-
-				if (strcmp (Attribute->name, "POSITION") == 0)
-				{
-					BufferSize += Attribute->data->count * sizeof (float) * 3;
-
-					if (strcmp (Mesh->name, "BackgroundPlane") == 0)
-					{
-						BGVertexBufferSize += Attribute->data->count * sizeof (float) * 3;
-					}
-					else if (strcmp (Mesh->name, "UIElementPlane") == 0)
-					{
-						UIVertexBufferSize += Attribute->data->count * sizeof (float) * 3;
-					}
-				}
-				else if (strcmp (Attribute->name, "TEXCOORD_0") == 0)
-				{
-					BufferSize += Attribute->data->count * sizeof (float) * 2;
-					BGVertexBufferSize += Attribute->data->count * sizeof (float) * 3;
-
-					if (strcmp (Mesh->name, "BackgroundPlane") == 0)
-					{
-						BGVertexBufferSize += Attribute->data->count * sizeof (float) * 2;
-					}
-					else if (strcmp (Mesh->name, "UIElementPlane") == 0)
-					{
-						UIVertexBufferSize += Attribute->data->count * sizeof (float) * 2;
-					}
-				}
-			}
-
-			CreateInfo.size = BufferSize;
-			VertexMemorySize += BufferSize;
-
-			if (strcmp (Mesh->name, "BackgroundPlane") == 0)
-			{
-				if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &BGVertexBuffer) != VK_SUCCESS)
-				{
-					return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
-				}
-
-				CreateInfo.size = Primitive->indices->count * sizeof (uint32_t);
-				VertexMemorySize += Primitive->indices->count * sizeof (uint32_t);
-				BGIndexBufferSize = Primitive->indices->count * sizeof (uint32_t);
-
-				if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &BGIndexBuffer) != VK_SUCCESS)
-				{
-					return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
-				}
-			}
-			else if (strcmp (Mesh->name, "UIElementPlane") == 0)
-			{
-				if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &UIVertexBuffer) != VK_SUCCESS)
-				{
-					return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
-				}
-
-				CreateInfo.size = Primitive->indices->count * sizeof (uint32_t);
-				VertexMemorySize += Primitive->indices->count * sizeof (uint32_t);
-				UIIndexBufferSize = Primitive->indices->count * sizeof (uint32_t);
-
-				if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &UIIndexBuffer) != VK_SUCCESS)
-				{
-					return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
-				}
-			}
-		}
-	}
 
 	VkMemoryRequirements BGVertexBufferMemoryRequirements;
 	vkGetBufferMemoryRequirements (GraphicsDevice, BGVertexBuffer, &BGVertexBufferMemoryRequirements);
@@ -308,8 +239,6 @@ void DestroyMainMenuGraphics ()
 {
 	OutputDebugString (L"DestroyMainMenu\n");
 
-	cgltf_free (MainMenuData);
-
 	if (BGVertexBuffer != VK_NULL_HANDLE)
 	{
 		vkDestroyBuffer (GraphicsDevice, BGVertexBuffer, NULL);
@@ -334,4 +263,24 @@ void DestroyMainMenuGraphics ()
 	{
 		vkFreeMemory (GraphicsDevice, BGUIVertexIndexMemory, NULL);
 	}
+
+	for (uint32_t m = 0; m < MeshCount; m++)
+	{
+		if (Meshes[m].Positions)
+		{
+			free (Meshes[m].Positions);
+		}
+		
+		if (Meshes[m].Indices)
+		{
+			free (Meshes[m].Indices);
+		}
+
+		if (Meshes[m].Name)
+		{
+			free (Meshes[m].Name);
+		}
+	}
+
+	free (Meshes);
 }
