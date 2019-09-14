@@ -12,7 +12,9 @@
 
 #include <vulkan/vulkan.h>
 
-Mesh* Meshes;
+Mesh Meshes[2];
+Mesh *BGMesh;
+Mesh *UIElementMesh;
 uint32_t MeshCount = 2;
 
 VkBuffer BGVertexBuffer;
@@ -34,20 +36,27 @@ int ImportMainMenuAssets ()
 	char UIElementFile[MAX_PATH];
 	wcstombs_s (NULL, UIElementFile, MAX_PATH, UIElementPath, MAX_PATH);
 
-	Meshes = (Mesh*)malloc (sizeof (Mesh) * MeshCount);
+	//Meshes = (Mesh*)malloc (sizeof (Mesh) * MeshCount);
 
 	if (Meshes != NULL)
 	{
 		int Result = ImportMainMenuGLTF (UIElementFile, Meshes);
 
-		wchar_t Buff[32];
-		swprintf_s (Buff, 32, L"%hs\n", Meshes[1].Name);
-
-		OutputDebugString (Buff);
-
 		if (Result != 0)
 		{
 			return Result;
+		}
+
+		for (uint32_t m = 0; m < MeshCount; m++)
+		{
+			if (strcmp (Meshes[m].Name, "BackgroundPlane") == 0)
+			{
+				BGMesh = &Meshes[m];
+			}
+			else if (strcmp (Meshes[m].Name, "UIElementPlane") == 0)
+			{
+				UIElementMesh = &Meshes[m];
+			}
 		}
 	}
 
@@ -72,15 +81,33 @@ int CreateMainMenuHostVBs ()
 	CreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	CreateInfo.queueFamilyIndexCount = 1;
 	CreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
+	CreateInfo.size = (VkDeviceSize)(BGMesh->PositionsSize + BGMesh->UVsSize);
 
-	uint64_t VertexMemorySize = 0;
+	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &BGVertexBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
+	}
 
-	uint64_t BGVertexBufferSize = 0;
-	uint64_t UIVertexBufferSize = 0;
-	uint64_t BGIndexBufferSize = 0;
-	uint64_t UIIndexBufferSize = 0;
+	CreateInfo.size = (VkDeviceSize)(BGMesh->IndicesSize);
 
+	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &BGIndexBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
+	}
 
+	CreateInfo.size = (VkDeviceSize)((UIElementMesh->PositionsSize) + (UIElementMesh->UVsSize));
+
+	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &UIVertexBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
+	}
+
+	CreateInfo.size = (VkDeviceSize)(UIElementMesh->IndicesSize);
+
+	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &UIIndexBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
+	}
 
 	VkMemoryRequirements BGVertexBufferMemoryRequirements;
 	vkGetBufferMemoryRequirements (GraphicsDevice, BGVertexBuffer, &BGVertexBufferMemoryRequirements);
@@ -135,6 +162,44 @@ int CreateMainMenuHostVBs ()
 	{
 		return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
 	}
+
+	void* Data = NULL;
+
+	if (vkMapMemory (GraphicsDevice, BGUIVertexIndexMemory, 0, BGMesh->PositionsSize, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+	}
+
+	memcpy_s (Data, BGMesh->PositionsSize, BGMesh->Positions, BGMesh->PositionsSize);
+
+	vkUnmapMemory (GraphicsDevice, BGUIVertexIndexMemory);
+
+	if (vkMapMemory (GraphicsDevice, BGUIVertexIndexMemory, BGMesh->PositionsSize, BGMesh->UVsSize, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+	}
+
+	memcpy_s (Data, BGMesh->UVsSize, BGMesh->UVs, BGMesh->UVsSize);
+
+	vkUnmapMemory (GraphicsDevice, BGUIVertexIndexMemory);
+
+	if (vkMapMemory (GraphicsDevice, BGUIVertexIndexMemory, BGMesh->PositionsSize + BGMesh->UVsSize, UIElementMesh->PositionsSize, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+	}
+
+	memcpy_s (Data, UIElementMesh->PositionsSize, UIElementMesh->Positions, UIElementMesh->PositionsSize);
+
+	vkUnmapMemory (GraphicsDevice, BGUIVertexIndexMemory);
+
+	if (vkMapMemory (GraphicsDevice, BGUIVertexIndexMemory, BGMesh->PositionsSize + BGMesh->UVsSize + UIElementMesh->PositionsSize, UIElementMesh->UVsSize, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+	}
+
+	memcpy_s (Data, UIElementMesh->UVsSize, UIElementMesh->UVs, UIElementMesh->UVsSize);
+
+	vkUnmapMemory (GraphicsDevice, BGUIVertexIndexMemory);
 
 	return 0;
 }
@@ -270,17 +335,15 @@ void DestroyMainMenuGraphics ()
 		{
 			free (Meshes[m].Positions);
 		}
-		
+
+		if (Meshes[m].UVs)
+		{
+			free (Meshes[m].UVs);
+		}
+
 		if (Meshes[m].Indices)
 		{
 			free (Meshes[m].Indices);
 		}
-
-		if (Meshes[m].Name)
-		{
-			free (Meshes[m].Name);
-		}
 	}
-
-	free (Meshes);
 }

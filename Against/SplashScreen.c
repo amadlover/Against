@@ -1292,7 +1292,7 @@ void DestroySplashScreenGraphics ()
 		vkFreeMemory (GraphicsDevice, UniformBufferMemory, NULL);
 	}
 	
-	if (UniformBuffer != VK_NULL_HANDLE)
+	if (HostVBIBMemory != VK_NULL_HANDLE)
 	{
 		vkFreeMemory (GraphicsDevice, HostVBIBMemory, NULL);
 	}

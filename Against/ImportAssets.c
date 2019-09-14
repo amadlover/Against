@@ -59,21 +59,27 @@ int ImportMainMenuGLTF (const char* Filename, Mesh* Meshes)
 							if (strcmp (Attribute->name, "POSITION") == 0)
 							{
 								cgltf_accessor* Accessor = Attribute->data;
-								Meshes[m].VertexCount = Accessor->count;
-								Meshes[m].Positions = (float*)malloc (Accessor->buffer_view->buffer->size);
-								memcpy_s (Meshes[m].Positions, Accessor->buffer_view->buffer->size, Accessor->buffer_view->buffer->data, Accessor->buffer_view->buffer->size);
+								Meshes[m].Positions = (float*)malloc (Accessor->buffer_view->size);
+								memcpy_s (Meshes[m].Positions, Accessor->buffer_view->size, Accessor->buffer_view->buffer->data, Accessor->buffer_view->size);
+								Meshes[m].PositionsSize = Accessor->buffer_view->size;
 							}
 							else if (strcmp (Attribute->name, "TEXCOORD_0") == 0)
 							{
 								cgltf_accessor* Accessor = Attribute->data;
-								Meshes[m].UVs = (float*)malloc (Accessor->buffer_view->buffer->size);
-								memcpy_s (Meshes[m].Positions, Accessor->buffer_view->buffer->size, Accessor->buffer_view->buffer->data, Accessor->buffer_view->buffer->size);
+								Meshes[m].UVs = (float*)malloc (Accessor->buffer_view->size);
+								memcpy_s (Meshes[m].Positions, Accessor->buffer_view->size, Accessor->buffer_view->buffer->data, Accessor->buffer_view->size);
+								Meshes[m].UVsSize = Accessor->buffer_view->size;
 							}
 						}
+
+						cgltf_accessor* IndicesAccessor = Primitive->indices;
+						Meshes[m].IndexCount = IndicesAccessor->count;
+						Meshes[m].Indices = (uint32_t*)malloc (IndicesAccessor->buffer_view->size);
+						memcpy_s (Meshes[m].Indices, IndicesAccessor->buffer_view->size, IndicesAccessor->buffer_view->buffer->data, IndicesAccessor->buffer_view->size);
+						Meshes[m].IndicesSize = IndicesAccessor->buffer_view->size;
 					}
 
-					Meshes[m].Name = (char*)malloc (strlen (Mesh->name));
-					memcpy_s (Meshes[m].Name, strlen (Mesh->name), Mesh->name, strlen (Mesh->name));
+					strncpy_s (Meshes[m].Name, 256, Mesh->name, _TRUNCATE);
 				}
 			}
 			else
