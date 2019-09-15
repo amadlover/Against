@@ -19,10 +19,7 @@ typedef struct _Mesh
 {
 	Matrix4x4 TransformationMatrix;
 
-	uint32_t VertexCount;
 	uint32_t IndexCount;
-
-	Vertex* Vertices;
 
 	float* Positions;
 	float* UVs;

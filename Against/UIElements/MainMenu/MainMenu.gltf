@@ -9,18 +9,76 @@
             "name" : "Scene",
             "nodes" : [
                 0,
-                1
+                1,
+                2
             ]
         }
     ],
     "nodes" : [
         {
             "mesh" : 0,
-            "name" : "Background"
+            "name" : "Background",
+            "scale" : [
+                4.645498752593994,
+                3.5756850242614746,
+                3.5756850242614746
+            ]
         },
         {
             "mesh" : 1,
-            "name" : "UIElement"
+            "name" : "New",
+            "translation" : [
+                -2.920586109161377,
+                -0.08558493107557297,
+                2.0813300609588623
+            ]
+        },
+        {
+            "mesh" : 2,
+            "name" : "Quit",
+            "translation" : [
+                -2.920586109161377,
+                -0.08558493107557297,
+                -2.4795403480529785
+            ]
+        }
+    ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "BackgroundMat",
+            "pbrMetallicRoughness" : {
+                "baseColorTexture" : {
+                    "index" : 0,
+                    "texCoord" : 0
+                },
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.5
+            }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "NewMat",
+            "pbrMetallicRoughness" : {
+                "baseColorTexture" : {
+                    "index" : 1,
+                    "texCoord" : 0
+                },
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.5
+            }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "QuitMat",
+            "pbrMetallicRoughness" : {
+                "baseColorTexture" : {
+                    "index" : 2,
+                    "texCoord" : 0
+                },
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.5
+            }
         }
     ],
     "meshes" : [
@@ -30,25 +88,66 @@
                 {
                     "attributes" : {
                         "POSITION" : 0,
-                        "NORMAL" : 1,
-                        "TEXCOORD_0" : 2
+                        "TEXCOORD_0" : 1
                     },
-                    "indices" : 3
+                    "indices" : 2,
+                    "material" : 0
                 }
             ]
         },
         {
-            "name" : "UIElementPlane",
+            "name" : "NewPlane",
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 4,
-                        "NORMAL" : 5,
-                        "TEXCOORD_0" : 6
+                        "POSITION" : 3,
+                        "TEXCOORD_0" : 4
                     },
-                    "indices" : 3
+                    "indices" : 2,
+                    "material" : 1
                 }
             ]
+        },
+        {
+            "name" : "QuitPlane",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 5,
+                        "TEXCOORD_0" : 6
+                    },
+                    "indices" : 2,
+                    "material" : 2
+                }
+            ]
+        }
+    ],
+    "textures" : [
+        {
+            "source" : 0
+        },
+        {
+            "source" : 1
+        },
+        {
+            "source" : 2
+        }
+    ],
+    "images" : [
+        {
+            "mimeType" : "image/png",
+            "name" : "MainMenuBG",
+            "uri" : "MainMenuBG.png"
+        },
+        {
+            "mimeType" : "image/png",
+            "name" : "MainMenuNew",
+            "uri" : "MainMenuNew.png"
+        },
+        {
+            "mimeType" : "image/png",
+            "name" : "MainMenuQuit",
+            "uri" : "MainMenuQuit.png"
         }
     ],
     "accessors" : [
@@ -72,22 +171,16 @@
             "bufferView" : 1,
             "componentType" : 5126,
             "count" : 4,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 2,
-            "componentType" : 5126,
-            "count" : 4,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 3,
+            "bufferView" : 2,
             "componentType" : 5123,
             "count" : 6,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 4,
+            "bufferView" : 3,
             "componentType" : 5126,
             "count" : 4,
             "max" : [
@@ -103,9 +196,25 @@
             "type" : "VEC3"
         },
         {
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 4,
+            "type" : "VEC2"
+        },
+        {
             "bufferView" : 5,
             "componentType" : 5126,
             "count" : 4,
+            "max" : [
+                1,
+                1.3756464412040259e-08,
+                0.31471121311187744
+            ],
+            "min" : [
+                -1,
+                -1.3756464412040259e-08,
+                -0.31471121311187744
+            ],
             "type" : "VEC3"
         },
         {
@@ -123,38 +232,38 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 48,
+            "byteLength" : 32,
             "byteOffset" : 48
         },
         {
             "buffer" : 0,
-            "byteLength" : 32,
-            "byteOffset" : 96
-        },
-        {
-            "buffer" : 0,
             "byteLength" : 12,
-            "byteOffset" : 128
+            "byteOffset" : 80
         },
         {
             "buffer" : 0,
             "byteLength" : 48,
+            "byteOffset" : 92
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 32,
             "byteOffset" : 140
         },
         {
             "buffer" : 0,
             "byteLength" : 48,
-            "byteOffset" : 188
+            "byteOffset" : 172
         },
         {
             "buffer" : 0,
             "byteLength" : 32,
-            "byteOffset" : 236
+            "byteOffset" : 220
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 268,
+            "byteLength" : 252,
             "uri" : "MainMenu.bin"
         }
     ]

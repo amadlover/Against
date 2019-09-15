@@ -116,11 +116,6 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 			DispatchMessage (&Msg);
 		}
 
-		if (Msg.message == WM_QUIT)
-		{
-			break;
-		}
-
 		Result = GameMainLoop ();
 
 		if (Result != 0)
