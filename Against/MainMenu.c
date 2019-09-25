@@ -186,7 +186,10 @@ int CreateMainMenuHostVBIB ()
 
 	for (uint32_t m = 0; m < MeshCount; m++)
 	{
-		VBCreateInfo.size += Meshes[m].PositionsSize + Meshes[m].UVsSize;
+		for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
+		{
+			VBCreateInfo.size += Meshes[m].Primitives[p].PositionsSize + Meshes[m].Primitives[p].UVsSize;
+		}
 	}
 
 	if (vkCreateBuffer (GraphicsDevice, &VBCreateInfo, NULL, &MainMenuHostVB) != VK_SUCCESS)
@@ -204,7 +207,10 @@ int CreateMainMenuHostVBIB ()
 
 	for (uint32_t m = 0; m < MeshCount; m++)
 	{
-		IBCreateInfo.size += Meshes[m].IndicesSize;
+		for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
+		{
+			IBCreateInfo.size += Meshes[m].Primitives[p].IndicesSize;
+		}
 	}
 
 	if (vkCreateBuffer (GraphicsDevice, &IBCreateInfo, NULL, &MainMenuHostIB) != VK_SUCCESS)
