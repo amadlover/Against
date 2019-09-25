@@ -51,9 +51,6 @@ VkImageView TextureImageView;
 
 Mesh SplashScreenMesh;
 
-Mesh* Meshes;
-size_t MeshCount;
-
 int CreateSplashScreenMesh ()
 {
 	OutputDebugString (L"CreateSplashScreenMesh\n");
@@ -812,7 +809,7 @@ int CreateSplashScreenHostVBIB ()
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
-	memcpy_s (Data, SplashScreenMesh.PositionsSize, SplashScreenMesh.Positions, SplashScreenMesh.PositionsSize);
+	memcpy (Data, SplashScreenMesh.Positions, SplashScreenMesh.PositionsSize);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
 	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.PositionsSize, SplashScreenMesh.UVsSize, 0, &Data) != VK_SUCCESS)
@@ -820,7 +817,7 @@ int CreateSplashScreenHostVBIB ()
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
-	memcpy_s (Data, SplashScreenMesh.UVsSize, SplashScreenMesh.UVs, SplashScreenMesh.UVsSize);
+	memcpy (Data, SplashScreenMesh.UVs, SplashScreenMesh.UVsSize);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
 	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, IBMemoryRequirements.alignment, SplashScreenMesh.IndicesSize, 0, &Data) != VK_SUCCESS)
@@ -828,7 +825,7 @@ int CreateSplashScreenHostVBIB ()
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
-	memcpy_s (Data, SplashScreenMesh.IndicesSize, SplashScreenMesh.Indices, SplashScreenMesh.IndicesSize);
+	memcpy (Data, SplashScreenMesh.Indices, SplashScreenMesh.IndicesSize);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
 	return 0;
@@ -911,7 +908,7 @@ int CreateSplashScreenHostTextureImage ()
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_IMAGE_MEMORY;
 	}
-	memcpy_s (Data, (const rsize_t)MemoryRequirements.size, Pixels, Width * Height * BPP * sizeof (uint8_t));
+	memcpy (Data, Pixels, Width * Height * BPP * sizeof (uint8_t));
 
 	vkUnmapMemory (GraphicsDevice, TextureImageMemory);
 
@@ -1343,10 +1340,5 @@ void DestroySplashScreenGraphics ()
 	if (DescriptorSetLayout != VK_NULL_HANDLE)
 	{
 		vkDestroyDescriptorSetLayout (GraphicsDevice, DescriptorSetLayout, NULL);
-	}
-
-	if (Meshes)
-	{
-		free (Meshes);
 	}
 }

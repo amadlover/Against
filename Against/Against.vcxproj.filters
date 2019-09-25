@@ -19,6 +19,9 @@
     <Filter Include="Shaders\SplashScreen">
       <UniqueIdentifier>{322800a3-9bcd-44f5-83ec-2a34d3510949}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\MainMenu">
+      <UniqueIdentifier>{f86d5668-8520-4830-881b-89189174c356}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.c">
