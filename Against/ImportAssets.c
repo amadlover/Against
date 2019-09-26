@@ -107,7 +107,6 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 
 							(*Meshes + MeshCounter)->Primitives[p].IndexCount = Accessor->count;
 
-
 							char* DataStart = (char*)BufferView->buffer->data;
 
 							switch (Accessor->component_type)

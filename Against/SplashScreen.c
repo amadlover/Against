@@ -37,8 +37,7 @@ VkSemaphore SignalSemaphore;
 
 VkSampler Sampler;
 
-VkBuffer SplashScreenHostVB;
-VkBuffer SplashScreenHostIB;
+VkBuffer SplashScreenHostVBIB;
 VkBuffer UniformBuffer;
 
 VkImage TextureImage;
@@ -677,9 +676,9 @@ int CreateSplashScreenCommandBuffer ()
 
 		VkDeviceSize Offsets[3] = { 0, SplashScreenMesh.PositionsSize,  SplashScreenMesh.PositionsSize + SplashScreenMesh.UVsSize };
 
-		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &SplashScreenHostVB, &Offsets[0]);
-		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 1, 1, &SplashScreenHostVB, &Offsets[1]);
-		vkCmdBindIndexBuffer (SwapchainCommandBuffers[i], SplashScreenHostIB, Offsets[0], VK_INDEX_TYPE_UINT32);
+		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &SplashScreenHostVBIB, &Offsets[0]);
+		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 1, 1, &SplashScreenHostVBIB, &Offsets[1]);
+		vkCmdBindIndexBuffer (SwapchainCommandBuffers[i], SplashScreenHostVBIB, Offsets[2], VK_INDEX_TYPE_UINT32);
 
 		vkCmdDrawIndexed (SwapchainCommandBuffers[i], SplashScreenMesh.IndexCount, 1, 0, 0, 0);
 
@@ -740,47 +739,30 @@ int CreateSplashScreenHostVBIB ()
 	memset (&VBCreateInfo, 0, sizeof (VkBufferCreateInfo));
 
 	VBCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	VBCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	VBCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	VBCreateInfo.queueFamilyIndexCount = 1;
 	VBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
-	VBCreateInfo.size = SplashScreenMesh.PositionsSize + SplashScreenMesh.UVsSize;
+	VBCreateInfo.size = SplashScreenMesh.PositionsSize + SplashScreenMesh.UVsSize + SplashScreenMesh.IndicesSize;
 
-	if (vkCreateBuffer (GraphicsDevice, &VBCreateInfo, NULL, &SplashScreenHostVB) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
-	}
-
-	VkBufferCreateInfo IBCreateInfo;
-	memset (&IBCreateInfo, 0, sizeof (VkBufferCreateInfo));
-
-	IBCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	IBCreateInfo.size = SplashScreenMesh.IndicesSize;
-	IBCreateInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-	IBCreateInfo.queueFamilyIndexCount = 1;
-	IBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
-
-	if (vkCreateBuffer (GraphicsDevice, &IBCreateInfo, NULL, &SplashScreenHostIB) != VK_SUCCESS)
+	if (vkCreateBuffer (GraphicsDevice, &VBCreateInfo, NULL, &SplashScreenHostVBIB) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
 	}
 
 	VkMemoryRequirements VBMemoryRequirements;
-	vkGetBufferMemoryRequirements (GraphicsDevice, SplashScreenHostVB, &VBMemoryRequirements);
-
-	VkMemoryRequirements IBMemoryRequirements;
-	vkGetBufferMemoryRequirements (GraphicsDevice, SplashScreenHostIB, &IBMemoryRequirements);
+	vkGetBufferMemoryRequirements (GraphicsDevice, SplashScreenHostVBIB, &VBMemoryRequirements);
 
 	VkMemoryAllocateInfo MemoryAllocateInfo;
 	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
 
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	MemoryAllocateInfo.allocationSize = VBMemoryRequirements.size + IBMemoryRequirements.size;
+	MemoryAllocateInfo.allocationSize = VBMemoryRequirements.size;
 
 	uint32_t RequiredTypes = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
 	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
 	{
-		if (VBMemoryRequirements.memoryTypeBits & (1 << i) && IBMemoryRequirements.memoryTypeBits & (1 << i) && RequiredTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
+		if (VBMemoryRequirements.memoryTypeBits & (1 << i) && RequiredTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
 		{
 			MemoryAllocateInfo.memoryTypeIndex = i;
 			break;
@@ -792,12 +774,7 @@ int CreateSplashScreenHostVBIB ()
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_BUFFER_MEMORY;
 	}
 
-	if (vkBindBufferMemory (GraphicsDevice, SplashScreenHostVB, SplasScreenHostVBIBMemory, 0) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
-	}
-
-	if (vkBindBufferMemory (GraphicsDevice, SplashScreenHostIB, SplasScreenHostVBIBMemory, VBMemoryRequirements.alignment) != VK_SUCCESS)
+	if (vkBindBufferMemory (GraphicsDevice, SplashScreenHostVBIB, SplasScreenHostVBIBMemory, 0) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
 	}
@@ -820,7 +797,7 @@ int CreateSplashScreenHostVBIB ()
 	memcpy (Data, SplashScreenMesh.UVs, SplashScreenMesh.UVsSize);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
-	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, IBMemoryRequirements.alignment, SplashScreenMesh.IndicesSize, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.PositionsSize + SplashScreenMesh.UVsSize, SplashScreenMesh.IndicesSize, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
@@ -1296,19 +1273,14 @@ void DestroySplashScreenGraphics ()
 		vkFreeMemory (GraphicsDevice, SplasScreenHostVBIBMemory, NULL);
 	}
 	
-	if (SplashScreenHostIB != VK_NULL_HANDLE)
-	{
-		vkDestroyBuffer (GraphicsDevice, SplashScreenHostIB, NULL);
-	}
-	
 	if (UniformBuffer != VK_NULL_HANDLE)
 	{
 		vkDestroyBuffer (GraphicsDevice, UniformBuffer, NULL);
 	}
 	
-	if (SplashScreenHostVB != VK_NULL_HANDLE)
+	if (SplashScreenHostVBIB != VK_NULL_HANDLE)
 	{
-		vkDestroyBuffer (GraphicsDevice, SplashScreenHostVB, NULL);
+		vkDestroyBuffer (GraphicsDevice, SplashScreenHostVBIB, NULL);
 	}
 	
 	if (TextureImageMemory != VK_NULL_HANDLE)
