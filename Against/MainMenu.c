@@ -283,6 +283,11 @@ void DestroyMainMenuGraphics ()
 				{
 					if (Meshes[m].Primitives[p].Material)
 					{
+						if (Meshes[m].Primitives[p].Material->BaseColorTexture.Pixels)
+						{
+							free (Meshes[m].Primitives[p].Material->BaseColorTexture.Pixels);
+						}
+
 						free (Meshes[m].Primitives[p].Material);
 					}
 
