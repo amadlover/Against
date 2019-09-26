@@ -82,7 +82,7 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 									char* DataStart = (char*)BufferView->buffer->data;
 									float* Positions = (float*)(DataStart + Accessor->offset + BufferView->offset);
 
-									(*Meshes + MeshCounter)->Primitives[p].PositionsSize = BufferView->size;
+									(*Meshes + MeshCounter)->Primitives[p].PositionSize = BufferView->size;
 									(*Meshes + MeshCounter)->Primitives[p].Positions = (float*)malloc (BufferView->size);
 
 									memcpy ((*Meshes + MeshCounter)->Primitives[p].Positions, Positions, BufferView->size);
@@ -94,7 +94,7 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 										char* DataStart = (char*)BufferView->buffer->data;
 										float* UVs = (float*)(DataStart + Accessor->offset + BufferView->offset);
 
-										(*Meshes + MeshCounter)->Primitives[p].UVsSize = BufferView->size;
+										(*Meshes + MeshCounter)->Primitives[p].UVSize = BufferView->size;
 										(*Meshes + MeshCounter)->Primitives[p].UVs = (float*)malloc (BufferView->size);
 
 										memcpy ((*Meshes + MeshCounter)->Primitives[p].UVs, UVs, BufferView->size);
@@ -112,7 +112,7 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 							switch (Accessor->component_type)
 							{
 							case cgltf_component_type_r_16u:
-								(*Meshes + MeshCounter)->Primitives[p].IndicesSize = BufferView->size * 2;
+								(*Meshes + MeshCounter)->Primitives[p].IndexSize = BufferView->size * 2;
 								(*Meshes + MeshCounter)->Primitives[p].Indices = (uint32_t*)malloc (BufferView->size * 2);
 
 								uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
@@ -125,7 +125,7 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 								break;
 
 							case cgltf_component_type_r_32u:
-								(*Meshes + MeshCounter)->Primitives[p].IndicesSize = BufferView->size;
+								(*Meshes + MeshCounter)->Primitives[p].IndexSize = BufferView->size;
 								(*Meshes + MeshCounter)->Primitives[p].Indices = (uint32_t*)malloc (BufferView->size);
 
 								uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
