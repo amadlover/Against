@@ -34,10 +34,10 @@ typedef struct _Primitive
 	uint32_t PositionsSize;
 	uint32_t UVsSize;
 	uint32_t NormalsSize;
+	uint32_t IndicesSize;
 
 	uint32_t IndexCount;
 	uint32_t* Indices;
-	uint32_t IndicesSize;
 
 	Material* Material;
 } Primitive;
