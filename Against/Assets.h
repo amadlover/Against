@@ -7,6 +7,7 @@
 
 typedef struct _Image
 {
+	char Name[256];
 	unsigned int Width;
 	unsigned int Height;
 	unsigned int BPP;
@@ -18,6 +19,7 @@ typedef struct _Image
 
 typedef struct _Texture
 {
+	char Name[256];
 	Image* Image;
 } Texture;
 
@@ -41,7 +43,7 @@ typedef struct _Primitive
 	uint32_t IndexCount;
 	uint32_t* Indices;
 
-	Material Material;
+	Material* Material;
 } Primitive;
 
 typedef struct _Mesh
@@ -52,23 +54,8 @@ typedef struct _Mesh
 	float Rotation[4];
 	float Scale[3];
 
-	uint32_t IndexCount;
-
-	float* Positions;
-	float* UV0s;
-	float* Normals;
-
-	uint32_t* Indices;
-
 	char Name[256];
 	uint32_t ID;
-
-	Material* Materials;
-
-	uint32_t PositionSize;
-	uint32_t NormalSize;
-	uint32_t UV0Size;
-	uint32_t IndexSize;
 
 	Primitive* Primitives;
 	uint32_t PrimitiveCount;

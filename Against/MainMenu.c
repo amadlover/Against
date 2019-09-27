@@ -322,21 +322,6 @@ void DestroyMainMenuGraphics ()
 	{
 		for (uint32_t m = 0; m < MeshCount; m++)
 		{
-			if (Meshes[m].Positions)
-			{
-				free (Meshes[m].Positions);
-			}
-
-			if (Meshes[m].UV0s)
-			{
-				free (Meshes[m].UV0s);
-			}
-
-			if (Meshes[m].Indices)
-			{
-				free (Meshes[m].Indices);
-			}
-
 			if (Meshes[m].Primitives)
 			{
 				for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)

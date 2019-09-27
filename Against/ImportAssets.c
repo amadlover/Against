@@ -28,6 +28,82 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 
 			if (Result == cgltf_result_success)
 			{
+				*ImageCount = Data->images_count;
+				*Images = (Image*)malloc (sizeof (Image) * Data->images_count);
+				memset (*Images, 0, sizeof (Image) * Data->images_count);
+
+				for (uint32_t i = 0; i < Data->images_count; i++)
+				{
+					cgltf_image* Image = Data->images + i;
+
+					TCHAR TextureFile[MAX_PATH];
+					mbstowcs (TextureFile, Filename, MAX_PATH);
+
+					PathRemoveFileSpec (TextureFile);
+					TCHAR URI[MAX_PATH];
+					mbstowcs (URI, Image->uri, MAX_PATH);
+
+					TCHAR URIPath[MAX_PATH];
+					StringCchCopy (URIPath, MAX_PATH, L"\\");
+					StringCchCat (URIPath, MAX_PATH, URI);
+
+					StringCchCat (TextureFile, MAX_PATH, URIPath);
+
+					char TextureFilename[MAX_PATH];
+					wcstombs (TextureFilename, TextureFile, MAX_PATH);
+					(*Images + i)->Pixels = stbi_load (TextureFilename, &(*Images + i)->Width, &(*Images + i)->Height, &(*Images + i)->BPP, 4);
+					(*Images + i)->PixelSize = (*Images + i)->Width * (*Images + i)->Height * 4 * sizeof (unsigned char);
+
+					if (Image->name)
+					{
+						strcpy ((*Images + i)->Name, Image->name);
+					}
+				}
+
+				*TextureCount = Data->textures_count;
+				*Textures = (Texture*)malloc (sizeof (Texture) * Data->textures_count);
+				memset (*Textures, 0, sizeof (Texture) * Data->textures_count);
+
+				for (uint32_t t = 0; t < Data->textures_count; t++)
+				{
+					cgltf_texture* Texture = Data->textures + t;
+
+					for (uint32_t i = 0; i < Data->images_count; i++)
+					{
+						if ((Data->images + i) == (Texture->image))
+						{
+							(*Textures + t)->Image = (*Images + i);
+						}
+					}
+
+					if (Texture->name)
+					{
+						strcpy ((*Textures + t)->Name, Texture->name);
+					}
+				}
+
+				*MaterialCount = Data->materials_count;
+				*Materials = (Material*)malloc (sizeof (Material) * Data->materials_count);
+				memset (*Materials, 0, sizeof (Material) * Data->materials_count);
+
+				for (uint32_t m = 0; m < Data->materials_count; m++)
+				{
+					cgltf_material* Material = Data->materials + m;
+
+					for (uint32_t t = 0; t < Data->textures_count; t++)
+					{
+						if (Material->pbr_metallic_roughness.base_color_texture.texture == (Data->textures + t))
+						{
+							(*Materials + m)->BaseColorTexture = (*Textures + t);
+						}
+					}
+
+					if (Material->name)
+					{
+						strcpy ((*Materials + m)->Name, Material->name);
+					}
+				}
+
 				*MeshCount = Data->meshes_count;
 				*Meshes = (Mesh*)malloc (sizeof (Mesh) * Data->meshes_count);
 				memset (*Meshes, 0, sizeof (Mesh) * Data->meshes_count);
@@ -136,91 +212,22 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 								break;
 							}
 
-							/*if (Primitive->material->has_pbr_metallic_roughness)
+							for (uint32_t mat = 0; mat < Data->materials_count; mat++)
 							{
-								TCHAR TextureFile[MAX_PATH];
-								mbstowcs (TextureFile, Filename, MAX_PATH);
+								if (Primitive->material == (Data->materials + mat))
+								{
+									(*Meshes + MeshCounter)->Primitives[p].Material = (*Materials + mat);
+								}
+							}
+						}
 
-								PathRemoveFileSpec (TextureFile);
-								TCHAR URI[MAX_PATH];
-								mbstowcs (URI, Primitive->material->pbr_metallic_roughness.base_color_texture.texture->image->uri, MAX_PATH);
-
-								TCHAR URIPath[MAX_PATH];
-								StringCchCopy (URIPath, MAX_PATH, L"\\");
-								StringCchCat (URIPath, MAX_PATH, URI);
-
-								StringCchCat (TextureFile, MAX_PATH, URIPath);
-
-								char TextureFilename[MAX_PATH];
-								wcstombs (TextureFilename, TextureFile, MAX_PATH);
-
-								(*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.Pixels = stbi_load (TextureFilename,
-																													&(*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.Width,
-																													&(*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.Height,
-																													&(*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.BPP,
-																													4);
-
-								(*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.PixelSize = (*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.Width * (*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.Height * 4 * sizeof (unsigned char);
-							}*/
-
-							strcpy ((*Meshes + MeshCounter)->Primitives[p].Material.Name, Primitive->material->name);
+						if (Mesh->name)
+						{
+							strcpy ((*Meshes + MeshCounter)->Name, Mesh->name);
 						}
 
 						MeshCounter++;
 					}
-				}
-
-				*ImageCount = Data->images_count;
-				*Images = (Image*)malloc (sizeof (Image) * Data->images_count);
-				memset (*Images, 0, sizeof (Image) * Data->images_count);
-
-				for (uint32_t i = 0; i < Data->images_count; i++)
-				{
-					cgltf_image* Image = Data->images + i;
-
-					TCHAR TextureFile[MAX_PATH];
-					mbstowcs (TextureFile, Filename, MAX_PATH);
-
-					PathRemoveFileSpec (TextureFile);
-					TCHAR URI[MAX_PATH];
-					mbstowcs (URI, Image->uri, MAX_PATH);
-
-					TCHAR URIPath[MAX_PATH];
-					StringCchCopy (URIPath, MAX_PATH, L"\\");
-					StringCchCat (URIPath, MAX_PATH, URI);
-
-					StringCchCat (TextureFile, MAX_PATH, URIPath);
-
-					char TextureFilename[MAX_PATH];
-					wcstombs (TextureFilename, TextureFile, MAX_PATH);
-					(*Images + i)->Pixels = stbi_load (TextureFilename, &(*Images + i)->Width, &(*Images + i)->Height, &(*Images + i)->BPP, 4);
-					(*Images + i)->PixelSize = (*Images + i)->Width * (*Images + i)->Height * 4 * sizeof (unsigned char);
-				}
-
-				*TextureCount = Data->textures_count;
-				*Textures = (Texture*)malloc (sizeof (Texture) * Data->textures_count);
-				memset (*Textures, 0, sizeof (Texture) * Data->textures_count);
-
-				for (uint32_t t = 0; t < Data->textures_count; t++)
-				{
-					cgltf_texture* Texture = Data->textures + t;
-					
-					for (uint32_t i = 0; i < Data->images_count; i++)
-					{
-						if ((Data->images + i) == (Texture->image))
-						{
-							(*Textures + t)->Image = (*Images + i);
-						}
-					}
-				}
-
-				*MaterialCount = Data->materials_count;
-				*Materials = (Material*)malloc (sizeof (Material) * Data->materials_count);
-				memset (*Materials, 0, sizeof (Material) * Data->materials_count);
-
-				for (uint32_t m = 0; m < Data->materials_count; m++)
-				{
-					cgltf_material* Material = Data->materials + m;
 				}
 
 				cgltf_free (Data);
