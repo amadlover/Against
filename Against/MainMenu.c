@@ -64,7 +64,7 @@ int CreateMainMenuHostVBIB ()
 	{
 		for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
 		{
-			VBIBCreateInfo.size += Meshes[m].Primitives[p].PositionSize + Meshes[m].Primitives[p].UVSize + Meshes[m].Primitives[p].IndexSize;
+			VBIBCreateInfo.size += Meshes[m].Primitives[p].PositionSize + Meshes[m].Primitives[p].UV0Size + Meshes[m].Primitives[p].IndexSize;
 		}
 	}
 
@@ -123,15 +123,15 @@ int CreateMainMenuHostVBIB ()
 			
 			CurrentMemoryOffset += Meshes[m].Primitives[p].PositionSize;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, Meshes[m].Primitives[p].UVSize, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, Meshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
 
-			memcpy (Data, Meshes[m].Primitives[p].UVs, Meshes[m].Primitives[p].UVSize);
+			memcpy (Data, Meshes[m].Primitives[p].UV0s, Meshes[m].Primitives[p].UV0Size);
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 
-			CurrentMemoryOffset += Meshes[m].Primitives[p].UVSize;
+			CurrentMemoryOffset += Meshes[m].Primitives[p].UV0Size;
 
 			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, Meshes[m].Primitives[p].IndexSize, 0, &Data) != VK_SUCCESS)
 			{
@@ -267,9 +267,9 @@ void DestroyMainMenuGraphics ()
 				free (Meshes[m].Positions);
 			}
 
-			if (Meshes[m].UVs)
+			if (Meshes[m].UV0s)
 			{
-				free (Meshes[m].UVs);
+				free (Meshes[m].UV0s);
 			}
 
 			if (Meshes[m].Indices)
@@ -291,9 +291,9 @@ void DestroyMainMenuGraphics ()
 						free (Meshes[m].Primitives[p].Positions);
 					}
 
-					if (Meshes[m].Primitives[p].UVs)
+					if (Meshes[m].Primitives[p].UV0s)
 					{
-						free (Meshes[m].Primitives[p].UVs);
+						free (Meshes[m].Primitives[p].UV0s);
 					}
 
 					if (Meshes[m].Primitives[p].Indices)

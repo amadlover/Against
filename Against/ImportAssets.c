@@ -93,10 +93,10 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 										char* DataStart = (char*)BufferView->buffer->data;
 										float* UVs = (float*)(DataStart + Accessor->offset + BufferView->offset);
 
-										(*Meshes + MeshCounter)->Primitives[p].UVSize = BufferView->size;
-										(*Meshes + MeshCounter)->Primitives[p].UVs = (float*)malloc (BufferView->size);
+										(*Meshes + MeshCounter)->Primitives[p].UV0Size = BufferView->size;
+										(*Meshes + MeshCounter)->Primitives[p].UV0s = (float*)malloc (BufferView->size);
 
-										memcpy ((*Meshes + MeshCounter)->Primitives[p].UVs, UVs, BufferView->size);
+										memcpy ((*Meshes + MeshCounter)->Primitives[p].UV0s, UVs, BufferView->size);
 									}
 								}
 							}

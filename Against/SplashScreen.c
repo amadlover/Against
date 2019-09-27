@@ -57,30 +57,30 @@ int CreateSplashScreenMesh ()
 	memset (&SplashScreenMesh, 0, sizeof (Mesh));
 
 	SplashScreenMesh.ID = 0;
-	SplashScreenMesh.PositionsSize = 4 * sizeof (float) * 3;
+	SplashScreenMesh.PositionSize = 4 * sizeof (float) * 3;
 
-	SplashScreenMesh.UVsSize = 4 * sizeof (float) * 2;
+	SplashScreenMesh.UV0Size = 4 * sizeof (float) * 2;
 
 	SplashScreenMesh.IndexCount = 6;
-	SplashScreenMesh.IndicesSize = 6 * sizeof (uint32_t);
+	SplashScreenMesh.IndexSize = 6 * sizeof (uint32_t);
 
-	SplashScreenMesh.Indices = (uint32_t*)malloc (SplashScreenMesh.IndicesSize);
+	SplashScreenMesh.Indices = (uint32_t*)malloc (SplashScreenMesh.IndexSize);
 	SplashScreenMesh.Indices[0] = 0; SplashScreenMesh.Indices[1] = 1; SplashScreenMesh.Indices[2] = 2;
 	SplashScreenMesh.Indices[3] = 0; SplashScreenMesh.Indices[4] = 2; SplashScreenMesh.Indices[5] = 3;
 
-	SplashScreenMesh.Positions = (float*)malloc (SplashScreenMesh.PositionsSize);
+	SplashScreenMesh.Positions = (float*)malloc (SplashScreenMesh.PositionSize);
 
 	SplashScreenMesh.Positions[0] = 2; SplashScreenMesh.Positions[1] = 2; SplashScreenMesh.Positions[2] = 0;
 	SplashScreenMesh.Positions[3] = -2; SplashScreenMesh.Positions[4] = 2; SplashScreenMesh.Positions[5] = 0;
 	SplashScreenMesh.Positions[6] = -2; SplashScreenMesh.Positions[7] = -2; SplashScreenMesh.Positions[8] = 0;
 	SplashScreenMesh.Positions[9] = 2; SplashScreenMesh.Positions[10] = -2; SplashScreenMesh.Positions[11] = 0;
 
-	SplashScreenMesh.UVs = (float*)malloc (SplashScreenMesh.UVsSize);
+	SplashScreenMesh.UV0s = (float*)malloc (SplashScreenMesh.UV0Size);
 
-	SplashScreenMesh.UVs[0] = 1; SplashScreenMesh.UVs[1] = 1;
-	SplashScreenMesh.UVs[2] = 0; SplashScreenMesh.UVs[3] = 1;
-	SplashScreenMesh.UVs[4] = 0; SplashScreenMesh.UVs[5] = 0;
-	SplashScreenMesh.UVs[6] = 1; SplashScreenMesh.UVs[7] = 0;
+	SplashScreenMesh.UV0s[0] = 1; SplashScreenMesh.UV0s[1] = 1;
+	SplashScreenMesh.UV0s[2] = 0; SplashScreenMesh.UV0s[3] = 1;
+	SplashScreenMesh.UV0s[4] = 0; SplashScreenMesh.UV0s[5] = 0;
+	SplashScreenMesh.UV0s[6] = 1; SplashScreenMesh.UV0s[7] = 0;
 
 	return 0;
 }
@@ -674,7 +674,7 @@ int CreateSplashScreenCommandBuffer ()
 		vkCmdBindDescriptorSets (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipelineLayout, 0, 1, &DescriptorSet, 0, NULL);
 		vkCmdBindPipeline (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipeline);
 
-		VkDeviceSize Offsets[3] = { 0, SplashScreenMesh.PositionsSize,  SplashScreenMesh.PositionsSize + SplashScreenMesh.UVsSize };
+		VkDeviceSize Offsets[3] = { 0, SplashScreenMesh.PositionSize,  SplashScreenMesh.PositionSize + SplashScreenMesh.UV0Size };
 
 		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &SplashScreenHostVBIB, &Offsets[0]);
 		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 1, 1, &SplashScreenHostVBIB, &Offsets[1]);
@@ -742,7 +742,7 @@ int CreateSplashScreenHostVBIB ()
 	VBCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	VBCreateInfo.queueFamilyIndexCount = 1;
 	VBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
-	VBCreateInfo.size = SplashScreenMesh.PositionsSize + SplashScreenMesh.UVsSize + SplashScreenMesh.IndicesSize;
+	VBCreateInfo.size = SplashScreenMesh.PositionSize + SplashScreenMesh.UV0Size + SplashScreenMesh.IndexSize;
 
 	if (vkCreateBuffer (GraphicsDevice, &VBCreateInfo, NULL, &SplashScreenHostVBIB) != VK_SUCCESS)
 	{
@@ -781,28 +781,28 @@ int CreateSplashScreenHostVBIB ()
 
 	void* Data;
 
-	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, 0, SplashScreenMesh.PositionsSize, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, 0, SplashScreenMesh.PositionSize, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
-	memcpy (Data, SplashScreenMesh.Positions, SplashScreenMesh.PositionsSize);
+	memcpy (Data, SplashScreenMesh.Positions, SplashScreenMesh.PositionSize);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
-	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.PositionsSize, SplashScreenMesh.UVsSize, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.PositionSize, SplashScreenMesh.UV0Size, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
-	memcpy (Data, SplashScreenMesh.UVs, SplashScreenMesh.UVsSize);
+	memcpy (Data, SplashScreenMesh.UV0s, SplashScreenMesh.UV0Size);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
-	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.PositionsSize + SplashScreenMesh.UVsSize, SplashScreenMesh.IndicesSize, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.PositionSize + SplashScreenMesh.UV0Size, SplashScreenMesh.IndexSize, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 	}
 
-	memcpy (Data, SplashScreenMesh.Indices, SplashScreenMesh.IndicesSize);
+	memcpy (Data, SplashScreenMesh.Indices, SplashScreenMesh.IndexSize);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
 	return 0;

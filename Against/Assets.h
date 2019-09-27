@@ -21,12 +21,12 @@ typedef struct _Material
 typedef struct _Primitive
 {
 	float* Positions;
-	float* UVs;
+	float* UV0s;
 	float* Normals;
 
 	uint32_t PositionSize;
-	uint32_t UVSize;
-	uint32_t NormalsSize;
+	uint32_t UV0Size;
+	uint32_t NormalSize;
 	uint32_t IndexSize;
 
 	uint32_t IndexCount;
@@ -46,7 +46,7 @@ typedef struct _Mesh
 	uint32_t IndexCount;
 
 	float* Positions;
-	float* UVs;
+	float* UV0s;
 	float* Normals;
 
 	uint32_t* Indices;
@@ -56,10 +56,10 @@ typedef struct _Mesh
 
 	Material* Materials;
 
-	uint32_t PositionsSize;
-	uint32_t NormalsSize;
-	uint32_t UVsSize;
-	uint32_t IndicesSize;
+	uint32_t PositionSize;
+	uint32_t NormalSize;
+	uint32_t UV0Size;
+	uint32_t IndexSize;
 
 	Primitive* Primitives;
 	uint32_t PrimitiveCount;

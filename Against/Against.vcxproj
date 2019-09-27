@@ -57,6 +57,10 @@
   <ItemGroup>
     <None Include="..\x64\Debug\Shaders\SplashScreen\frag.frag" />
     <None Include="..\x64\Debug\Shaders\SplashScreen\vert.vert" />
+    <None Include="Shaders\MainMenu\Background.frag" />
+    <None Include="Shaders\MainMenu\Background.vert" />
+    <None Include="Shaders\MainMenu\UI.frag" />
+    <None Include="Shaders\MainMenu\UI.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
