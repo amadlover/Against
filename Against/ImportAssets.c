@@ -2,15 +2,14 @@
 #include "Error.h"
 
 #include <Windows.h>
+#include <strsafe.h>
+#include <Shlwapi.h>
 
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
 #define STB_IMPLEMENTATION
 #include <stb_image.h>
-
-#include <Shlwapi.h>
-#include <strsafe.h>
 
 int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount)
 {
@@ -136,6 +135,33 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 							default:
 								break;
 							}
+
+							if (Primitive->material->has_pbr_metallic_roughness)
+							{
+								TCHAR TextureFile[MAX_PATH];
+								mbstowcs (TextureFile, Filename, MAX_PATH);
+
+								PathRemoveFileSpec (TextureFile);
+								TCHAR URI[MAX_PATH];
+								mbstowcs (URI, Primitive->material->pbr_metallic_roughness.base_color_texture.texture->image->uri, MAX_PATH);
+
+								TCHAR URIPath[MAX_PATH];
+								StringCchCopy (URIPath, MAX_PATH, L"\\");
+								StringCchCat (URIPath, MAX_PATH, URI);
+
+								StringCchCat (TextureFile, MAX_PATH, URIPath);
+
+								char TextureFilename[MAX_PATH];
+								wcstombs (TextureFilename, TextureFile, MAX_PATH);
+
+								(*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.Pixels = stbi_load (TextureFilename,
+																													&(*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.Width,
+																													&(*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.Height,
+																													&(*Meshes + MeshCounter)->Primitives[p].Material.BaseColorTexture.BPP,
+																													4);
+							}
+
+							strcpy ((*Meshes + MeshCounter)->Primitives[p].Material.Name, Primitive->material->name);
 						}
 
 						MeshCounter++;

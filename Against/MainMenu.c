@@ -281,14 +281,9 @@ void DestroyMainMenuGraphics ()
 			{
 				for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
 				{
-					if (Meshes[m].Primitives[p].Material)
+					if (Meshes[m].Primitives[p].Material.BaseColorTexture.Pixels)
 					{
-						if (Meshes[m].Primitives[p].Material->BaseColorTexture.Pixels)
-						{
-							free (Meshes[m].Primitives[p].Material->BaseColorTexture.Pixels);
-						}
-
-						free (Meshes[m].Primitives[p].Material);
+						free (Meshes[m].Primitives[p].Material.BaseColorTexture.Pixels);
 					}
 
 					if (Meshes[m].Primitives[p].Positions)

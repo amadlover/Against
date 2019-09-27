@@ -12,13 +12,6 @@ typedef struct _Texture
 	unsigned char* Pixels;
 } Texture;
 
-typedef struct _Vertex
-{
-	Vector3 Position;
-	Vector2 UV;
-	Vector3 Normal;
-} Vertex;
-
 typedef struct _Material
 {
 	char Name[256];
@@ -39,7 +32,7 @@ typedef struct _Primitive
 	uint32_t IndexCount;
 	uint32_t* Indices;
 
-	Material* Material;
+	Material Material;
 } Primitive;
 
 typedef struct _Mesh
