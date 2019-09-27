@@ -16,9 +16,22 @@
 Mesh* Meshes;
 uint32_t MeshCount;
 
+Material* Materials;
+uint32_t MaterialCount;
+
+Texture* Textures;
+uint32_t TextureCount;
+
+Image* Images;
+uint32_t ImageCount;
+
 VkBuffer MainMenuHostVBIB;
 
 VkDeviceMemory MainMenuHostVBIBMemory;
+VkDeviceMemory MainMenuHostTextureMemory;
+
+VkSampler MainMenuSampler;
+VkImageView MainMenuImageView;
 
 int ImportMainMenuAssets ()
 {
@@ -31,7 +44,7 @@ int ImportMainMenuAssets ()
 	char UIElementFile[MAX_PATH];
 	wcstombs_s (NULL, UIElementFile, MAX_PATH, UIElementPath, MAX_PATH);
 
-	int Result = ImportMainMenuGLTF (UIElementFile, &Meshes, &MeshCount);
+	int Result = ImportMainMenuGLTF (UIElementFile, &Meshes, &MeshCount, &Materials, &MaterialCount, &Textures, &TextureCount, &Images, &ImageCount);
 
 	if (Result != 0)
 	{
@@ -150,7 +163,47 @@ int CreateMainMenuHostVBIB ()
 
 int CreateMainMenuTextureImages ()
 {
-	OutputDebugString (L"CreateMainMenuTextureImages");
+	OutputDebugString (L"CreateMainMenuTextureImages\n");
+
+	VkImageCreateInfo CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkImageCreateInfo));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	CreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+	CreateInfo.arrayLayers = 1;
+	CreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+	CreateInfo.mipLevels = 1;
+	CreateInfo.queueFamilyIndexCount = 1;
+	CreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
+	CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	CreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+	CreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+
+	uint32_t TotalTextureSize = 0;
+
+	for (uint32_t m = 0; m < MeshCount; m++)
+	{
+		for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
+		{
+			/*CreateInfo.extent.width = Meshes[m].Primitives[p].Material.BaseColorTexture.Width;
+			CreateInfo.extent.height = Meshes[m].Primitives[p].Material.BaseColorTexture.Height;
+			CreateInfo.extent.depth = 1;
+
+			if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &Meshes[m].Primitives[p].Material.BaseColorTexture.VulkanHandle) != VK_SUCCESS)
+			{
+				return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
+			}
+
+			TotalTextureSize += Meshes[m].Primitives[p].Material.BaseColorTexture.Width * Meshes[m].Primitives[p].Material.BaseColorTexture.Height * 4 * sizeof (unsigned char);
+
+			VkMemoryRequirements MemoryRequirements;
+			vkGetImageMemoryRequirements (GraphicsDevice, Meshes[m].Primitives[p].Material.BaseColorTexture.VulkanHandle, &MemoryRequirements);*/
+		}
+	}
+
+
 
 	return 0;
 }
@@ -236,6 +289,13 @@ int CreateMainMenuGraphics ()
 		return Result;
 	}
 
+	Result = CreateMainMenuTextureImages ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 	return 0;
 }
 
@@ -281,11 +341,6 @@ void DestroyMainMenuGraphics ()
 			{
 				for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
 				{
-					if (Meshes[m].Primitives[p].Material.BaseColorTexture.Pixels)
-					{
-						free (Meshes[m].Primitives[p].Material.BaseColorTexture.Pixels);
-					}
-
 					if (Meshes[m].Primitives[p].Positions)
 					{
 						free (Meshes[m].Primitives[p].Positions);
@@ -307,5 +362,28 @@ void DestroyMainMenuGraphics ()
 		}
 
 		free (Meshes);
+	}
+
+	if (Images)
+	{
+		for (uint32_t i = 0; i < ImageCount; i++)
+		{
+			if (Images[i].Pixels)
+			{
+				free (Images[i].Pixels);
+			}
+		}
+
+		free (Images);
+	}
+
+	if (Textures)
+	{
+		free (Textures);
+	}
+
+	if (Materials)
+	{
+		free (Materials);
 	}
 }

@@ -115,12 +115,6 @@
     <None Include="..\x64\Debug\Shaders\SplashScreen\vert.vert">
       <Filter>Shaders\SplashScreen</Filter>
     </None>
-    <None Include="Shaders\MainMenu\Background.frag">
-      <Filter>Shaders\MainMenu</Filter>
-    </None>
-    <None Include="Shaders\MainMenu\Background.vert">
-      <Filter>Shaders\MainMenu</Filter>
-    </None>
     <None Include="Shaders\MainMenu\UI.frag">
       <Filter>Shaders\MainMenu</Filter>
     </None>

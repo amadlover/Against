@@ -3,19 +3,28 @@
 
 #include <stdint.h>
 
-typedef struct _Texture
+#include <vulkan/vulkan.h>
+
+typedef struct _Image
 {
 	unsigned int Width;
 	unsigned int Height;
 	unsigned int BPP;
 
 	unsigned char* Pixels;
+
+	uint32_t PixelSize;
+}Image;
+
+typedef struct _Texture
+{
+	Image* Image;
 } Texture;
 
 typedef struct _Material
 {
 	char Name[256];
-	Texture BaseColorTexture;
+	Texture* BaseColorTexture;
 } Material;
 
 typedef struct _Primitive

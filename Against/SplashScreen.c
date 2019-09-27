@@ -838,8 +838,8 @@ int CreateSplashScreenHostTextureImage ()
 	CreateInfo.imageType = VK_IMAGE_TYPE_2D;
 	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 	CreateInfo.mipLevels = 1;
-	CreateInfo.pQueueFamilyIndices = NULL;
-	CreateInfo.queueFamilyIndexCount = 0;
+	CreateInfo.queueFamilyIndexCount = 1;
+	CreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 	CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	CreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
