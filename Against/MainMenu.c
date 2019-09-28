@@ -13,22 +13,28 @@
 
 #include <vulkan/vulkan.h>
 
-Node* Nodes;
-uint32_t NodeCount;
+Node* MainMenuNodes;
+uint32_t MainMenuNodeCount;
 
-Mesh* Meshes;
-uint32_t MeshCount;
+Mesh* MainMenuMeshes;
+uint32_t MainMenuMeshCount;
 
-Material* Materials;
-uint32_t MaterialCount;
+Material* MainMenuMaterials;
+uint32_t MainMenuMaterialCount;
 
-Texture* Textures;
-uint32_t TextureCount;
+Texture* MainMenuTextures;
+uint32_t MainMenuTextureCount;
 
-Image* Images;
-uint32_t ImageCount;
+Image* MainMenuImages;
+uint32_t MainMenuImageCount;
+
+Sampler* MainMenuSamplers;
+uint32_t MainMenuSamplerCount;
 
 VkBuffer MainMenuHostVBIB;
+
+VkImage* MainMenuTImages;
+VkImageView* MainMenuTImageViews;
 
 VkDeviceMemory MainMenuHostVBIBMemory;
 VkDeviceMemory MainMenuHostTextureMemory;
@@ -47,7 +53,7 @@ int ImportMainMenuAssets ()
 	char UIElementFile[MAX_PATH];
 	wcstombs_s (NULL, UIElementFile, MAX_PATH, UIElementPath, MAX_PATH);
 
-	int Result = ImportMainMenuGLTF (UIElementFile, &Nodes, &NodeCount, &Meshes, &MeshCount, &Materials, &MaterialCount, &Textures, &TextureCount, &Images, &ImageCount);
+	int Result = ImportMainMenuGLTF (UIElementFile, &MainMenuNodes, &MainMenuNodeCount, &MainMenuMeshes, &MainMenuMeshCount, &MainMenuMaterials, &MainMenuMaterialCount, &MainMenuTextures, &MainMenuTextureCount, &MainMenuImages, &MainMenuImageCount, &MainMenuSamplers, &MainMenuSamplerCount);
 
 	if (Result != 0)
 	{
@@ -76,11 +82,11 @@ int CreateMainMenuHostVBIB ()
 	VBIBCreateInfo.queueFamilyIndexCount = 1;
 	VBIBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 
-	for (uint32_t m = 0; m < MeshCount; m++)
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
 	{
-		for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
+		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 		{
-			VBIBCreateInfo.size += Meshes[m].Primitives[p].PositionSize + Meshes[m].Primitives[p].UV0Size + Meshes[m].Primitives[p].IndexSize;
+			VBIBCreateInfo.size += MainMenuMeshes[m].Primitives[p].PositionSize + MainMenuMeshes[m].Primitives[p].UV0Size + MainMenuMeshes[m].Primitives[p].IndexSize;
 		}
 	}
 
@@ -123,41 +129,41 @@ int CreateMainMenuHostVBIB ()
 
 	VkDeviceSize CurrentMemoryOffset = 0;
 
-	for (uint32_t m = 0; m < MeshCount; m++)
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
 	{
-		for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
+		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 		{
 			void* Data = NULL;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, Meshes[m].Primitives[p].PositionSize, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, MainMenuMeshes[m].Primitives[p].PositionSize, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
 
-			memcpy (Data, Meshes[m].Primitives[p].Positions, Meshes[m].Primitives[p].PositionSize);
+			memcpy (Data, MainMenuMeshes[m].Primitives[p].Positions, MainMenuMeshes[m].Primitives[p].PositionSize);
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 			
-			CurrentMemoryOffset += Meshes[m].Primitives[p].PositionSize;
+			CurrentMemoryOffset += MainMenuMeshes[m].Primitives[p].PositionSize;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, Meshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, MainMenuMeshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
 
-			memcpy (Data, Meshes[m].Primitives[p].UV0s, Meshes[m].Primitives[p].UV0Size);
+			memcpy (Data, MainMenuMeshes[m].Primitives[p].UV0s, MainMenuMeshes[m].Primitives[p].UV0Size);
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 
-			CurrentMemoryOffset += Meshes[m].Primitives[p].UV0Size;
+			CurrentMemoryOffset += MainMenuMeshes[m].Primitives[p].UV0Size;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, Meshes[m].Primitives[p].IndexSize, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, MainMenuMeshes[m].Primitives[p].IndexSize, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
 
-			memcpy (Data, Meshes[m].Primitives[p].Indices, Meshes[m].Primitives[p].IndexSize);
+			memcpy (Data, MainMenuMeshes[m].Primitives[p].Indices, MainMenuMeshes[m].Primitives[p].IndexSize);
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 
-			CurrentMemoryOffset += Meshes[m].Primitives[p].IndexSize;
+			CurrentMemoryOffset += MainMenuMeshes[m].Primitives[p].IndexSize;
 		}
 	}
 
@@ -184,25 +190,17 @@ int CreateMainMenuTextureImages ()
 	CreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
 	CreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 
-	uint32_t TotalTextureSize = 0;
+	MainMenuTImages = (VkImage*)malloc (sizeof (VkImage) * MainMenuTextureCount);
 
-	for (uint32_t m = 0; m < MeshCount; m++)
+	for (uint32_t t = 0; t < MainMenuTextureCount; t++)
 	{
-		for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
+		CreateInfo.extent.width = MainMenuTextures[t].Image->Width;
+		CreateInfo.extent.height = MainMenuTextures[t].Image->Height;
+		CreateInfo.extent.depth = 1;
+
+		if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &MainMenuTImages[t]) != VK_SUCCESS)
 		{
-			/*CreateInfo.extent.width = Meshes[m].Primitives[p].Material.BaseColorTexture.Width;
-			CreateInfo.extent.height = Meshes[m].Primitives[p].Material.BaseColorTexture.Height;
-			CreateInfo.extent.depth = 1;
-
-			if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &Meshes[m].Primitives[p].Material.BaseColorTexture.VulkanHandle) != VK_SUCCESS)
-			{
-				return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
-			}
-
-			TotalTextureSize += Meshes[m].Primitives[p].Material.BaseColorTexture.Width * Meshes[m].Primitives[p].Material.BaseColorTexture.Height * 4 * sizeof (unsigned char);
-
-			VkMemoryRequirements MemoryRequirements;
-			vkGetImageMemoryRequirements (GraphicsDevice, Meshes[m].Primitives[p].Material.BaseColorTexture.VulkanHandle, &MemoryRequirements);*/
+			return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
 		}
 	}
 
@@ -319,57 +317,78 @@ void DestroyMainMenuGraphics ()
 		vkFreeMemory (GraphicsDevice, MainMenuHostVBIBMemory, NULL);
 	}
 
-	if (Meshes)
+	if (MainMenuTImages)
 	{
-		for (uint32_t m = 0; m < MeshCount; m++)
+		for (uint32_t i = 0; i < MainMenuImageCount; i++)
 		{
-			if (Meshes[m].Primitives)
+			vkDestroyImage (GraphicsDevice, MainMenuTImages[i], NULL);
+		}
+	}
+
+	if (MainMenuTImageViews)
+	{
+		for (uint32_t i = 0; i < MainMenuImageCount; i++)
+		{
+			vkDestroyImageView (GraphicsDevice, MainMenuTImageViews[i], NULL);
+		}
+	}
+
+	if (MainMenuNodes)
+	{
+		free (MainMenuNodes);
+	}
+
+	if (MainMenuMeshes)
+	{
+		for (uint32_t m = 0; m < MainMenuMeshCount; m++)
+		{
+			if (MainMenuMeshes[m].Primitives)
 			{
-				for (uint32_t p = 0; p < Meshes[m].PrimitiveCount; p++)
+				for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 				{
-					if (Meshes[m].Primitives[p].Positions)
+					if (MainMenuMeshes[m].Primitives[p].Positions)
 					{
-						free (Meshes[m].Primitives[p].Positions);
+						free (MainMenuMeshes[m].Primitives[p].Positions);
 					}
 
-					if (Meshes[m].Primitives[p].UV0s)
+					if (MainMenuMeshes[m].Primitives[p].UV0s)
 					{
-						free (Meshes[m].Primitives[p].UV0s);
+						free (MainMenuMeshes[m].Primitives[p].UV0s);
 					}
 
-					if (Meshes[m].Primitives[p].Indices)
+					if (MainMenuMeshes[m].Primitives[p].Indices)
 					{
-						free (Meshes[m].Primitives[p].Indices);
+						free (MainMenuMeshes[m].Primitives[p].Indices);
 					}
 				}
 
-				free (Meshes[m].Primitives);
+				free (MainMenuMeshes[m].Primitives);
 			}
 		}
 
-		free (Meshes);
+		free (MainMenuMeshes);
 	}
 
-	if (Images)
+	if (MainMenuImages)
 	{
-		for (uint32_t i = 0; i < ImageCount; i++)
+		for (uint32_t i = 0; i < MainMenuImageCount; i++)
 		{
-			if (Images[i].Pixels)
+			if (MainMenuImages[i].Pixels)
 			{
-				free (Images[i].Pixels);
+				free (MainMenuImages[i].Pixels);
 			}
 		}
 
-		free (Images);
+		free (MainMenuImages);
 	}
 
-	if (Textures)
+	if (MainMenuTextures)
 	{
-		free (Textures);
+		free (MainMenuTextures);
 	}
 
-	if (Materials)
+	if (MainMenuMaterials)
 	{
-		free (Materials);
+		free (MainMenuMaterials);
 	}
 }

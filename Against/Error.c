@@ -167,7 +167,7 @@ void LogError (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_TEXTURE_SAMPLER:
-		OutputDebugString (L"Graphics Error: Create Texture Sampler\n");
+		OutputDebugString (L"Graphics Error: Create Texture SplashScreenSampler\n");
 		break;
 
 	default:

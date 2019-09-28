@@ -35,17 +35,17 @@ VkFence* SwapchainFences;
 VkSemaphore WaitSemaphore;
 VkSemaphore SignalSemaphore;
 
-VkSampler Sampler;
+VkSampler SplashScreenSampler;
 
 VkBuffer SplashScreenHostVBIB;
 VkBuffer UniformBuffer;
 
-VkImage TextureImage;
+VkImage SplashScreenTextureImage;
 
 VkDeviceMemory SplasScreenHostVBIBMemory;
 VkDeviceMemory UniformBufferMemory;
 
-VkDeviceMemory TextureImageMemory;
+VkDeviceMemory SplashScreenTextureImageMemory;
 VkImageView TextureImageView;
 
 Mesh SplashScreenMesh;
@@ -218,7 +218,7 @@ int CreateSplashScreenDescriptorSet ()
 	BufferInfo.range = VK_WHOLE_SIZE;
 
 	VkDescriptorImageInfo ImageInfo;
-	ImageInfo.sampler = Sampler;
+	ImageInfo.sampler = SplashScreenSampler;
 	ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	ImageInfo.imageView = TextureImageView;
 
@@ -849,13 +849,13 @@ int CreateSplashScreenHostTextureImage ()
 	CreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
 	CreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 
-	if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &TextureImage) != VK_SUCCESS)
+	if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &SplashScreenTextureImage) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
 	}
 
 	VkMemoryRequirements MemoryRequirements;
-	vkGetImageMemoryRequirements (GraphicsDevice, TextureImage, &MemoryRequirements);
+	vkGetImageMemoryRequirements (GraphicsDevice, SplashScreenTextureImage, &MemoryRequirements);
 
 	VkMemoryAllocateInfo MemoryAllocateInfo;
 	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
@@ -874,24 +874,24 @@ int CreateSplashScreenHostTextureImage ()
 		}
 	}
 
-	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &TextureImageMemory) != VK_SUCCESS)
+	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &SplashScreenTextureImageMemory) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_IMAGE_MEMORY;
 	}
 
-	if (vkBindImageMemory (GraphicsDevice, TextureImage, TextureImageMemory, 0) != VK_SUCCESS)
+	if (vkBindImageMemory (GraphicsDevice, SplashScreenTextureImage, SplashScreenTextureImageMemory, 0) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
 	}
 
 	void* Data = NULL;
-	if (vkMapMemory (GraphicsDevice, TextureImageMemory, 0, MemoryRequirements.size, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, SplashScreenTextureImageMemory, 0, MemoryRequirements.size, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_IMAGE_MEMORY;
 	}
 	memcpy (Data, Pixels, Width * Height * BPP * sizeof (uint8_t));
 
-	vkUnmapMemory (GraphicsDevice, TextureImageMemory);
+	vkUnmapMemory (GraphicsDevice, SplashScreenTextureImageMemory);
 
 	free (Pixels);
 
@@ -932,7 +932,7 @@ int CreateSplashScreenHostTextureImage ()
 	memset (&MemoryBarrier, 0, sizeof (VkImageMemoryBarrier));
 
 	MemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	MemoryBarrier.image = TextureImage;
+	MemoryBarrier.image = SplashScreenTextureImage;
 	MemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 	MemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	MemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
@@ -982,7 +982,7 @@ int CreateSplashScreenHostTextureImage ()
 	SamplerCreateInfo.compareEnable = VK_FALSE;
 	SamplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 
-	if (vkCreateSampler (GraphicsDevice, &SamplerCreateInfo, NULL, &Sampler) != VK_SUCCESS)
+	if (vkCreateSampler (GraphicsDevice, &SamplerCreateInfo, NULL, &SplashScreenSampler) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_TEXTURE_SAMPLER;
 	}
@@ -991,7 +991,7 @@ int CreateSplashScreenHostTextureImage ()
 	memset (&ImageViewCreateInfo, 0, sizeof (VkImageViewCreateInfo));
 
 	ImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	ImageViewCreateInfo.image = TextureImage;
+	ImageViewCreateInfo.image = SplashScreenTextureImage;
 	ImageViewCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
 	ImageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
@@ -1287,19 +1287,19 @@ void DestroySplashScreenGraphics ()
 		vkDestroyBuffer (GraphicsDevice, SplashScreenHostVBIB, NULL);
 	}
 	
-	if (TextureImageMemory != VK_NULL_HANDLE)
+	if (SplashScreenTextureImageMemory != VK_NULL_HANDLE)
 	{
-		vkFreeMemory (GraphicsDevice, TextureImageMemory, NULL);
+		vkFreeMemory (GraphicsDevice, SplashScreenTextureImageMemory, NULL);
 	}
 	
-	if (TextureImage != VK_NULL_HANDLE)
+	if (SplashScreenTextureImage != VK_NULL_HANDLE)
 	{
-		vkDestroyImage (GraphicsDevice, TextureImage, NULL);
+		vkDestroyImage (GraphicsDevice, SplashScreenTextureImage, NULL);
 	}
 	
-	if (Sampler != VK_NULL_HANDLE)
+	if (SplashScreenSampler != VK_NULL_HANDLE)
 	{
-		vkDestroySampler (GraphicsDevice, Sampler, NULL);
+		vkDestroySampler (GraphicsDevice, SplashScreenSampler, NULL);
 	}
 
 	if (TextureImageView != VK_NULL_HANDLE)

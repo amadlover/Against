@@ -11,7 +11,7 @@
 #define STB_IMPLEMENTATION
 #include <stb_image.h>
 
-int ImportMainMenuGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material** Materials, uint32_t* MaterialCount, Texture** Textures, uint32_t* TextureCount, Image** Images, uint32_t* ImageCount)
+int ImportMainMenuGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material** Materials, uint32_t* MaterialCount, Texture** Textures, uint32_t* TextureCount, Image** Images, uint32_t* ImageCount, Sampler** Samplers, uint32_t* SamplerCount)
 {
 	cgltf_options Options = { 0 };
 	cgltf_data* Data = NULL;
@@ -28,6 +28,19 @@ int ImportMainMenuGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount,
 
 			if (Result == cgltf_result_success)
 			{
+				*SamplerCount = Data->samplers_count;
+				*Samplers = (Sampler*)malloc (sizeof (Sampler) * Data->samplers_count);
+
+				for (uint32_t s = 0; s < Data->samplers_count; s++)
+				{
+					cgltf_sampler* Sampler = Data->samplers + s;
+
+					(*Samplers + s)->MagFilter = Sampler->mag_filter;
+					(*Samplers + s)->MinFilter = Sampler->min_filter;
+					(*Samplers + s)->Wrap_S = Sampler->wrap_s;
+					(*Samplers + s)->Wrap_T = Sampler->wrap_t;
+				}
+
 				*ImageCount = Data->images_count;
 				*Images = (Image*)malloc (sizeof (Image) * Data->images_count);
 				memset (*Images, 0, sizeof (Image) * Data->images_count);
@@ -73,6 +86,14 @@ int ImportMainMenuGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount,
 						if ((Data->images + i) == (Texture->image))
 						{
 							(*Textures + t)->Image = (*Images + i);
+						}
+					}
+
+					for (uint32_t s = 0; s < Data->samplers_count; s++)
+					{
+						if ((Data->samplers + s) == (Texture->sampler))
+						{
+							(*Textures + t)->Sampler = (*Samplers + s);
 						}
 					}
 

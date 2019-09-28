@@ -17,10 +17,19 @@ typedef struct _Image
 	uint32_t PixelSize;
 }Image;
 
+typedef struct _Sampler
+{
+	int MinFilter;
+	int MagFilter;
+	int Wrap_S;
+	int Wrap_T;
+} Sampler;
+
 typedef struct _Texture
 {
 	char Name[256];
 	Image* Image;
+	Sampler* Sampler;
 } Texture;
 
 typedef struct _Material
