@@ -11,7 +11,7 @@
 #define STB_IMPLEMENTATION
 #include <stb_image.h>
 
-int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount, Material** Materials, uint32_t* MaterialCount, Texture** Textures, uint32_t* TextureCount, Image** Images, uint32_t* ImageCount)
+int ImportMainMenuGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material** Materials, uint32_t* MaterialCount, Texture** Textures, uint32_t* TextureCount, Image** Images, uint32_t* ImageCount)
 {
 	cgltf_options Options = { 0 };
 	cgltf_data* Data = NULL;
@@ -108,125 +108,143 @@ int ImportMainMenuGLTF (const char* Filename, Mesh** Meshes, uint32_t* MeshCount
 				*Meshes = (Mesh*)malloc (sizeof (Mesh) * Data->meshes_count);
 				memset (*Meshes, 0, sizeof (Mesh) * Data->meshes_count);
 
-				uint32_t MeshCounter = 0;
+				for (uint32_t m = 0; m < Data->meshes_count; m++)
+				{
+					cgltf_mesh* Mesh = Data->meshes + m;
 
+					(*Meshes + m)->PrimitiveCount = Mesh->primitives_count;
+					(*Meshes + m)->Primitives = (Primitive*)malloc (sizeof (Primitive) * Mesh->primitives_count);
+					memset ((*Meshes + m)->Primitives, 0, sizeof (Primitive) * Mesh->primitives_count);
+
+					for (uint32_t p = 0; p < Mesh->primitives_count; p++)
+					{
+						cgltf_primitive* Primitive = Mesh->primitives + p;
+
+						for (uint32_t a = 0; a < Primitive->attributes_count; a++)
+						{
+							cgltf_attribute* Attribute = Primitive->attributes + a;
+							cgltf_accessor* Accessor = Attribute->data;
+							cgltf_buffer_view* BufferView = Accessor->buffer_view;
+
+							if (Attribute->type == cgltf_attribute_type_position)
+							{
+								char* DataStart = (char*)BufferView->buffer->data;
+								float* Positions = (float*)(DataStart + Accessor->offset + BufferView->offset);
+
+								(*Meshes + m)->Primitives[p].PositionSize = BufferView->size;
+								(*Meshes + m)->Primitives[p].Positions = (float*)malloc (BufferView->size);
+
+								memcpy ((*Meshes + m)->Primitives[p].Positions, Positions, BufferView->size);
+							}
+							else if (Attribute->type == cgltf_attribute_type_texcoord)
+							{
+								if (strcmp (Attribute->name, "TEXCOORD_0") == 0)
+								{
+									char* DataStart = (char*)BufferView->buffer->data;
+									float* UVs = (float*)(DataStart + Accessor->offset + BufferView->offset);
+
+									(*Meshes + m)->Primitives[p].UV0Size = BufferView->size;
+									(*Meshes + m)->Primitives[p].UV0s = (float*)malloc (BufferView->size);
+
+									memcpy ((*Meshes + m)->Primitives[p].UV0s, UVs, BufferView->size);
+								}
+							}
+						}
+
+						cgltf_accessor* Accessor = Primitive->indices;
+						cgltf_buffer_view* BufferView = Accessor->buffer_view;
+
+						(*Meshes + m)->Primitives[p].IndexCount = Accessor->count;
+
+						char* DataStart = (char*)BufferView->buffer->data;
+
+						switch (Accessor->component_type)
+						{
+						case cgltf_component_type_r_16u:
+							(*Meshes + m)->Primitives[p].IndexSize = BufferView->size * 2;
+							(*Meshes + m)->Primitives[p].Indices = (uint32_t*)malloc (BufferView->size * 2);
+
+							uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
+
+							for (uint32_t i = 0; i < Accessor->count; i++)
+							{
+								(*Meshes + m)->Primitives[p].Indices[i] = I16[i];
+							}
+
+							break;
+
+						case cgltf_component_type_r_32u:
+							(*Meshes + m)->Primitives[p].IndexSize = BufferView->size;
+							(*Meshes + m)->Primitives[p].Indices = (uint32_t*)malloc (BufferView->size);
+
+							uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
+
+							memcpy ((*Meshes + m)->Primitives[p].Indices, I32, BufferView->size);
+							break;
+
+						default:
+							break;
+						}
+
+						for (uint32_t mat = 0; mat < Data->materials_count; mat++)
+						{
+							if (Primitive->material == (Data->materials + mat))
+							{
+								(*Meshes + m)->Primitives[p].Material = (*Materials + mat);
+							}
+						}
+					}
+
+					if (Mesh->name)
+					{
+						strcpy ((*Meshes + m)->Name, Mesh->name);
+					}
+				}
+
+				*NodeCount = Data->nodes_count;
+				*Nodes = (Node*)malloc (sizeof (Node) * Data->nodes_count);
+				memset (*Nodes, 0, sizeof (Node) * Data->nodes_count);
+				
 				for (uint32_t n = 0; n < Data->nodes_count; n++)
 				{
 					cgltf_node* Node = Data->nodes + n;
+
+					if (Node->has_matrix)
+					{
+						memcpy ((*Nodes + n)->TransformationMatrix, Node->matrix, sizeof (float) * 16);
+					}
+
+					if (Node->has_translation)
+					{
+						memcpy ((*Nodes + n)->Translation, Node->translation, sizeof (float) * 3);
+					}
+
+					if (Node->has_rotation)
+					{
+						memcpy ((*Nodes + n)->Rotation, Node->rotation, sizeof (float) * 4);
+					}
+
+					if (Node->has_scale)
+					{
+						memcpy ((*Nodes + n)->Scale, Node->scale, sizeof (float) * 3);
+					}
 
 					if (Node->mesh)
 					{
 						cgltf_mesh* Mesh = Node->mesh;
 
-						if (Node->has_matrix)
+						for (uint32_t m = 0; m < Data->meshes_count; m++)
 						{
-							memcpy ((*Meshes + MeshCounter)->TransformationMatrix, Node->matrix, sizeof (float) * 16);
-						}
-
-						if (Node->has_translation)
-						{
-							memcpy ((*Meshes + MeshCounter)->Translation, Node->translation, sizeof (float) * 3);
-						}
-
-						if (Node->has_rotation)
-						{
-							memcpy ((*Meshes + MeshCounter)->Rotation, Node->rotation, sizeof (float) * 4);
-						}
-
-						if (Node->has_scale)
-						{
-							memcpy ((*Meshes + MeshCounter)->Scale, Node->scale, sizeof (float) * 3);
-						}
-
-						(*Meshes + MeshCounter)->PrimitiveCount = Mesh->primitives_count;
-						(*Meshes + MeshCounter)->Primitives = (Primitive*)malloc (sizeof (Primitive) * Mesh->primitives_count);
-						memset ((*Meshes + MeshCounter)->Primitives, 0, sizeof (Primitive) * Mesh->primitives_count);
-
-						for (uint32_t p = 0; p < Mesh->primitives_count; p++)
-						{
-							cgltf_primitive* Primitive = Mesh->primitives + p;
-
-							for (uint32_t a = 0; a < Primitive->attributes_count; a++)
+							if (Mesh == (Data->meshes + m))
 							{
-								cgltf_attribute* Attribute = Primitive->attributes + a;
-								cgltf_accessor* Accessor = Attribute->data;
-								cgltf_buffer_view* BufferView = Accessor->buffer_view;
-
-								if (Attribute->type == cgltf_attribute_type_position)
-								{
-									char* DataStart = (char*)BufferView->buffer->data;
-									float* Positions = (float*)(DataStart + Accessor->offset + BufferView->offset);
-
-									(*Meshes + MeshCounter)->Primitives[p].PositionSize = BufferView->size;
-									(*Meshes + MeshCounter)->Primitives[p].Positions = (float*)malloc (BufferView->size);
-
-									memcpy ((*Meshes + MeshCounter)->Primitives[p].Positions, Positions, BufferView->size);
-								}
-								else if (Attribute->type == cgltf_attribute_type_texcoord)
-								{
-									if (strcmp (Attribute->name, "TEXCOORD_0") == 0)
-									{
-										char* DataStart = (char*)BufferView->buffer->data;
-										float* UVs = (float*)(DataStart + Accessor->offset + BufferView->offset);
-
-										(*Meshes + MeshCounter)->Primitives[p].UV0Size = BufferView->size;
-										(*Meshes + MeshCounter)->Primitives[p].UV0s = (float*)malloc (BufferView->size);
-
-										memcpy ((*Meshes + MeshCounter)->Primitives[p].UV0s, UVs, BufferView->size);
-									}
-								}
-							}
-
-							cgltf_accessor* Accessor = Primitive->indices;
-							cgltf_buffer_view* BufferView = Accessor->buffer_view;
-
-							(*Meshes + MeshCounter)->Primitives[p].IndexCount = Accessor->count;
-
-							char* DataStart = (char*)BufferView->buffer->data;
-
-							switch (Accessor->component_type)
-							{
-							case cgltf_component_type_r_16u:
-								(*Meshes + MeshCounter)->Primitives[p].IndexSize = BufferView->size * 2;
-								(*Meshes + MeshCounter)->Primitives[p].Indices = (uint32_t*)malloc (BufferView->size * 2);
-
-								uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
-
-								for (uint32_t i = 0; i < Accessor->count; i++)
-								{
-									(*Meshes + MeshCounter)->Primitives[p].Indices[i] = I16[i];
-								}
-
-								break;
-
-							case cgltf_component_type_r_32u:
-								(*Meshes + MeshCounter)->Primitives[p].IndexSize = BufferView->size;
-								(*Meshes + MeshCounter)->Primitives[p].Indices = (uint32_t*)malloc (BufferView->size);
-
-								uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
-
-								memcpy ((*Meshes + MeshCounter)->Primitives[p].Indices, I32, BufferView->size);
-								break;
-
-							default:
-								break;
-							}
-
-							for (uint32_t mat = 0; mat < Data->materials_count; mat++)
-							{
-								if (Primitive->material == (Data->materials + mat))
-								{
-									(*Meshes + MeshCounter)->Primitives[p].Material = (*Materials + mat);
-								}
+								(*Nodes + n)->Mesh = (*Meshes + m);
 							}
 						}
+					}
 
-						if (Mesh->name)
-						{
-							strcpy ((*Meshes + MeshCounter)->Name, Mesh->name);
-						}
-
-						MeshCounter++;
+					if (Node->name)
+					{
+						strcpy ((*Nodes + n)->Name, Node->name);
 					}
 				}
 

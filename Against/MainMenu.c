@@ -13,6 +13,9 @@
 
 #include <vulkan/vulkan.h>
 
+Node* Nodes;
+uint32_t NodeCount;
+
 Mesh* Meshes;
 uint32_t MeshCount;
 
@@ -44,7 +47,7 @@ int ImportMainMenuAssets ()
 	char UIElementFile[MAX_PATH];
 	wcstombs_s (NULL, UIElementFile, MAX_PATH, UIElementPath, MAX_PATH);
 
-	int Result = ImportMainMenuGLTF (UIElementFile, &Meshes, &MeshCount, &Materials, &MaterialCount, &Textures, &TextureCount, &Images, &ImageCount);
+	int Result = ImportMainMenuGLTF (UIElementFile, &Nodes, &NodeCount, &Meshes, &MeshCount, &Materials, &MaterialCount, &Textures, &TextureCount, &Images, &ImageCount);
 
 	if (Result != 0)
 	{
@@ -202,8 +205,6 @@ int CreateMainMenuTextureImages ()
 			vkGetImageMemoryRequirements (GraphicsDevice, Meshes[m].Primitives[p].Material.BaseColorTexture.VulkanHandle, &MemoryRequirements);*/
 		}
 	}
-
-
 
 	return 0;
 }

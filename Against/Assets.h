@@ -48,6 +48,15 @@ typedef struct _Primitive
 
 typedef struct _Mesh
 {
+	char Name[256];
+	uint32_t ID;
+
+	Primitive* Primitives;
+	uint32_t PrimitiveCount;
+} Mesh;
+
+typedef struct _Node
+{
 	float TransformationMatrix[16];
 
 	float Translation[3];
@@ -55,8 +64,6 @@ typedef struct _Mesh
 	float Scale[3];
 
 	char Name[256];
-	uint32_t ID;
 
-	Primitive* Primitives;
-	uint32_t PrimitiveCount;
-} Mesh;
+	Mesh* Mesh;
+} Node;
