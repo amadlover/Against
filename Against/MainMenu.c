@@ -43,6 +43,12 @@ VkDeviceMemory MainMenuHostTImageMemory;
 
 VkSampler MainMenuFallbackSampler;
 
+VkDescriptorPool MainMenuDescriptorPool;
+VkDescriptorSetLayout MainMenuDescriptorSetLayout;
+VkDescriptorSet MainMenuDescriptorSet;
+
+VkPipelineLayout MainMenuGraphicsPipelineLayout;
+
 VkShaderModule MainMenuVertexShaderModule;
 VkShaderModule MainMenuFragmentShaderModule;
 VkPipelineShaderStageCreateInfo MainMenuPipelineShaderStages[2];
@@ -50,6 +56,8 @@ VkPipelineShaderStageCreateInfo MainMenuPipelineShaderStages[2];
 VkFramebuffer* MainMenuSwapchainFramebuffers;
 
 VkRenderPass MainMenuRenderPass;
+
+VkPipeline MainMenuGraphicsPipeline;
 
 int ImportMainMenuAssets ()
 {
@@ -572,9 +580,32 @@ int CreateMainMenuFBs ()
 	return 0;
 }
 
-int CreateMainMenuDescriptorSetPool ()
+int CreateMainMenuDescriptorPool ()
 {
-	OutputDebugString (L"CreateMainMenuDescriptorSetPool\n");
+	OutputDebugString (L"CreateMainMenuDescriptorPool\n");
+
+	VkDescriptorPoolSize PoolSizes[2];
+	memset (&PoolSizes, 0, sizeof (VkDescriptorPoolSize) * 2);
+
+	PoolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	PoolSizes[0].descriptorCount = 2;
+
+	PoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	PoolSizes[1].descriptorCount = 1;
+
+	VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo;
+	memset (&DescriptorPoolCreateInfo, 0, sizeof (VkDescriptorPoolCreateInfo));
+
+	DescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	DescriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	DescriptorPoolCreateInfo.poolSizeCount = 2;
+	DescriptorPoolCreateInfo.pPoolSizes = PoolSizes;
+	DescriptorPoolCreateInfo.maxSets = 1;
+	
+	if (vkCreateDescriptorPool (GraphicsDevice, &DescriptorPoolCreateInfo, NULL, &MainMenuDescriptorPool) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_POOL;
+	}
 
 	return 0;
 }
@@ -583,6 +614,35 @@ int CreateMainMenuDescriptorSetLayout ()
 {
 	OutputDebugString (L"CreateMainMenuDescriptorSetLayout\n");
 
+	VkDescriptorSetLayoutBinding LayoutBinding[3];
+	memset (&LayoutBinding, 0, sizeof (VkDescriptorSetLayoutBinding) * 3);
+
+	LayoutBinding[0].binding = 0;
+	LayoutBinding[0].descriptorCount = 1;
+	LayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	LayoutBinding[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	LayoutBinding[1].binding = 1;
+	LayoutBinding[1].descriptorCount = 1; 
+	LayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	LayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	LayoutBinding[2].binding = 2;
+	LayoutBinding[2].descriptorCount = 1;
+	LayoutBinding[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	LayoutBinding[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo;
+	memset (&DescriptorSetLayoutCreateInfo, 0, sizeof (VkDescriptorSetLayoutCreateInfo));
+	DescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	DescriptorSetLayoutCreateInfo.bindingCount = 3;
+	DescriptorSetLayoutCreateInfo.pBindings = LayoutBinding;
+
+	if (vkCreateDescriptorSetLayout (GraphicsDevice, &DescriptorSetLayoutCreateInfo, NULL, &MainMenuDescriptorSetLayout) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT;
+	}
+
 	return 0;
 }
 
@@ -590,12 +650,186 @@ int CreateMainMenuDescriptorSet ()
 {
 	OutputDebugString (L"CreateMainMenuDescriptorSet\n");
 
+	VkDescriptorSetAllocateInfo AllocateInfo;
+	memset (&AllocateInfo, 0, sizeof (VkDescriptorSetAllocateInfo));
+
+	AllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	AllocateInfo.descriptorPool = MainMenuDescriptorPool;
+	AllocateInfo.descriptorSetCount = 1;
+	AllocateInfo.pSetLayouts = &MainMenuDescriptorSetLayout;
+
+	if (vkAllocateDescriptorSets (GraphicsDevice, &AllocateInfo, &MainMenuDescriptorSet) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SET;
+	}
+
 	return 0;
 }
 
 int CreateMainMenuCommandBuffers ()
 {
 	OutputDebugString (L"CreateMainMenuCommandBuffers\n");
+
+	return 0;
+}
+
+int CreateMainMenuGraphicsPipelineLayout ()
+{
+	OutputDebugString (L"CreateMainMenuGraphicsPipelineLayout\n");
+
+	VkPipelineLayoutCreateInfo PipelineCreateInfo;
+	memset (&PipelineCreateInfo, 0, sizeof (VkPipelineLayoutCreateInfo));
+
+	PipelineCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	PipelineCreateInfo.setLayoutCount = 1;
+	PipelineCreateInfo.pSetLayouts = &MainMenuDescriptorSetLayout;
+
+	if (vkCreatePipelineLayout (GraphicsDevice, &PipelineCreateInfo, NULL, &MainMenuGraphicsPipelineLayout) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_PIPELINE_LAYOUT;
+	}
+
+	return 0;
+}
+
+int CreateMainMenuGraphicsPipeline ()
+{
+	OutputDebugString (L"CreateMainMenuGraphicsPipeline\n");
+
+	VkVertexInputBindingDescription VertexInputBindingDescription[2];
+	memset (&VertexInputBindingDescription, 0, sizeof (VkVertexInputBindingDescription) * 2);
+
+	VertexInputBindingDescription[0].binding = 0;
+	VertexInputBindingDescription[0].stride = sizeof (float) * 3;
+	VertexInputBindingDescription[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	VertexInputBindingDescription[1].binding = 1;
+	VertexInputBindingDescription[1].stride = sizeof (float) * 2;
+	VertexInputBindingDescription[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	VkVertexInputAttributeDescription VertexInputAttributeDescriptions[2];
+	memset (&VertexInputAttributeDescriptions, 0, sizeof (VkVertexInputAttributeDescription) * 2);
+
+	VertexInputAttributeDescriptions[0].binding = 0;
+	VertexInputAttributeDescriptions[0].location = 0;
+	VertexInputAttributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	VertexInputAttributeDescriptions[0].offset = 0;
+
+	VertexInputAttributeDescriptions[1].binding = 1;
+	VertexInputAttributeDescriptions[1].location = 1;
+	VertexInputAttributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+	VertexInputAttributeDescriptions[1].offset = 0;
+
+	VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo;
+	memset (&VertexInputStateCreateInfo, 0, sizeof (VkPipelineVertexInputStateCreateInfo));
+
+	VertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	VertexInputStateCreateInfo.vertexBindingDescriptionCount = 2;
+	VertexInputStateCreateInfo.pVertexBindingDescriptions = VertexInputBindingDescription;
+	VertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2;
+	VertexInputStateCreateInfo.pVertexAttributeDescriptions = VertexInputAttributeDescriptions;
+
+	VkPipelineInputAssemblyStateCreateInfo InputAssemblyCreateInfo;
+	memset (&InputAssemblyCreateInfo, 0, sizeof (VkPipelineInputAssemblyStateCreateInfo));
+
+	InputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	InputAssemblyCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	InputAssemblyCreateInfo.primitiveRestartEnable = VK_FALSE;
+
+	VkPipelineRasterizationStateCreateInfo RasterizationStateCreateInfo;
+	memset (&RasterizationStateCreateInfo, 0, sizeof (VkPipelineRasterizationStateCreateInfo));;
+
+	RasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	RasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+	RasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	RasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	RasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
+	RasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+	RasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+	RasterizationStateCreateInfo.depthBiasClamp = 0;
+	RasterizationStateCreateInfo.depthBiasSlopeFactor = 0;
+	RasterizationStateCreateInfo.depthBiasConstantFactor = 0;
+	RasterizationStateCreateInfo.lineWidth = 1;
+
+	VkPipelineColorBlendAttachmentState ColorBlendAttachmentState;
+	memset (&ColorBlendAttachmentState, 0, sizeof (VkPipelineColorBlendAttachmentState));
+
+	ColorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	ColorBlendAttachmentState.blendEnable = VK_FALSE;
+
+	VkPipelineColorBlendStateCreateInfo ColorBlendStateCreateInfo;
+	memset (&ColorBlendStateCreateInfo, 0, sizeof (VkPipelineColorBlendStateCreateInfo));
+
+	ColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	ColorBlendStateCreateInfo.attachmentCount = 1;
+	ColorBlendStateCreateInfo.pAttachments = &ColorBlendAttachmentState;
+	ColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
+	ColorBlendStateCreateInfo.blendConstants[0] = 1.f;
+	ColorBlendStateCreateInfo.blendConstants[1] = 1.f;
+	ColorBlendStateCreateInfo.blendConstants[2] = 1.f;
+	ColorBlendStateCreateInfo.blendConstants[3] = 1.f;
+
+	VkPipelineDepthStencilStateCreateInfo DepthStencilStateCreateInfo;
+	memset (&DepthStencilStateCreateInfo, 0, sizeof (VkPipelineDepthStencilStateCreateInfo));
+
+	DepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	DepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
+	DepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+	DepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+	DepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
+	DepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+
+	VkViewport Viewport;
+	Viewport.x = 0;
+	Viewport.y = (float)SurfaceExtent.height;
+	Viewport.width = (float)SurfaceExtent.width;
+	Viewport.height = -(float)SurfaceExtent.height;
+	Viewport.minDepth = 0;
+	Viewport.maxDepth = 1;
+
+	VkRect2D Scissors;
+	Scissors.offset.x = 0;
+	Scissors.offset.y = 0;
+	Scissors.extent = SurfaceExtent;
+
+	VkPipelineViewportStateCreateInfo ViewportStateCreateInfo;
+	memset (&ViewportStateCreateInfo, 0, sizeof (VkPipelineViewportStateCreateInfo));
+
+	ViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	ViewportStateCreateInfo.viewportCount = 1;
+	ViewportStateCreateInfo.pViewports = &Viewport;
+	ViewportStateCreateInfo.scissorCount = 1;
+	ViewportStateCreateInfo.pScissors = &Scissors;
+
+	VkPipelineMultisampleStateCreateInfo MultisampleStateCreateInfo;
+	memset (&MultisampleStateCreateInfo, 0, sizeof (VkPipelineMultisampleStateCreateInfo));
+
+	MultisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	MultisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	MultisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
+	MultisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;
+	MultisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;
+
+	VkGraphicsPipelineCreateInfo CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkGraphicsPipelineCreateInfo));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	CreateInfo.layout = MainMenuGraphicsPipelineLayout;
+	CreateInfo.stageCount = 2;
+	CreateInfo.pStages = MainMenuPipelineShaderStages;
+	CreateInfo.renderPass = MainMenuRenderPass;
+	CreateInfo.pVertexInputState = &VertexInputStateCreateInfo;
+	CreateInfo.pInputAssemblyState = &InputAssemblyCreateInfo;
+	CreateInfo.pRasterizationState = &RasterizationStateCreateInfo;
+	CreateInfo.pColorBlendState = &ColorBlendStateCreateInfo;
+	CreateInfo.pViewportState = &ViewportStateCreateInfo;
+	CreateInfo.pMultisampleState = &MultisampleStateCreateInfo;
+	CreateInfo.pDepthStencilState = &DepthStencilStateCreateInfo;
+
+	if (vkCreateGraphicsPipelines (GraphicsDevice, VK_NULL_HANDLE, 1, &CreateInfo, NULL, &MainMenuGraphicsPipeline) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_GRAPHICS_PIPELINE;
+	}
 
 	return 0;
 }
@@ -639,6 +873,48 @@ int CreateMainMenuGraphics ()
 		return Result;
 	}
 
+	Result = CreateMainMenuDescriptorPool ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateMainMenuDescriptorSetLayout ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateMainMenuDescriptorSet ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateMainMenuRenderPass ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateMainMenuGraphicsPipelineLayout ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateMainMenuGraphicsPipeline ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 	return 0;
 }
 
@@ -650,6 +926,31 @@ int DrawMainMenu ()
 void DestroyMainMenuGraphics ()
 {
 	OutputDebugString (L"DestroyMainMenu\n");
+
+	if (MainMenuDescriptorSet!= VK_NULL_HANDLE)
+	{
+		vkFreeDescriptorSets (GraphicsDevice, MainMenuDescriptorPool, 1, &MainMenuDescriptorSet);
+	}
+
+	if (MainMenuDescriptorSetLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyDescriptorSetLayout (GraphicsDevice, MainMenuDescriptorSetLayout, NULL);
+	}
+
+	if (MainMenuDescriptorPool != VK_NULL_HANDLE)
+	{
+		vkDestroyDescriptorPool (GraphicsDevice, MainMenuDescriptorPool, NULL);
+	}
+
+	if (MainMenuGraphicsPipeline != VK_NULL_HANDLE)
+	{
+		vkDestroyPipeline (GraphicsDevice, MainMenuGraphicsPipeline, NULL);
+	}
+
+	if (MainMenuGraphicsPipelineLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyPipelineLayout (GraphicsDevice, MainMenuGraphicsPipelineLayout, NULL);
+	}
 
 	if (MainMenuSwapchainFramebuffers)
 	{

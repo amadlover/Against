@@ -12,5 +12,5 @@ layout (location = 0) out vec4 OutColor;
 
 void main ()
 {
-	OutColor = texture (ColorTexture, InUV) * Buffer.Glow;
+	OutColor = texture (ColorTexture, InUV) + Buffer.Glow;
 }
