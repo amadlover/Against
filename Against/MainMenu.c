@@ -32,14 +32,16 @@ Sampler* MainMenuSamplers;
 uint32_t MainMenuSamplerCount;
 
 VkBuffer MainMenuHostVBIB;
+VkBuffer* MainMenuHostVBIBs;
+uint32_t MainMenuBufferCount;
 
 VkImage* MainMenuTImages;
 VkImageView* MainMenuTImageViews;
 
 VkDeviceMemory MainMenuHostVBIBMemory;
-VkDeviceMemory MainMenuHostTextureMemory;
+VkDeviceMemory MainMenuHostTImageMemory;
 
-VkSampler MainMenuSampler;
+VkSampler MainMenuFallabckSampler;
 VkImageView MainMenuImageView;
 
 int ImportMainMenuAssets ()
@@ -60,6 +62,14 @@ int ImportMainMenuAssets ()
 		return Result;
 	}
 
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
+	{
+		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
+		{
+			++MainMenuBufferCount;
+		}
+	}
+
 	return 0;
 }
 
@@ -70,9 +80,9 @@ int CreateMainMenuUniformBuffer ()
 	return 0;
 }
 
-int CreateMainMenuHostVBIB ()
+int CreateMainMenuHostVBIBs ()
 {
-	OutputDebugString (L"CreateMainMenuHostVBIB\n");
+	OutputDebugString (L"CreateMainMenuHostVBIBs\n");
 
 	VkBufferCreateInfo VBIBCreateInfo;
 	memset (&VBIBCreateInfo, 0, sizeof (VkBufferCreateInfo));
@@ -81,71 +91,99 @@ int CreateMainMenuHostVBIB ()
 	VBIBCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	VBIBCreateInfo.queueFamilyIndexCount = 1;
 	VBIBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
+	
+	MainMenuHostVBIBs = (VkBuffer*)malloc (sizeof (VkBuffer) * MainMenuBufferCount);
+	VkMemoryRequirements* VBIBMemoryRequirements = (VkMemoryRequirements*)malloc (sizeof (VkMemoryRequirements) * MainMenuBufferCount);
+
+	uint32_t CurrentBufferCount = 0;
 
 	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
 	{
 		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 		{
-			VBIBCreateInfo.size += MainMenuMeshes[m].Primitives[p].PositionSize + MainMenuMeshes[m].Primitives[p].UV0Size + MainMenuMeshes[m].Primitives[p].IndexSize;
+			VBIBCreateInfo.size = MainMenuMeshes[m].Primitives[p].PositionSize + MainMenuMeshes[m].Primitives[p].UV0Size + MainMenuMeshes[m].Primitives[p].IndexSize;
+
+			if (vkCreateBuffer (GraphicsDevice, &VBIBCreateInfo, NULL, &MainMenuHostVBIBs[CurrentBufferCount]) != VK_SUCCESS)
+			{
+				return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
+			}
+	
+			vkGetBufferMemoryRequirements (GraphicsDevice, MainMenuHostVBIBs[CurrentBufferCount], VBIBMemoryRequirements + m);
+			++CurrentBufferCount;
 		}
+
 	}
-
-	if (vkCreateBuffer (GraphicsDevice, &VBIBCreateInfo, NULL, &MainMenuHostVBIB) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
-	}
-
-	VkMemoryRequirements VBIBMemoryRequirements;
-	memset (&VBIBMemoryRequirements, 0, sizeof (VkMemoryRequirements));
-
-	vkGetBufferMemoryRequirements (GraphicsDevice, MainMenuHostVBIB, &VBIBMemoryRequirements);
-
+	
 	VkMemoryAllocateInfo VBIBMemoryAllocateInfo;
 	memset (&VBIBMemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
 
 	VBIBMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	VBIBMemoryAllocateInfo.allocationSize = VBIBMemoryRequirements.size;
-
-	uint32_t RequiredTypes = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-
-	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
+	
+	for (uint32_t m = 0; m < MainMenuBufferCount; m++)
 	{
-		if (VBIBMemoryRequirements.memoryTypeBits & (1 << i) && RequiredTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
-		{
-			VBIBMemoryAllocateInfo.memoryTypeIndex = i;
-			break;
-		}
+		VBIBMemoryAllocateInfo.allocationSize += VBIBMemoryRequirements[m].size;
 	}
+
+	uint32_t RequiredMemoryTypes = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+	uint32_t MemoryTypeIndex = 0;
+
+	for (uint32_t m = 0; m < MainMenuBufferCount; m++)
+	{
+		for (uint32_t mt = 0; mt < PhysicalDeviceMemoryProperties.memoryTypeCount; mt++)
+		{
+			if (VBIBMemoryRequirements->memoryTypeBits & (1 << mt))
+			{
+				if (RequiredMemoryTypes & PhysicalDeviceMemoryProperties.memoryTypes[mt].propertyFlags)
+				{
+					MemoryTypeIndex = mt;
+					break;
+				}
+			}
+		}
+ 	}
+
+	VBIBMemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
 
 	if (vkAllocateMemory (GraphicsDevice, &VBIBMemoryAllocateInfo, NULL, &MainMenuHostVBIBMemory) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_BUFFER_MEMORY;
 	}
 
-	if (vkBindBufferMemory (GraphicsDevice, MainMenuHostVBIB, MainMenuHostVBIBMemory, 0) != VK_SUCCESS)
+	VkDeviceSize BindMemoryOffset = 0;
+
+	for (uint32_t m = 0; m < MainMenuBufferCount; m++)
 	{
-		return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
+		if (vkBindBufferMemory (GraphicsDevice, MainMenuHostVBIBs[m], MainMenuHostVBIBMemory, BindMemoryOffset) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
+		}
+
+		BindMemoryOffset += VBIBMemoryRequirements[m].size;
 	}
 
-	VkDeviceSize CurrentMemoryOffset = 0;
+	free (VBIBMemoryRequirements);
 
-	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
-	{
+	CurrentBufferCount = 0;
+
+	VkDeviceSize MapMemoryOffset = 0;
+
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++) {
 		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 		{
 			void* Data = NULL;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, MainMenuMeshes[m].Primitives[p].PositionSize, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, MapMemoryOffset, MainMenuMeshes[m].Primitives[p].PositionSize, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
 
 			memcpy (Data, MainMenuMeshes[m].Primitives[p].Positions, MainMenuMeshes[m].Primitives[p].PositionSize);
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
-			
-			CurrentMemoryOffset += MainMenuMeshes[m].Primitives[p].PositionSize;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, MainMenuMeshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
+			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].PositionSize;
+
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, MapMemoryOffset, MainMenuMeshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
@@ -153,9 +191,9 @@ int CreateMainMenuHostVBIB ()
 			memcpy (Data, MainMenuMeshes[m].Primitives[p].UV0s, MainMenuMeshes[m].Primitives[p].UV0Size);
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 
-			CurrentMemoryOffset += MainMenuMeshes[m].Primitives[p].UV0Size;
+			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].UV0Size;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, CurrentMemoryOffset, MainMenuMeshes[m].Primitives[p].IndexSize, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, MapMemoryOffset, MainMenuMeshes[m].Primitives[p].IndexSize, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
@@ -163,7 +201,9 @@ int CreateMainMenuHostVBIB ()
 			memcpy (Data, MainMenuMeshes[m].Primitives[p].Indices, MainMenuMeshes[m].Primitives[p].IndexSize);
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 
-			CurrentMemoryOffset += MainMenuMeshes[m].Primitives[p].IndexSize;
+			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].IndexSize;
+
+			++CurrentBufferCount;
 		}
 	}
 
@@ -190,19 +230,86 @@ int CreateMainMenuTextureImages ()
 	CreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
 	CreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 
-	MainMenuTImages = (VkImage*)malloc (sizeof (VkImage) * MainMenuTextureCount);
+	MainMenuTImages = (VkImage*)malloc (sizeof (VkImage) * MainMenuImageCount);
+	VkMemoryRequirements* TImageMemoryRequirements = (VkMemoryRequirements*)malloc (sizeof (VkMemoryRequirements) * MainMenuImageCount);
 
-	for (uint32_t t = 0; t < MainMenuTextureCount; t++)
+	for (uint32_t i = 0; i < MainMenuImageCount; i++)
 	{
-		CreateInfo.extent.width = MainMenuTextures[t].Image->Width;
-		CreateInfo.extent.height = MainMenuTextures[t].Image->Height;
+		CreateInfo.extent.width = MainMenuImages[i].Width;
+		CreateInfo.extent.height = MainMenuImages[i].Height;
 		CreateInfo.extent.depth = 1;
 
-		if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &MainMenuTImages[t]) != VK_SUCCESS)
+		if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &MainMenuTImages[i]) != VK_SUCCESS)
 		{
 			return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
 		}
+
+		vkGetImageMemoryRequirements (GraphicsDevice, MainMenuTImages[i], (TImageMemoryRequirements + i));
 	}
+
+	VkMemoryAllocateInfo MemoryAllocateInfo;
+	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+
+	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+
+	for (uint32_t i = 0; i < MainMenuImageCount; i++)
+	{
+		MemoryAllocateInfo.allocationSize += TImageMemoryRequirements[i].size;
+	}
+
+	uint32_t MemoryTypeIndex = 0;
+	uint32_t RequiredMemoryTypes = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+
+	for (uint32_t i = 0; i < MainMenuImageCount; i++)
+	{
+		for (uint32_t mt = 0; mt < PhysicalDeviceMemoryProperties.memoryTypeCount; mt++)
+		{
+			if (TImageMemoryRequirements[i].memoryTypeBits & (1 << mt))
+			{
+				if (RequiredMemoryTypes & PhysicalDeviceMemoryProperties.memoryTypes[mt].propertyFlags)
+				{
+					MemoryTypeIndex = mt;
+					break;
+				}
+			}
+		}
+	}
+
+	MemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
+
+	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &MainMenuHostTImageMemory) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_IMAGE_MEMORY;
+	}
+
+	VkDeviceSize BindMemoryOffset = 0;
+
+	for (uint32_t i = 0; i < MainMenuImageCount; i++)
+	{
+		if (vkBindImageMemory (GraphicsDevice, MainMenuTImages[i], MainMenuHostTImageMemory, BindMemoryOffset) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
+		}
+
+		BindMemoryOffset += TImageMemoryRequirements[i].size;
+	}
+
+	uint32_t MapMemoryOffset = 0;
+
+	for (uint32_t i = 0; i < MainMenuImageCount; i++)
+	{
+		void* Data = NULL;
+
+		if (vkMapMemory (GraphicsDevice, MainMenuHostTImageMemory, MapMemoryOffset, MainMenuImages[i].PixelSize, 0, &Data) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_MAP_IMAGE_MEMORY;
+		}
+
+		memcpy (Data, MainMenuImages[i].Pixels, MainMenuImages[i].PixelSize);
+		vkUnmapMemory (GraphicsDevice, MainMenuHostTImageMemory);
+	}
+
+	free (TImageMemoryRequirements);
 
 	return 0;
 }
@@ -281,7 +388,7 @@ int CreateMainMenuGraphics ()
 		return Result;
 	}
 
-	Result = CreateMainMenuHostVBIB ();
+	Result = CreateMainMenuHostVBIBs ();
 
 	if (Result != 0)
 	{
@@ -310,6 +417,14 @@ void DestroyMainMenuGraphics ()
 	if (MainMenuHostVBIB != VK_NULL_HANDLE)
 	{
 		vkDestroyBuffer (GraphicsDevice, MainMenuHostVBIB, NULL);
+	}
+
+	if (MainMenuHostVBIBs)
+	{
+		for (uint32_t b = 0; b < MainMenuBufferCount; b++)
+		{
+			vkDestroyBuffer (GraphicsDevice, MainMenuHostVBIBs[b], NULL);
+		}
 	}
 
 	if (MainMenuHostVBIBMemory != VK_NULL_HANDLE)

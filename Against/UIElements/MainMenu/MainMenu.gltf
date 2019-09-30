@@ -31,10 +31,34 @@
     "materials" : [
         {
             "doubleSided" : true,
-            "name" : "MainMenu",
+            "name" : "MainMenuBG",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 0,
+                    "texCoord" : 0
+                },
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.5
+            }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "MainMenuNew",
+            "pbrMetallicRoughness" : {
+                "baseColorTexture" : {
+                    "index" : 1,
+                    "texCoord" : 0
+                },
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.5
+            }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "MainMenuQuit",
+            "pbrMetallicRoughness" : {
+                "baseColorTexture" : {
+                    "index" : 2,
                     "texCoord" : 0
                 },
                 "metallicFactor" : 0,
@@ -65,7 +89,7 @@
                         "TEXCOORD_0" : 4
                     },
                     "indices" : 2,
-                    "material" : 0
+                    "material" : 1
                 }
             ]
         },
@@ -78,7 +102,7 @@
                         "TEXCOORD_0" : 6
                     },
                     "indices" : 2,
-                    "material" : 0
+                    "material" : 2
                 }
             ]
         }
@@ -86,13 +110,29 @@
     "textures" : [
         {
             "source" : 0
+        },
+        {
+            "source" : 1
+        },
+        {
+            "source" : 2
         }
     ],
     "images" : [
         {
             "mimeType" : "image/png",
-            "name" : "MainMenu",
-            "uri" : "MainMenu.png"
+            "name" : "MainMenuBG",
+            "uri" : "MainMenuBG.png"
+        },
+        {
+            "mimeType" : "image/png",
+            "name" : "MainMenuNew",
+            "uri" : "MainMenuNew.png"
+        },
+        {
+            "mimeType" : "image/png",
+            "name" : "MainMenuQuit",
+            "uri" : "MainMenuQuit.png"
         }
     ],
     "accessors" : [
