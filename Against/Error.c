@@ -166,7 +166,7 @@ void LogError (AGAINSTRESULT Result)
 		OutputDebugString (L"Graphics Error: Update Uniform Buffer\n");
 		break;
 
-	case AGAINST_ERROR_GRAPHICS_CREATE_TEXTURE_SAMPLER:
+	case AGAINST_ERROR_GRAPHICS_CREATE_SAMPLER:
 		OutputDebugString (L"Graphics Error: Create Texture SplashScreenSampler\n");
 		break;
 

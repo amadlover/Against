@@ -23,8 +23,8 @@ VkDescriptorSetLayout DescriptorSetLayout;
 VkDescriptorPool DescriptorPool;
 VkDescriptorSet DescriptorSet;
 VkRenderPass RenderPass;
-VkShaderModule VertexShaderModule;
-VkShaderModule FragmentShaderModule;
+VkShaderModule SplashScreenVertexShaderModule;
+VkShaderModule SplashScreenFragmentShaderModule;
 VkPipelineShaderStageCreateInfo PipelineShaderStages[2];
 VkFramebuffer* SwapchainFramebuffers;
 VkCommandPool GraphicsDeviceCommandPool;
@@ -340,7 +340,7 @@ int CreateSplashScreenShaders ()
 	VertexShaderModuleCreateInfo.pCode = (uint32_t*)Buffer;
 	VertexShaderModuleCreateInfo.codeSize = sizeof (uint32_t) * FileSize;
 
-	if (vkCreateShaderModule (GraphicsDevice, &VertexShaderModuleCreateInfo, NULL, &VertexShaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule (GraphicsDevice, &VertexShaderModuleCreateInfo, NULL, &SplashScreenVertexShaderModule) != VK_SUCCESS)
 	{
 		free (Buffer);
 		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
@@ -379,7 +379,7 @@ int CreateSplashScreenShaders ()
 	FragmentShaderModuleCreateInfo.pCode = (uint32_t*)Buffer;
 	FragmentShaderModuleCreateInfo.codeSize = sizeof (uint32_t) * FileSize;
 
-	if (vkCreateShaderModule (GraphicsDevice, &FragmentShaderModuleCreateInfo, NULL, &FragmentShaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule (GraphicsDevice, &FragmentShaderModuleCreateInfo, NULL, &SplashScreenFragmentShaderModule) != VK_SUCCESS)
 	{
 		free (Buffer);
 		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
@@ -392,7 +392,7 @@ int CreateSplashScreenShaders ()
 
 	VertexShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	VertexShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	VertexShaderStageCreateInfo.module = VertexShaderModule;
+	VertexShaderStageCreateInfo.module = SplashScreenVertexShaderModule;
 	VertexShaderStageCreateInfo.pName = "main";
 
 	VkPipelineShaderStageCreateInfo FragmentShaderStageCreateInfo;
@@ -400,7 +400,7 @@ int CreateSplashScreenShaders ()
 
 	FragmentShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	FragmentShaderStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	FragmentShaderStageCreateInfo.module = FragmentShaderModule;
+	FragmentShaderStageCreateInfo.module = SplashScreenFragmentShaderModule;
 	FragmentShaderStageCreateInfo.pName = "main";
 
 	PipelineShaderStages[0] = VertexShaderStageCreateInfo;
@@ -984,7 +984,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	if (vkCreateSampler (GraphicsDevice, &SamplerCreateInfo, NULL, &SplashScreenSampler) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_TEXTURE_SAMPLER;
+		return AGAINST_ERROR_GRAPHICS_CREATE_SAMPLER;
 	}
 
 	VkImageViewCreateInfo ImageViewCreateInfo;
@@ -1239,29 +1239,16 @@ void DestroySplashScreenGraphics ()
 		vkDestroyPipelineLayout (GraphicsDevice, GraphicsPipelineLayout, NULL);
 	}
 	
-	if (VertexShaderModule != VK_NULL_HANDLE)
+	if (SplashScreenVertexShaderModule != VK_NULL_HANDLE)
 	{
-		vkDestroyShaderModule (GraphicsDevice, VertexShaderModule, NULL);
+		vkDestroyShaderModule (GraphicsDevice, SplashScreenVertexShaderModule, NULL);
 	}
 	
-	if (FragmentShaderModule != VK_NULL_HANDLE)
+	if (SplashScreenFragmentShaderModule != VK_NULL_HANDLE)
 	{
-		vkDestroyShaderModule (GraphicsDevice, FragmentShaderModule, NULL);
+		vkDestroyShaderModule (GraphicsDevice, SplashScreenFragmentShaderModule, NULL);
 	}
 	
-	if (SwapchainFramebuffers)
-	{
-		for (uint8_t i = 0; i < SwapchainImageCount; i++)
-		{
-			if (SwapchainFramebuffers[i] != VK_NULL_HANDLE)
-			{
-				vkDestroyFramebuffer (GraphicsDevice, SwapchainFramebuffers[i], NULL);
-			}
-		}
-
-		free (SwapchainFramebuffers);
-	}
-
 	if (RenderPass != VK_NULL_HANDLE)
 	{
 		vkDestroyRenderPass (GraphicsDevice, RenderPass, NULL);
@@ -1275,6 +1262,17 @@ void DestroySplashScreenGraphics ()
 	if (SplasScreenHostVBIBMemory != VK_NULL_HANDLE)
 	{
 		vkFreeMemory (GraphicsDevice, SplasScreenHostVBIBMemory, NULL);
+	}
+
+	if (SwapchainFramebuffers)
+	{
+		for (uint32_t i = 0; i < SwapchainImageCount; i++)
+		{
+			if (SwapchainFramebuffers[i] != VK_NULL_HANDLE)
+			{
+				vkDestroyFramebuffer (GraphicsDevice, SwapchainFramebuffers[i], NULL);
+			}
+		}
 	}
 	
 	if (UniformBuffer != VK_NULL_HANDLE)
