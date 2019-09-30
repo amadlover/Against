@@ -38,6 +38,15 @@ typedef struct _Material
 	Texture* BaseColorTexture;
 } Material;
 
+typedef struct _VkPrimitiveHandles
+{
+	//TODO: Pointers or values;
+	VkBuffer VBIB;
+	VkImage* Image;
+	VkImageView* ImageView;
+	VkSampler Sampler;
+} VkPrimitiveHandles;
+
 typedef struct _Primitive
 {
 	float* Positions;
@@ -53,6 +62,8 @@ typedef struct _Primitive
 	uint32_t* Indices;
 
 	Material* Material;
+
+	VkPrimitiveHandles VkHandles;
 } Primitive;
 
 typedef struct _Mesh

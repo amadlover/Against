@@ -61,6 +61,8 @@ VkPipeline MainMenuGraphicsPipeline;
 VkCommandPool MainMenuCommandPool;
 VkCommandBuffer* MainMenuSwapchainCommandBuffers;
 
+//TODO: Using only host memory now
+
 int ImportMainMenuAssets ()
 {
 	OutputDebugString (L"ImportMainMenuAssets\n");
@@ -375,6 +377,21 @@ int CreateMainMenuTextureImages ()
 	if (vkCreateSampler (GraphicsDevice, &SamplerCreateInfo, NULL, &MainMenuFallbackSampler) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_SAMPLER;
+	}
+
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
+	{
+		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
+		{
+			for (uint32_t i = 0; i < MainMenuImageCount; i++)
+			{
+				if (MainMenuMeshes[m].Primitives[p].Material->BaseColorTexture->Image == MainMenuImages + i)
+				{
+					MainMenuMeshes[m].Primitives[p].VkHandles.Image = MainMenuTImages + i;
+					MainMenuMeshes[m].Primitives[p].VkHandles.ImageView = MainMenuTImageViews + i;
+				}
+			}
+		}
 	}
 
 	return 0;
@@ -890,6 +907,20 @@ int CreateMainMenuCommandBuffers ()
 	CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
+	VkDescriptorImageInfo ImageInfo;
+	memset (&ImageInfo, 0, sizeof (VkDescriptorImageInfo));
+	ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	ImageInfo.sampler = MainMenuFallbackSampler;
+
+	VkWriteDescriptorSet DescriptorWrite;
+	memset (&DescriptorWrite, 0, sizeof (VkWriteDescriptorSet));
+
+	DescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	DescriptorWrite.dstSet = MainMenuDescriptorSet;
+	DescriptorWrite.dstBinding = 1;
+	DescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	DescriptorWrite.descriptorCount = 1;
+
 	for (uint32_t i = 0; i < SwapchainImageCount; i++)
 	{
 		RenderPassBeginInfo.framebuffer = MainMenuSwapchainFramebuffers[i];
@@ -900,8 +931,31 @@ int CreateMainMenuCommandBuffers ()
 		}
 
 		vkCmdBeginRenderPass (MainMenuSwapchainCommandBuffers[i], &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-		vkCmdBindDescriptorSets (MainMenuSwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, MainMenuGraphicsPipelineLayout, 0, 3, MainMenuDescriptorSet, 0, NULL);
 		vkCmdBindPipeline (MainMenuSwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, MainMenuGraphicsPipeline);
+		vkCmdBindDescriptorSets (MainMenuSwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, MainMenuGraphicsPipelineLayout, 0, 1, &MainMenuDescriptorSet, 0, NULL);
+
+		uint32_t MeshCounter = 0;
+
+		for (uint32_t m = 0; m < MainMenuMeshCount; m++)
+		{
+			for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
+			{
+				ImageInfo.imageView = *MainMenuMeshes[m].Primitives[p].VkHandles.ImageView;
+
+				DescriptorWrite.pImageInfo = &ImageInfo;
+				vkUpdateDescriptorSets (GraphicsDevice, 1, &DescriptorWrite, 0, NULL);
+
+				VkDeviceSize Offsets[3] = { 0, MainMenuMeshes[m].Primitives[p].PositionSize, MainMenuMeshes[m].Primitives[p].PositionSize + MainMenuMeshes[m].Primitives[p].UV0Size };
+
+				vkCmdBindVertexBuffers (MainMenuSwapchainCommandBuffers[i], 0, 1, MainMenuHostVBIBs + MeshCounter, Offsets);
+				vkCmdBindVertexBuffers (MainMenuSwapchainCommandBuffers[i], 1, 1, MainMenuHostVBIBs + MeshCounter, Offsets + 1);
+				vkCmdBindIndexBuffer (MainMenuSwapchainCommandBuffers[i], MainMenuHostVBIBs[MeshCounter], Offsets[2], VK_INDEX_TYPE_UINT32);
+
+				vkCmdDrawIndexed (MainMenuSwapchainCommandBuffers[i], MainMenuMeshes[m].Primitives[p].IndexCount, 1, 0, 0, 0);
+
+				++MeshCounter;
+			}
+		}
 
 		vkCmdEndRenderPass (MainMenuSwapchainCommandBuffers[i]);
 
@@ -975,6 +1029,13 @@ int CreateMainMenuGraphics ()
 	}
 
 	Result = CreateMainMenuRenderPass ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateMainMenuFBs ();
 
 	if (Result != 0)
 	{

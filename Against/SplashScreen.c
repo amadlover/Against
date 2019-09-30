@@ -210,13 +210,6 @@ int CreateSplashScreenDescriptorSet ()
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SET;
 	}
 
-	VkDescriptorBufferInfo BufferInfo;
-	memset (&BufferInfo, 0, sizeof (VkDescriptorBufferInfo));
-
-	BufferInfo.buffer = UniformBuffer;
-	BufferInfo.offset = 0;
-	BufferInfo.range = VK_WHOLE_SIZE;
-
 	VkDescriptorImageInfo ImageInfo;
 	ImageInfo.sampler = SplashScreenSampler;
 	ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
