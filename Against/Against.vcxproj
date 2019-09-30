@@ -55,10 +55,10 @@
     <ClInclude Include="Utility.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\x64\Debug\Shaders\SplashScreen\frag.frag" />
-    <None Include="..\x64\Debug\Shaders\SplashScreen\vert.vert" />
     <None Include="Shaders\MainMenu\UI.frag" />
     <None Include="Shaders\MainMenu\UI.vert" />
+    <None Include="Shaders\SplashScreen\frag.frag" />
+    <None Include="Shaders\SplashScreen\vert.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -203,9 +203,10 @@ xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ProgramDatabaseFile />
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 
@@ -235,9 +236,10 @@ xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ProgramDatabaseFile />
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 

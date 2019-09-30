@@ -54,10 +54,12 @@ VkShaderModule MainMenuFragmentShaderModule;
 VkPipelineShaderStageCreateInfo MainMenuPipelineShaderStages[2];
 
 VkFramebuffer* MainMenuSwapchainFramebuffers;
-
 VkRenderPass MainMenuRenderPass;
 
 VkPipeline MainMenuGraphicsPipeline;
+
+VkCommandPool MainMenuCommandPool;
+VkCommandBuffer* MainMenuSwapchainCommandBuffers;
 
 int ImportMainMenuAssets ()
 {
@@ -666,13 +668,6 @@ int CreateMainMenuDescriptorSet ()
 	return 0;
 }
 
-int CreateMainMenuCommandBuffers ()
-{
-	OutputDebugString (L"CreateMainMenuCommandBuffers\n");
-
-	return 0;
-}
-
 int CreateMainMenuGraphicsPipelineLayout ()
 {
 	OutputDebugString (L"CreateMainMenuGraphicsPipelineLayout\n");
@@ -834,6 +829,91 @@ int CreateMainMenuGraphicsPipeline ()
 	return 0;
 }
 
+int CreateMainMenuCommandPool ()
+{
+	OutputDebugString (L"CreateMainMenuCommandPool\n");
+
+	VkCommandPoolCreateInfo CreateInfo;
+	memset (&CreateInfo, 0, sizeof (VkCommandPoolCreateInfo));
+
+	CreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	CreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+
+	if (vkCreateCommandPool (GraphicsDevice, &CreateInfo, NULL, &MainMenuCommandPool) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
+	}
+
+	VkCommandBufferAllocateInfo AllocateInfo;
+	memset (&AllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
+
+	AllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	AllocateInfo.commandPool = MainMenuCommandPool;
+	AllocateInfo.commandBufferCount = SwapchainImageCount;
+	AllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+	MainMenuSwapchainCommandBuffers = (VkCommandBuffer*)malloc (sizeof (VkCommandBuffer) * SwapchainImageCount);
+
+	if (vkAllocateCommandBuffers (GraphicsDevice, &AllocateInfo, MainMenuSwapchainCommandBuffers) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
+	}
+
+	return 0;
+}
+
+int CreateMainMenuCommandBuffers ()
+{
+	OutputDebugString (L"CreateMainMenuCommandBuffers\n");
+
+	VkClearValue ClearValues[2];
+	ClearValues[0].color.float32[0] = 0;
+	ClearValues[0].color.float32[1] = 0;
+	ClearValues[0].color.float32[2] = 0;
+	ClearValues[0].color.float32[3] = 1;
+
+	ClearValues[1].depthStencil.depth = 1;
+	ClearValues[1].depthStencil.stencil = 0;
+
+	VkRenderPassBeginInfo RenderPassBeginInfo;
+	memset (&RenderPassBeginInfo, 0, sizeof (VkRenderPassBeginInfo));
+
+	RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	RenderPassBeginInfo.renderPass = MainMenuRenderPass;
+	RenderPassBeginInfo.renderArea.extent = SurfaceExtent;
+	RenderPassBeginInfo.clearValueCount = 2;
+	RenderPassBeginInfo.pClearValues = ClearValues;
+
+	VkCommandBufferBeginInfo CommandBufferBeginInfo;
+	memset (&CommandBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
+
+	CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
+	for (uint32_t i = 0; i < SwapchainImageCount; i++)
+	{
+		RenderPassBeginInfo.framebuffer = MainMenuSwapchainFramebuffers[i];
+
+		if (vkBeginCommandBuffer (MainMenuSwapchainCommandBuffers[i], &CommandBufferBeginInfo) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
+		}
+
+		vkCmdBeginRenderPass (MainMenuSwapchainCommandBuffers[i], &RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBindDescriptorSets (MainMenuSwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, MainMenuGraphicsPipelineLayout, 0, 3, MainMenuDescriptorSet, 0, NULL);
+		vkCmdBindPipeline (MainMenuSwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, MainMenuGraphicsPipeline);
+
+		vkCmdEndRenderPass (MainMenuSwapchainCommandBuffers[i]);
+
+		if (vkEndCommandBuffer (MainMenuSwapchainCommandBuffers[i]) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
+		}
+	}
+
+	return 0;
+}
+
 int CreateMainMenuGraphics ()
 {
 	OutputDebugString (L"SetupMainMenu\n");
@@ -915,6 +995,20 @@ int CreateMainMenuGraphics ()
 		return Result;
 	}
 
+	Result = CreateMainMenuCommandPool ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateMainMenuCommandBuffers ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 	return 0;
 }
 
@@ -926,6 +1020,18 @@ int DrawMainMenu ()
 void DestroyMainMenuGraphics ()
 {
 	OutputDebugString (L"DestroyMainMenu\n");
+
+	if (MainMenuSwapchainCommandBuffers)
+	{
+		vkFreeCommandBuffers (GraphicsDevice, MainMenuCommandPool, SwapchainImageCount, MainMenuSwapchainCommandBuffers);
+
+		free (MainMenuSwapchainCommandBuffers);
+	}
+
+	if (MainMenuCommandPool != VK_NULL_HANDLE)
+	{
+		vkDestroyCommandPool (GraphicsDevice, MainMenuCommandPool, NULL);
+	}
 
 	if (MainMenuDescriptorSet!= VK_NULL_HANDLE)
 	{

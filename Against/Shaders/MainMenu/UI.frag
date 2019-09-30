@@ -1,7 +1,7 @@
 #version 450
 
-layout (binding = 1) uniform sampler2D ColorTexture;
-layout (binding = 2) uniform FragUBO
+layout (set = 0, binding = 1) uniform sampler2D ColorTexture;
+layout (set = 0, binding = 2) uniform FragUBO
 {
 	float Glow;
 } Buffer;
