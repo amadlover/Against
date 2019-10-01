@@ -66,6 +66,11 @@ VkPipeline MainMenuGraphicsPipeline;
 VkCommandPool MainMenuCommandPool;
 VkCommandBuffer* MainMenuSwapchainCommandBuffers;
 
+VkSemaphore MainMenuWaitSemaphore;
+VkSemaphore MainMenuSignalSemaphore;
+
+VkFence* MainMenuSwapchainFences;
+
 float ModelViewProj[16];
 float Glow;
 
@@ -568,7 +573,7 @@ int CreateMainMenuRenderPass ()
 	memset (&AttachmentDescription, 0, sizeof (VkAttachmentDescription));
 
 	AttachmentDescription.format = ChosenSurfaceFormat.format;
-	AttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	AttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	AttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	AttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -589,25 +594,6 @@ int CreateMainMenuRenderPass ()
 	SubpassDescription.colorAttachmentCount = 1;
 	SubpassDescription.pColorAttachments = &ColorReference;
 
-	VkSubpassDependency SubpassDependencies[2];
-	memset (&SubpassDependencies, 0, sizeof (VkSubpassDependency) * 2);
-
-	SubpassDependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-	SubpassDependencies[0].dstSubpass = 0;
-	SubpassDependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	SubpassDependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	SubpassDependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-	SubpassDependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
-	SubpassDependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	SubpassDependencies[1].srcSubpass = 0;
-	SubpassDependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-	SubpassDependencies[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	SubpassDependencies[1].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	SubpassDependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
-	SubpassDependencies[1].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-	SubpassDependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
 	VkRenderPassCreateInfo CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkRenderPassCreateInfo));
 
@@ -616,8 +602,6 @@ int CreateMainMenuRenderPass ()
 	CreateInfo.pSubpasses = &SubpassDescription;
 	CreateInfo.attachmentCount = 1;
 	CreateInfo.pAttachments = &AttachmentDescription;
-	CreateInfo.dependencyCount = 2;
-	CreateInfo.pDependencies = SubpassDependencies;
 
 	if (vkCreateRenderPass (GraphicsDevice, &CreateInfo, NULL, &MainMenuRenderPass) != VK_SUCCESS)
 	{
@@ -643,11 +627,9 @@ int CreateMainMenuFBs ()
 
 	MainMenuSwapchainFramebuffers = (VkFramebuffer*)malloc (sizeof (VkFramebuffer) * SwapchainImageCount);
 
-	VkImageView Attachment;
 	for (uint32_t i = 0; i < SwapchainImageCount; i++)
 	{
-		Attachment = SwapchainImageViews[i];
-		CreateInfo.pAttachments = &Attachment;
+		CreateInfo.pAttachments = &SwapchainImageViews[i];
 
 		if (vkCreateFramebuffer (GraphicsDevice, &CreateInfo, NULL, &MainMenuSwapchainFramebuffers[i]) != VK_SUCCESS)
 		{
@@ -1066,6 +1048,44 @@ int CreateMainMenuCommandBuffers ()
 	return 0;
 }
 
+int CreateMainMenuSyncObjects ()
+{
+	OutputDebugString (L"CreateMainMenuSyncObjects\n");
+
+	VkSemaphoreCreateInfo SemaphoreCreateInfo;
+	memset (&SemaphoreCreateInfo, 0, sizeof (VkSemaphoreCreateInfo));
+
+	SemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	if (vkCreateSemaphore (GraphicsDevice, &SemaphoreCreateInfo, NULL, &MainMenuWaitSemaphore) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_SEMAPHORE;
+	}
+
+	if (vkCreateSemaphore (GraphicsDevice, &SemaphoreCreateInfo, NULL, &MainMenuSignalSemaphore) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_SEMAPHORE;
+	}
+
+	VkFenceCreateInfo FenceCreateInfo;
+	memset (&FenceCreateInfo, 0, sizeof (VkFenceCreateInfo));
+
+	FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	FenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	MainMenuSwapchainFences = (VkFence*)malloc (sizeof (VkFence) * SwapchainImageCount);
+
+	for (uint32_t i = 0; i < SwapchainImageCount; i++)
+	{
+		if (vkCreateFence (GraphicsDevice, &FenceCreateInfo, NULL, &MainMenuSwapchainFences[i]) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_CREATE_FENCE;
+		}
+	}
+
+	return 0;
+}
+
 int CreateMainMenuGraphics ()
 {
 	OutputDebugString (L"SetupMainMenu\n");
@@ -1168,11 +1188,69 @@ int CreateMainMenuGraphics ()
 		return Result;
 	}
 
+	Result = CreateMainMenuSyncObjects ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 	return 0;
 }
 
 int DrawMainMenu ()
 {
+	uint32_t ImageIndex = 0;
+
+	if (vkAcquireNextImageKHR (GraphicsDevice, Swapchain, UINT64_MAX, MainMenuWaitSemaphore, VK_NULL_HANDLE, &ImageIndex) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE;
+	}
+
+	if (vkWaitForFences (GraphicsDevice, 1, &MainMenuSwapchainFences[ImageIndex], VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
+	}
+
+	if (vkResetFences (GraphicsDevice, 1, &MainMenuSwapchainFences[ImageIndex]) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_RESET_FENCE;
+	}
+
+	VkPipelineStageFlags WaitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+	VkSubmitInfo SubmitInfo;
+	memset (&SubmitInfo, 0, sizeof (VkSubmitInfo));
+
+	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	SubmitInfo.pWaitDstStageMask = &WaitStageMask;
+	SubmitInfo.pWaitSemaphores = &MainMenuWaitSemaphore;
+	SubmitInfo.waitSemaphoreCount = 1;
+	SubmitInfo.pSignalSemaphores = &MainMenuSignalSemaphore;
+	SubmitInfo.signalSemaphoreCount = 1;
+	SubmitInfo.pCommandBuffers = &MainMenuSwapchainCommandBuffers[ImageIndex];
+	SubmitInfo.commandBufferCount = 1;
+
+	if (vkQueueSubmit (GraphicsQueue, 1, &SubmitInfo, MainMenuSwapchainFences[ImageIndex]) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
+	}
+
+	VkPresentInfoKHR PresentInfo;
+	memset (&PresentInfo, 0, sizeof (VkPresentInfoKHR));
+
+	PresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	PresentInfo.swapchainCount = 1;
+	PresentInfo.pSwapchains = &Swapchain;
+	PresentInfo.pImageIndices = &ImageIndex;
+	PresentInfo.waitSemaphoreCount = 1;
+	PresentInfo.pWaitSemaphores = &MainMenuSignalSemaphore;
+
+	if (vkQueuePresentKHR (GraphicsQueue, &PresentInfo) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_QUEUE_PRESENT;
+	}
+
 	return 0;
 }
 
@@ -1180,18 +1258,46 @@ void DestroyMainMenuGraphics ()
 {
 	OutputDebugString (L"DestroyMainMenu\n");
 
-	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
+	if (MainMenuSwapchainFences)
 	{
-		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
-		{
-			if (MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet)
-			{
-				if (MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet != VK_NULL_HANDLE)
-				{
-					vkFreeDescriptorSets (GraphicsDevice, MainMenuDescriptorPool, 1, MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet);
-				}
+		vkWaitForFences (GraphicsDevice, SwapchainImageCount, MainMenuSwapchainFences, VK_TRUE, UINT64_MAX);
 
-				free (MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet);
+		for (uint32_t i = 0; i < SwapchainImageCount; i++)
+		{
+			if (MainMenuSwapchainFences[i] != VK_NULL_HANDLE)
+			{
+				vkDestroyFence (GraphicsDevice, MainMenuSwapchainFences[i], NULL);
+			}
+		}
+
+		free (MainMenuSwapchainFences);
+	}
+
+	if (MainMenuWaitSemaphore != VK_NULL_HANDLE)
+	{
+		vkDestroySemaphore (GraphicsDevice, MainMenuWaitSemaphore, NULL);
+	}
+
+	if (MainMenuSignalSemaphore != VK_NULL_HANDLE)
+	{
+		vkDestroySemaphore (GraphicsDevice, MainMenuSignalSemaphore, NULL);
+	}
+
+	if (MainMenuMeshes)
+	{
+		for (uint32_t m = 0; m < MainMenuMeshCount; m++)
+		{
+			for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
+			{
+				if (MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet)
+				{
+					if (MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet != VK_NULL_HANDLE)
+					{
+						vkFreeDescriptorSets (GraphicsDevice, MainMenuDescriptorPool, 1, MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet);
+					}
+
+					free (MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet);
+				}
 			}
 		}
 	}

@@ -258,25 +258,6 @@ int CreateSplashScreenRenderPass ()
 	SubpassDescription.colorAttachmentCount = 1;
 	SubpassDescription.pColorAttachments = &ColorReference;
 
-	VkSubpassDependency SubpassDependencies[2];
-	memset (&SubpassDependencies, 0, sizeof (VkSubpassDependency) * 2);
-
-	SubpassDependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-	SubpassDependencies[0].dstSubpass = 0;
-	SubpassDependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	SubpassDependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	SubpassDependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-	SubpassDependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
-	SubpassDependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	SubpassDependencies[1].srcSubpass = 0;
-	SubpassDependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-	SubpassDependencies[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	SubpassDependencies[1].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	SubpassDependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
-	SubpassDependencies[1].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-	SubpassDependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
 	VkRenderPassCreateInfo CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkRenderPassCreateInfo));
 
@@ -285,8 +266,6 @@ int CreateSplashScreenRenderPass ()
 	CreateInfo.pSubpasses = &SubpassDescription;
 	CreateInfo.attachmentCount = 1;
 	CreateInfo.pAttachments = &AttachmentDescription;
-	CreateInfo.dependencyCount = 2;
-	CreateInfo.pDependencies = SubpassDependencies;
 
 	if (vkCreateRenderPass (GraphicsDevice, &CreateInfo, NULL, &RenderPass) != VK_SUCCESS)
 	{
