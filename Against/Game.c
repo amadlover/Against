@@ -248,4 +248,6 @@ void GameShutdown ()
 	OutputDebugString (L"GameShutdown\n");
 
 	GraphicsShutdown ();
+	
+	OutputDebugString (L"Finished GameShutdown\n");
 }

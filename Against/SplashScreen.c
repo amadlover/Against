@@ -17,8 +17,8 @@
 #include <Shlwapi.h>
 #include <strsafe.h>
 
-VkBuffer UniformBuffer;
-VkDeviceMemory UniformBufferMemory;
+VkBuffer SplashScreenUniformBuffer;
+VkDeviceMemory SplashScreenUniformBufferMemory;
 VkDescriptorSetLayout DescriptorSetLayout;
 VkDescriptorPool DescriptorPool;
 VkDescriptorSet DescriptorSet;
@@ -38,14 +38,12 @@ VkSemaphore SignalSemaphore;
 VkSampler SplashScreenSampler;
 
 VkBuffer SplashScreenHostVBIB;
-VkBuffer UniformBuffer;
 
 VkImage SplashScreenTextureImage;
 
 VkDeviceMemory SplasScreenHostVBIBMemory;
-VkDeviceMemory UniformBufferMemory;
-
 VkDeviceMemory SplashScreenTextureImageMemory;
+
 VkImageView TextureImageView;
 
 Mesh SplashScreenMesh;
@@ -101,13 +99,13 @@ int CreateSplashScreenUniformBuffer ()
 	CreateInfo.size = sizeof (Matrix4x4);
 	CreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &UniformBuffer) != VK_SUCCESS)
+	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &SplashScreenUniformBuffer) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
 	}
 
 	VkMemoryRequirements MemoryRequirements;
-	vkGetBufferMemoryRequirements (GraphicsDevice, UniformBuffer, &MemoryRequirements);
+	vkGetBufferMemoryRequirements (GraphicsDevice, SplashScreenUniformBuffer, &MemoryRequirements);
 
 	VkMemoryAllocateInfo MemoryAllocateInfo;
 	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
@@ -126,12 +124,12 @@ int CreateSplashScreenUniformBuffer ()
 		}
 	}
 
-	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &UniformBufferMemory) != VK_SUCCESS)
+	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &SplashScreenUniformBufferMemory) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_BUFFER_MEMORY;
 	}
 
-	if (vkBindBufferMemory (GraphicsDevice, UniformBuffer, UniformBufferMemory, 0) != VK_SUCCESS)
+	if (vkBindBufferMemory (GraphicsDevice, SplashScreenUniformBuffer, SplashScreenUniformBufferMemory, 0) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
 	}
@@ -1247,11 +1245,6 @@ void DestroySplashScreenGraphics ()
 		vkDestroyRenderPass (GraphicsDevice, RenderPass, NULL);
 	}
 	
-	if (UniformBufferMemory != VK_NULL_HANDLE)
-	{
-		vkFreeMemory (GraphicsDevice, UniformBufferMemory, NULL);
-	}
-	
 	if (SplasScreenHostVBIBMemory != VK_NULL_HANDLE)
 	{
 		vkFreeMemory (GraphicsDevice, SplasScreenHostVBIBMemory, NULL);
@@ -1268,11 +1261,6 @@ void DestroySplashScreenGraphics ()
 		}
 	}
 	
-	if (UniformBuffer != VK_NULL_HANDLE)
-	{
-		vkDestroyBuffer (GraphicsDevice, UniformBuffer, NULL);
-	}
-	
 	if (SplashScreenHostVBIB != VK_NULL_HANDLE)
 	{
 		vkDestroyBuffer (GraphicsDevice, SplashScreenHostVBIB, NULL);
@@ -1281,6 +1269,16 @@ void DestroySplashScreenGraphics ()
 	if (SplashScreenTextureImageMemory != VK_NULL_HANDLE)
 	{
 		vkFreeMemory (GraphicsDevice, SplashScreenTextureImageMemory, NULL);
+	}
+
+	if (SplashScreenUniformBufferMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory (GraphicsDevice, SplashScreenUniformBufferMemory, NULL);
+	}
+
+	if (SplashScreenUniformBuffer != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer (GraphicsDevice, SplashScreenUniformBuffer, NULL);
 	}
 	
 	if (SplashScreenTextureImage != VK_NULL_HANDLE)
@@ -1328,4 +1326,6 @@ void DestroySplashScreenGraphics ()
 
 		free (SplashScreenMesh.Primitives);
 	}
+
+	OutputDebugString (L"Finished DestroySplashScreen\n");
 }

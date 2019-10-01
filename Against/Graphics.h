@@ -8,6 +8,7 @@ uint32_t GraphicsQueueFamilyIndex;
 
 VkDevice GraphicsDevice;
 VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
+VkPhysicalDeviceLimits PhysicalDeviceLimits;
 VkSurfaceFormatKHR ChosenSurfaceFormat;
 VkExtent2D SurfaceExtent;
 VkSwapchainKHR Swapchain;

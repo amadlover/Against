@@ -204,9 +204,6 @@ int GetPhysicalDevice ()
 
 	PhysicalDevice = PhysicalDevices[0];
 
-	VkPhysicalDeviceProperties DeviceProperties;
-	vkGetPhysicalDeviceProperties (PhysicalDevice, &DeviceProperties);
-
 	VkPhysicalDeviceFeatures DeviceFeatures;
 	vkGetPhysicalDeviceFeatures (PhysicalDevice, &DeviceFeatures);
 
@@ -225,6 +222,10 @@ int GetPhysicalDevice ()
 	}
 
 	vkGetPhysicalDeviceMemoryProperties (PhysicalDevice, &PhysicalDeviceMemoryProperties);
+
+	VkPhysicalDeviceProperties DeviceProperties;
+	vkGetPhysicalDeviceProperties (PhysicalDevice, &DeviceProperties);
+	PhysicalDeviceLimits = DeviceProperties.limits;
 
 	free (PhysicalDevices);
 	free (QueueFamilyProperties);
@@ -619,4 +620,6 @@ void GraphicsShutdown ()
 	{
 		vkDestroyInstance (Instance, NULL);
 	}
+
+	OutputDebugString (L"Finished GraphicsShutdown\n");
 }
