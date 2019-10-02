@@ -2,7 +2,8 @@
 
 layout (set = 0, binding = 0) uniform VertUBO
 {
-	mat4 ModelViewProj;
+	mat4 ViewProj;
+	mat4 Model;
 	float Glow;
 	int IsBackground;
 } Buffer;
@@ -21,7 +22,7 @@ void main ()
 	}
 	else 
 	{
-		gl_Position = Buffer.ModelViewProj * vec4 (InPosition, 1);
+		gl_Position = Buffer.ViewProj * Buffer.Model * vec4 (InPosition, 1);
 	}
 	
 	OutGlow = Buffer.Glow;

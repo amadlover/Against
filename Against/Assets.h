@@ -3,6 +3,12 @@
 
 #include <vulkan/vulkan.h>
 
+
+typedef struct _VkImageHandles
+{
+	VkMemoryRequirements MemoryRequirements;
+} VkImageHandles;
+
 typedef struct _Image
 {
 	char Name[256];
@@ -13,6 +19,8 @@ typedef struct _Image
 	unsigned char* Pixels;
 
 	uint32_t PixelSize;
+
+	VkImageHandles VkHandles;
 }Image;
 
 typedef struct _Sampler

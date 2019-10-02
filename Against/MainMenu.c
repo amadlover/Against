@@ -4,6 +4,7 @@
 #include "ImportAssets.h"
 #include "Utility.h"
 #include "Graphics.h"
+#include "Maths.hpp"
 
 #include <Windows.h>
 #include <strsafe.h>
@@ -113,7 +114,7 @@ int CreateMainMenuUniformBuffer ()
 	memset (&CreateInfo, 0, sizeof (VkBufferCreateInfo));
 	
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	CreateInfo.size = sizeof (float) * 16 + sizeof (float);
+	CreateInfo.size = sizeof (float) * 16 + sizeof (float) * 16 + sizeof (float) + sizeof (int);
 	CreateInfo.queueFamilyIndexCount = 1;
 	CreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -172,7 +173,6 @@ int CreateMainMenuHostVBIBs ()
 	VBIBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 	
 	MainMenuHostVBIBs = (VkBuffer*)malloc (sizeof (VkBuffer) * MainMenuBufferCount);
-	//VkMemoryRequirements* VBIBMemoryRequirements = (VkMemoryRequirements*)malloc (sizeof (VkMemoryRequirements) * MainMenuBufferCount);
 
 	VkMemoryAllocateInfo VBIBMemoryAllocateInfo;
 	memset (&VBIBMemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
@@ -242,8 +242,6 @@ int CreateMainMenuHostVBIBs ()
 			BindMemoryOffset += MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.size;
 		}
 	}
-
-	//free (VBIBMemoryRequirements);
 
 	CurrentBufferCount = 0;
 
@@ -320,7 +318,10 @@ int CreateMainMenuTextureImages ()
 	MainMenuTImages = (VkImage*)malloc (sizeof (VkImage) * MainMenuImageCount);
 	MainMenuTImageViews = (VkImageView*)malloc (sizeof (VkImageView) * MainMenuImageCount);
 
-	VkMemoryRequirements* TImageMemoryRequirements = (VkMemoryRequirements*)malloc (sizeof (VkMemoryRequirements) * MainMenuImageCount);
+	VkMemoryAllocateInfo MemoryAllocateInfo;
+	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+
+	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
 	for (uint32_t i = 0; i < MainMenuImageCount; i++)
 	{
@@ -333,17 +334,8 @@ int CreateMainMenuTextureImages ()
 			return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
 		}
 
-		vkGetImageMemoryRequirements (GraphicsDevice, MainMenuTImages[i], (TImageMemoryRequirements + i));
-	}
-
-	VkMemoryAllocateInfo MemoryAllocateInfo;
-	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
-
-	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-
-	for (uint32_t i = 0; i < MainMenuImageCount; i++)
-	{
-		MemoryAllocateInfo.allocationSize += TImageMemoryRequirements[i].size;
+		vkGetImageMemoryRequirements (GraphicsDevice, MainMenuTImages[i], &MainMenuImages[i].VkHandles.MemoryRequirements);
+		MemoryAllocateInfo.allocationSize += MainMenuImages[i].VkHandles.MemoryRequirements.size;
 	}
 
 	uint32_t MemoryTypeIndex = 0;
@@ -353,7 +345,7 @@ int CreateMainMenuTextureImages ()
 	{
 		for (uint32_t mt = 0; mt < PhysicalDeviceMemoryProperties.memoryTypeCount; mt++)
 		{
-			if (TImageMemoryRequirements[i].memoryTypeBits & (1 << mt))
+			if (MainMenuImages[i].VkHandles.MemoryRequirements.memoryTypeBits & (1 << mt))
 			{
 				if (RequiredMemoryTypes & PhysicalDeviceMemoryProperties.memoryTypes[mt].propertyFlags)
 				{
@@ -380,7 +372,7 @@ int CreateMainMenuTextureImages ()
 			return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
 		}
 
-		BindMemoryOffset += TImageMemoryRequirements[i].size;
+		BindMemoryOffset += MainMenuImages[i].VkHandles.MemoryRequirements.size;
 	}
 
 	uint32_t MapMemoryOffset = 0;
@@ -389,7 +381,7 @@ int CreateMainMenuTextureImages ()
 	{
 		void* Data = NULL;
 
-		if (vkMapMemory (GraphicsDevice, MainMenuHostTImageMemory, MapMemoryOffset, MainMenuImages[i].PixelSize, 0, &Data) != VK_SUCCESS)
+		if (vkMapMemory (GraphicsDevice, MainMenuHostTImageMemory, MapMemoryOffset, MainMenuImages[i].VkHandles.MemoryRequirements.size, 0, &Data) != VK_SUCCESS)
 		{
 			return AGAINST_ERROR_GRAPHICS_MAP_IMAGE_MEMORY;
 		}
@@ -397,8 +389,6 @@ int CreateMainMenuTextureImages ()
 		memcpy (Data, MainMenuImages[i].Pixels, MainMenuImages[i].PixelSize);
 		vkUnmapMemory (GraphicsDevice, MainMenuHostTImageMemory);
 	}
-
-	free (TImageMemoryRequirements);
 
 	VkImageViewCreateInfo ImageViewCreateInfo;
 	memset (&ImageViewCreateInfo, 0, sizeof (VkImageViewCreateInfo));
@@ -1095,6 +1085,31 @@ int CreateMainMenuSyncObjects ()
 	return 0;
 }
 
+int UpdateMainMenuUniformBufferViewProjMatrix ()
+{
+	OutputDebugString (L"UpdateMainMenuUniformBufferViewProjMatrix\n");
+
+	float ViewProjectionMatrix[16];
+
+	float Position[3] = { 0,0,10 };
+	float Rotation[4] = { 0,0,0,0 };
+	float Scale[3] = { 1,1,1 };
+
+	CreateViewProjectionMatrix (0.1f, 10.f, -2.f, 2.f, -2.f, 2.f, Position, Rotation, Scale, ViewProjectionMatrix);
+
+	void* Data = NULL;
+
+	if (vkMapMemory (GraphicsDevice, MainMenuUniformBufferMemory, 0, sizeof (float) * 16, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+	}
+
+	memcpy (Data, ViewProjectionMatrix, sizeof (float) * 16);
+	vkUnmapMemory (GraphicsDevice, MainMenuUniformBufferMemory);
+
+	return 0;
+}
+
 int CreateMainMenuGraphics ()
 {
 	OutputDebugString (L"SetupMainMenu\n");
@@ -1198,6 +1213,13 @@ int CreateMainMenuGraphics ()
 	}
 
 	Result = CreateMainMenuSyncObjects ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = UpdateMainMenuUniformBufferViewProjMatrix ();
 
 	if (Result != 0)
 	{
