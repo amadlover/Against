@@ -172,7 +172,12 @@ int CreateMainMenuHostVBIBs ()
 	VBIBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 	
 	MainMenuHostVBIBs = (VkBuffer*)malloc (sizeof (VkBuffer) * MainMenuBufferCount);
-	VkMemoryRequirements* VBIBMemoryRequirements = (VkMemoryRequirements*)malloc (sizeof (VkMemoryRequirements) * MainMenuBufferCount);
+	//VkMemoryRequirements* VBIBMemoryRequirements = (VkMemoryRequirements*)malloc (sizeof (VkMemoryRequirements) * MainMenuBufferCount);
+
+	VkMemoryAllocateInfo VBIBMemoryAllocateInfo;
+	memset (&VBIBMemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+
+	VBIBMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
 	uint32_t CurrentBufferCount = 0;
 
@@ -187,39 +192,34 @@ int CreateMainMenuHostVBIBs ()
 				return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
 			}
 	
-			vkGetBufferMemoryRequirements (GraphicsDevice, MainMenuHostVBIBs[CurrentBufferCount], VBIBMemoryRequirements + m);
+			vkGetBufferMemoryRequirements (GraphicsDevice, MainMenuHostVBIBs[CurrentBufferCount], &MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements);
+
+			VBIBMemoryAllocateInfo.allocationSize += MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.size;
 			++CurrentBufferCount;
 		}
 	}
 	
-	VkMemoryAllocateInfo VBIBMemoryAllocateInfo;
-	memset (&VBIBMemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
-
-	VBIBMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	
-	for (uint32_t m = 0; m < MainMenuBufferCount; m++)
-	{
-		VBIBMemoryAllocateInfo.allocationSize += VBIBMemoryRequirements[m].size;
-	}
-
 	uint32_t RequiredMemoryTypes = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
 	uint32_t MemoryTypeIndex = 0;
 
-	for (uint32_t m = 0; m < MainMenuBufferCount; m++)
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
 	{
-		for (uint32_t mt = 0; mt < PhysicalDeviceMemoryProperties.memoryTypeCount; mt++)
+		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 		{
-			if (VBIBMemoryRequirements[m].memoryTypeBits & (1 << mt))
+			for (uint32_t mt = 0; mt < PhysicalDeviceMemoryProperties.memoryTypeCount; mt++)
 			{
-				if (RequiredMemoryTypes & PhysicalDeviceMemoryProperties.memoryTypes[mt].propertyFlags)
+				if (MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.memoryTypeBits & (1 << mt))
 				{
-					MemoryTypeIndex = mt;
-					break;
+					if (RequiredMemoryTypes & PhysicalDeviceMemoryProperties.memoryTypes[mt].propertyFlags)
+					{
+						MemoryTypeIndex = mt;
+						break;
+					}
 				}
 			}
 		}
- 	}
+	}
 
 	VBIBMemoryAllocateInfo.memoryTypeIndex = MemoryTypeIndex;
 
@@ -230,28 +230,35 @@ int CreateMainMenuHostVBIBs ()
 
 	VkDeviceSize BindMemoryOffset = 0;
 
-	for (uint32_t m = 0; m < MainMenuBufferCount; m++)
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
 	{
-		if (vkBindBufferMemory (GraphicsDevice, MainMenuHostVBIBs[m], MainMenuHostVBIBMemory, BindMemoryOffset) != VK_SUCCESS)
+		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 		{
-			return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
-		}
+			if (vkBindBufferMemory (GraphicsDevice, MainMenuHostVBIBs[m], MainMenuHostVBIBMemory, BindMemoryOffset) != VK_SUCCESS)
+			{
+				return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
+			}
 
-		BindMemoryOffset += VBIBMemoryRequirements[m].size;
+			BindMemoryOffset += MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.size;
+		}
 	}
 
-	free (VBIBMemoryRequirements);
+	//free (VBIBMemoryRequirements);
 
 	CurrentBufferCount = 0;
 
 	VkDeviceSize MapMemoryOffset = 0;
+	BindMemoryOffset = 0;
 
-	for (uint32_t m = 0; m < MainMenuMeshCount; m++) {
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++) 
+	{
 		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 		{
+			MapMemoryOffset = 0;
+
 			void* Data = NULL;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, MapMemoryOffset, MainMenuMeshes[m].Primitives[p].PositionSize, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, BindMemoryOffset + MapMemoryOffset, MainMenuMeshes[m].Primitives[p].PositionSize, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
@@ -261,7 +268,7 @@ int CreateMainMenuHostVBIBs ()
 
 			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].PositionSize;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, MapMemoryOffset, MainMenuMeshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, BindMemoryOffset + MapMemoryOffset, MainMenuMeshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
@@ -271,7 +278,7 @@ int CreateMainMenuHostVBIBs ()
 
 			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].UV0Size;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, MapMemoryOffset, MainMenuMeshes[m].Primitives[p].IndexSize, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, BindMemoryOffset + MapMemoryOffset, MainMenuMeshes[m].Primitives[p].IndexSize, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
 			}
@@ -282,6 +289,58 @@ int CreateMainMenuHostVBIBs ()
 			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].IndexSize;
 
 			++CurrentBufferCount;
+
+			BindMemoryOffset += MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.size;
+		}
+	}
+
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
+	{
+		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
+		{
+			void* Data = NULL;
+
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, 0, MainMenuMeshes[m].Primitives[p].PositionSize, 0, &Data) != VK_SUCCESS)
+			{
+				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+			}
+
+			float* Temp = (float*)malloc (MainMenuMeshes[m].Primitives[p].PositionSize);
+
+			memcpy (Temp, Data, MainMenuMeshes[m].Primitives[p].PositionSize);
+
+			for (uint32_t t = 0; t < MainMenuMeshes[m].Primitives[p].PositionSize / 4; t+=3)
+			{
+				wchar_t Buff[32];
+				swprintf (Buff, 32, L"%f %f %f\n", Temp[t], Temp[t + 1], Temp[t + 2]);
+				OutputDebugString (Buff);
+
+				swprintf (Buff, 32, L"%f %f %f\n", MainMenuMeshes[m].Primitives[p].Positions[t], MainMenuMeshes[m].Primitives[p].Positions[t + 1], MainMenuMeshes[m].Primitives[p].Positions[t + 2]);
+				OutputDebugString (Buff);
+			}
+
+			free (Temp);
+
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, MainMenuMeshes[m].Primitives[p].PositionSize, MainMenuMeshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
+			{
+				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+			}
+
+			Temp = (float*)malloc (MainMenuMeshes[m].Primitives[p].UV0Size);
+
+			memcpy (Temp, Data, MainMenuMeshes[m].Primitives[p].UV0Size);
+
+			for (uint32_t t = 0; t < MainMenuMeshes[m].Primitives[p].UV0Size / 4; t += 2)
+			{
+				wchar_t Buff[32];
+				swprintf (Buff, 32, L"%f %f\n", Temp[t], Temp[t + 1]);
+				OutputDebugString (Buff);
+
+				swprintf (Buff, 32, L"%f %f\n", MainMenuMeshes[m].Primitives[p].UV0s[t], MainMenuMeshes[m].Primitives[p].UV0s[t + 1]);
+				OutputDebugString (Buff);
+			}
+
+			free (Temp);
 		}
 	}
 

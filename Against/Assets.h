@@ -46,6 +46,7 @@ typedef struct _VkPrimitiveHandles
 	VkImageView* ImageView;
 	VkSampler Sampler;
 	VkDescriptorSet* DescriptorSet;
+	VkMemoryRequirements MemoryRequirements;
 } VkPrimitiveHandles;
 
 typedef struct _Primitive
