@@ -1,6 +1,4 @@
 #pragma once
-#include "Maths.hpp"
-
 #include <stdint.h>
 
 #include <vulkan/vulkan.h>

@@ -72,10 +72,10 @@ int CreateSplashScreenMesh ()
 
 	SplashScreenMesh.Primitives[0].Positions = (float*)malloc (SplashScreenMesh.Primitives[0].PositionSize);
 
-	SplashScreenMesh.Primitives[0].Positions[0] = 2; SplashScreenMesh.Primitives[0].Positions[1] = 2; SplashScreenMesh.Primitives[0].Positions[2] = 0;
-	SplashScreenMesh.Primitives[0].Positions[3] = -2; SplashScreenMesh.Primitives[0].Positions[4] = 2; SplashScreenMesh.Primitives[0].Positions[5] = 0;
-	SplashScreenMesh.Primitives[0].Positions[6] = -2; SplashScreenMesh.Primitives[0].Positions[7] = -2; SplashScreenMesh.Primitives[0].Positions[8] = 0;
-	SplashScreenMesh.Primitives[0].Positions[9] = 2; SplashScreenMesh.Primitives[0].Positions[10] = -2; SplashScreenMesh.Primitives[0].Positions[11] = 0;
+	SplashScreenMesh.Primitives[0].Positions[0] = 1; SplashScreenMesh.Primitives[0].Positions[1] = 1; SplashScreenMesh.Primitives[0].Positions[2] = 1;
+	SplashScreenMesh.Primitives[0].Positions[3] = -1; SplashScreenMesh.Primitives[0].Positions[4] = 1; SplashScreenMesh.Primitives[0].Positions[5] = 1;
+	SplashScreenMesh.Primitives[0].Positions[6] = -1; SplashScreenMesh.Primitives[0].Positions[7] = -1; SplashScreenMesh.Primitives[0].Positions[8] = 1;
+	SplashScreenMesh.Primitives[0].Positions[9] = 1; SplashScreenMesh.Primitives[0].Positions[10] = -1; SplashScreenMesh.Primitives[0].Positions[11] = 1;
 
 	SplashScreenMesh.Primitives[0].UV0s = (float*)malloc (SplashScreenMesh.Primitives[0].UV0Size);
 
@@ -96,7 +96,7 @@ int CreateSplashScreenUniformBuffer ()
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	CreateInfo.size = sizeof (Matrix4x4);
+	CreateInfo.size = sizeof (float) * 16;
 	CreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
 	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, &SplashScreenUniformBuffer) != VK_SUCCESS)

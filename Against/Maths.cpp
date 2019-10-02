@@ -1,12 +1,9 @@
 #include "Maths.hpp"
-#include <glm/gtc/matrix_transform.hpp>
 
-void CreatePerspectiveProjectionMatrix (float FOV, float AspectRatio, float Near, float Far, Matrix4x4* Result)
-{
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
-}
-
-void CreateOrthographicProjectionMatrix (float Left, float Right, float Bottom, float Top, float Near, float Far, Matrix4x4* Result)
+void CreateOrthographicMatrixGLM (float Near, float far, float Left, float Right, float Bottom, float Top, float* Result)
 {
 
 }

@@ -287,60 +287,10 @@ int CreateMainMenuHostVBIBs ()
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 
 			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].IndexSize;
+			
+			BindMemoryOffset += MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.size;
 
 			++CurrentBufferCount;
-
-			BindMemoryOffset += MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.size;
-		}
-	}
-
-	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
-	{
-		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
-		{
-			void* Data = NULL;
-
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, 0, MainMenuMeshes[m].Primitives[p].PositionSize, 0, &Data) != VK_SUCCESS)
-			{
-				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
-			}
-
-			float* Temp = (float*)malloc (MainMenuMeshes[m].Primitives[p].PositionSize);
-
-			memcpy (Temp, Data, MainMenuMeshes[m].Primitives[p].PositionSize);
-
-			for (uint32_t t = 0; t < MainMenuMeshes[m].Primitives[p].PositionSize / 4; t+=3)
-			{
-				wchar_t Buff[32];
-				swprintf (Buff, 32, L"%f %f %f\n", Temp[t], Temp[t + 1], Temp[t + 2]);
-				OutputDebugString (Buff);
-
-				swprintf (Buff, 32, L"%f %f %f\n", MainMenuMeshes[m].Primitives[p].Positions[t], MainMenuMeshes[m].Primitives[p].Positions[t + 1], MainMenuMeshes[m].Primitives[p].Positions[t + 2]);
-				OutputDebugString (Buff);
-			}
-
-			free (Temp);
-
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, MainMenuMeshes[m].Primitives[p].PositionSize, MainMenuMeshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
-			{
-				return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
-			}
-
-			Temp = (float*)malloc (MainMenuMeshes[m].Primitives[p].UV0Size);
-
-			memcpy (Temp, Data, MainMenuMeshes[m].Primitives[p].UV0Size);
-
-			for (uint32_t t = 0; t < MainMenuMeshes[m].Primitives[p].UV0Size / 4; t += 2)
-			{
-				wchar_t Buff[32];
-				swprintf (Buff, 32, L"%f %f\n", Temp[t], Temp[t + 1]);
-				OutputDebugString (Buff);
-
-				swprintf (Buff, 32, L"%f %f\n", MainMenuMeshes[m].Primitives[p].UV0s[t], MainMenuMeshes[m].Primitives[p].UV0s[t + 1]);
-				OutputDebugString (Buff);
-			}
-
-			free (Temp);
 		}
 	}
 
