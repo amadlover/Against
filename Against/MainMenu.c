@@ -72,7 +72,8 @@ VkSemaphore MainMenuSignalSemaphore;
 
 VkFence* MainMenuSwapchainFences;
 
-float ModelViewProj[16];
+float MainMenuCameraViewProjMat[16];
+
 float Glow;
 
 //TODO: Use device local memory where possible
@@ -114,7 +115,7 @@ int CreateMainMenuUniformBuffer ()
 	memset (&CreateInfo, 0, sizeof (VkBufferCreateInfo));
 	
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	CreateInfo.size = sizeof (float) * 16 + sizeof (float) * 16 + sizeof (float) + sizeof (int);
+	CreateInfo.size = sizeof (float) * 16 + sizeof (float) + sizeof (int);
 	CreateInfo.queueFamilyIndexCount = 1;
 	CreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -786,12 +787,21 @@ int CreateMainMenuGraphicsPipelineLayout ()
 
 	VkDescriptorSetLayout SetLayouts[2] = { MainMenuUniformBufferDescriptorSetLayout, MainMenuColorTextureDescriptorSetLayout };
 
+	VkPushConstantRange PushConstantRange;
+	memset (&PushConstantRange, 0, sizeof (VkPushConstantRange));
+
+	PushConstantRange.offset = 0;
+	PushConstantRange.size = sizeof (float) * 16 + sizeof (float) + sizeof (int);
+	PushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
 	VkPipelineLayoutCreateInfo PipelineCreateInfo;
 	memset (&PipelineCreateInfo, 0, sizeof (VkPipelineLayoutCreateInfo));
 
 	PipelineCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	PipelineCreateInfo.setLayoutCount = 2;
 	PipelineCreateInfo.pSetLayouts = SetLayouts;
+	PipelineCreateInfo.pushConstantRangeCount = 1;
+	PipelineCreateInfo.pPushConstantRanges = &PushConstantRange;
 
 	if (vkCreatePipelineLayout (GraphicsDevice, &PipelineCreateInfo, NULL, &MainMenuGraphicsPipelineLayout) != VK_SUCCESS)
 	{
@@ -1003,6 +1013,13 @@ int CreateMainMenuCommandBuffers ()
 
 	CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+	
+	/*void* Data = NULL;
+
+	if (vkMapMemory (GraphicsDevice, MainMenuUniformBufferMemory, sizeof (float) * 16, sizeof (float) * 16, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+	}*/
 
 	for (uint32_t i = 0; i < SwapchainImageCount; i++)
 	{
@@ -1019,20 +1036,43 @@ int CreateMainMenuCommandBuffers ()
 
 		uint32_t MeshCounter = 0;
 
-		for (uint32_t m = 0; m < MainMenuMeshCount; m++)
+		for (uint32_t n = 0; n < MainMenuNodeCount; n++)
 		{
-			for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
+			if (MainMenuNodes[n].Mesh)
 			{
-				vkCmdBindDescriptorSets (MainMenuSwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, MainMenuGraphicsPipelineLayout, 1, 1, MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet, 0, NULL);
-				VkDeviceSize Offsets[3] = { 0, MainMenuMeshes[m].Primitives[p].PositionSize, MainMenuMeshes[m].Primitives[p].PositionSize + MainMenuMeshes[m].Primitives[p].UV0Size };
+				float ModelMatrix[16];
+				CreateTransformationMatrix (MainMenuNodes[n].Translation, MainMenuNodes[n].Rotation, MainMenuNodes[n].Scale, ModelMatrix);
+				//memcpy (Data, ModelMatrix, sizeof (float) * 16);
 
-				vkCmdBindVertexBuffers (MainMenuSwapchainCommandBuffers[i], 0, 1, MainMenuHostVBIBs + MeshCounter, Offsets);
-				vkCmdBindVertexBuffers (MainMenuSwapchainCommandBuffers[i], 1, 1, MainMenuHostVBIBs + MeshCounter, Offsets + 1);
-				vkCmdBindIndexBuffer (MainMenuSwapchainCommandBuffers[i], MainMenuHostVBIBs[MeshCounter], Offsets[2], VK_INDEX_TYPE_UINT32);
+				float ModelViewProjMatrix[16];
+				MultiplyMatrices (ModelMatrix, MainMenuCameraViewProjMat, ModelViewProjMatrix);
 
-				vkCmdDrawIndexed (MainMenuSwapchainCommandBuffers[i], MainMenuMeshes[m].Primitives[p].IndexCount, 1, 0, 0, 0);
+				vkCmdPushConstants (MainMenuSwapchainCommandBuffers[i], MainMenuGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof (float) * 16, ModelViewProjMatrix);
 
-				++MeshCounter;
+				if (strcmp (MainMenuNodes[n].Name, "Background") == 0)
+				{
+					int BackgroundPlane = 1;
+					vkCmdPushConstants (MainMenuSwapchainCommandBuffers[i], MainMenuGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof (float) * 16 + sizeof (float), sizeof (int), &BackgroundPlane);
+				}
+				else
+				{
+					int BackgroundPlane = 0;
+					vkCmdPushConstants (MainMenuSwapchainCommandBuffers[i], MainMenuGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof (float) * 16 + sizeof (float), sizeof (int), &BackgroundPlane);
+				}
+
+				for (uint32_t p = 0; p < MainMenuNodes[n].Mesh->PrimitiveCount; p++)
+				{
+					vkCmdBindDescriptorSets (MainMenuSwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, MainMenuGraphicsPipelineLayout, 1, 1, MainMenuNodes[n].Mesh->Primitives[p].VkHandles.DescriptorSet, 0, NULL);
+
+					VkDeviceSize Offsets[3] = { 0, MainMenuNodes[n].Mesh->Primitives[p].PositionSize, MainMenuNodes[n].Mesh->Primitives[p].PositionSize + MainMenuNodes[n].Mesh->Primitives[p].UV0Size };
+					vkCmdBindVertexBuffers (MainMenuSwapchainCommandBuffers[i], 0, 1, MainMenuHostVBIBs + MeshCounter, Offsets);
+					vkCmdBindVertexBuffers (MainMenuSwapchainCommandBuffers[i], 1, 1, MainMenuHostVBIBs + MeshCounter, Offsets + 1);
+					vkCmdBindIndexBuffer (MainMenuSwapchainCommandBuffers[i], MainMenuHostVBIBs[MeshCounter], Offsets[2], VK_INDEX_TYPE_UINT32);
+
+					vkCmdDrawIndexed (MainMenuSwapchainCommandBuffers[i], MainMenuNodes[n].Mesh->Primitives[p].IndexCount, 1, 0, 0, 0);
+
+					++MeshCounter;
+				}
 			}
 		}
 
@@ -1043,6 +1083,8 @@ int CreateMainMenuCommandBuffers ()
 			return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
 		}
 	}
+
+	//vkUnmapMemory (GraphicsDevice, MainMenuUniformBufferMemory);
 
 	return 0;
 }
@@ -1089,23 +1131,11 @@ int UpdateMainMenuUniformBufferViewProjMatrix ()
 {
 	OutputDebugString (L"UpdateMainMenuUniformBufferViewProjMatrix\n");
 
-	float ViewProjectionMatrix[16];
-
 	float Position[3] = { 0,0,10 };
 	float Rotation[4] = { 0,0,0,0 };
 	float Scale[3] = { 1,1,1 };
 
-	CreateViewProjectionMatrix (0.1f, 10.f, -2.f, 2.f, -2.f, 2.f, Position, Rotation, Scale, ViewProjectionMatrix);
-
-	void* Data = NULL;
-
-	if (vkMapMemory (GraphicsDevice, MainMenuUniformBufferMemory, 0, sizeof (float) * 16, 0, &Data) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
-	}
-
-	memcpy (Data, ViewProjectionMatrix, sizeof (float) * 16);
-	vkUnmapMemory (GraphicsDevice, MainMenuUniformBufferMemory);
+	CreateViewProjectionMatrix (0.1f, 10.f, -2.f, 2.f, -2.f, 2.f, Position, Rotation, Scale, MainMenuCameraViewProjMat);
 
 	return 0;
 }
@@ -1205,6 +1235,13 @@ int CreateMainMenuGraphics ()
 		return Result;
 	}
 
+	Result = UpdateMainMenuUniformBufferViewProjMatrix ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 	Result = CreateMainMenuCommandBuffers ();
 
 	if (Result != 0)
@@ -1219,12 +1256,6 @@ int CreateMainMenuGraphics ()
 		return Result;
 	}
 
-	Result = UpdateMainMenuUniformBufferViewProjMatrix ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
 
 	return 0;
 }
