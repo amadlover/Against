@@ -249,6 +249,10 @@ int ImportMainMenuGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount,
 					{
 						memcpy ((*Nodes + n)->Scale, Node->scale, sizeof (float) * 3);
 					}
+					else
+					{
+						(*Nodes + n)->Scale[0] = 1; (*Nodes + n)->Scale[1] = 1; (*Nodes + n)->Scale[2] = 1;
+					}
 
 					if (Node->mesh)
 					{

@@ -154,13 +154,17 @@
       <AdditionalDependencies>vulkan-1.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Shaders" "$(SolutionDir)$(Platform)\$(Configuration)\Shaders" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Characters" "$(SolutionDir)$(Platform)\$(Configuration)\Characters" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Maps" "$(SolutionDir)$(Platform)\$(Configuration)\Maps" /I /Y /D /E /R 
 xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons" /I /Y /D /E /R </Command>
-    </PostBuildEvent>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -182,13 +186,17 @@ xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons
       <AdditionalDependencies>vulkan-1.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Shaders" "$(SolutionDir)$(Platform)\$(Configuration)\Shaders" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Characters" "$(SolutionDir)$(Platform)\$(Configuration)\Characters" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Maps" "$(SolutionDir)$(Platform)\$(Configuration)\Maps" /I /Y /D /E /R 
 xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons" /I /Y /D /E /R </Command>
-    </PostBuildEvent>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -215,13 +223,17 @@ xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons
       <ProgramDatabaseFile />
     </Link>
     <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Shaders" "$(SolutionDir)$(Platform)\$(Configuration)\Shaders" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Characters" "$(SolutionDir)$(Platform)\$(Configuration)\Characters" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Maps" "$(SolutionDir)$(Platform)\$(Configuration)\Maps" /I /Y /D /E /R 
 xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons" /I /Y /D /E /R </Command>
-    </PostBuildEvent>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -248,13 +260,17 @@ xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons
       <ProgramDatabaseFile />
     </Link>
     <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Shaders" "$(SolutionDir)$(Platform)\$(Configuration)\Shaders" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Characters" "$(SolutionDir)$(Platform)\$(Configuration)\Characters" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Maps" "$(SolutionDir)$(Platform)\$(Configuration)\Maps" /I /Y /D /E /R 
 xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons" /I /Y /D /E /R </Command>
-    </PostBuildEvent>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

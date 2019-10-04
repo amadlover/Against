@@ -862,7 +862,7 @@ int CreateMainMenuGraphicsPipeline ()
 	RasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	RasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	RasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	RasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	RasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	RasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	RasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 	RasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
@@ -1125,7 +1125,7 @@ int UpdateMainMenuUniformBufferViewProjMatrix ()
 
 	CreatePerspectiveProjectionMatrixGLM (45.f, (float)SurfaceExtent.width / (float)SurfaceExtent.height, 0.1f, 50.f, MainMenuCameraProjectionMatrix);
 
-	float Eye[3] = { 5,5,5 };
+	float Eye[3] = { 0,0,10 };
 	float Center[3] = { 0,0,0 };
 	float Up[3] = { 0,1,0 };
 
