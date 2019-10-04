@@ -22,14 +22,14 @@ layout (location = 1) out float OutGlow;
 
 void main ()
 {
-	if (PushConsts.IsBackground == 1)
+	/*if (PushConsts.IsBackground == 1)
 	{
 		gl_Position = vec4 (InPosition, 1);
 	}
 	else 
-	{
+	{*/
 		gl_Position = PushConsts.ModelViewProj * vec4 (InPosition, 1);
-	}
+	//}
 	
 	OutGlow = PushConsts.Glow;
 	OutUV = InUV;

@@ -72,7 +72,8 @@ VkSemaphore MainMenuSignalSemaphore;
 
 VkFence* MainMenuSwapchainFences;
 
-float MainMenuCameraViewProjMat[16];
+float MainMenuCameraViewMatrix[16];
+float MainMenuCameraProjectionMatrix[16];
 
 float Glow;
 
@@ -307,7 +308,7 @@ int CreateMainMenuTextureImages ()
 	CreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
 	CreateInfo.arrayLayers = 1;
 	CreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	CreateInfo.mipLevels = 1;
 	CreateInfo.queueFamilyIndexCount = 1;
 	CreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
@@ -861,7 +862,7 @@ int CreateMainMenuGraphicsPipeline ()
 	RasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	RasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	RasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	RasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	RasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	RasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	RasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 	RasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
@@ -1013,13 +1014,6 @@ int CreateMainMenuCommandBuffers ()
 
 	CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-	
-	/*void* Data = NULL;
-
-	if (vkMapMemory (GraphicsDevice, MainMenuUniformBufferMemory, sizeof (float) * 16, sizeof (float) * 16, 0, &Data) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
-	}*/
 
 	for (uint32_t i = 0; i < SwapchainImageCount; i++)
 	{
@@ -1041,11 +1035,11 @@ int CreateMainMenuCommandBuffers ()
 			if (MainMenuNodes[n].Mesh)
 			{
 				float ModelMatrix[16];
-				CreateTransformationMatrix (MainMenuNodes[n].Translation, MainMenuNodes[n].Rotation, MainMenuNodes[n].Scale, ModelMatrix);
-				//memcpy (Data, ModelMatrix, sizeof (float) * 16);
+				CreateTransformationMatrixGLM (MainMenuNodes[n].Translation, MainMenuNodes[n].Rotation, MainMenuNodes[n].Scale, ModelMatrix);
 
 				float ModelViewProjMatrix[16];
-				MultiplyMatrices (ModelMatrix, MainMenuCameraViewProjMat, ModelViewProjMatrix);
+
+				CreateModelViewProjectinMatrix (MainMenuCameraProjectionMatrix, MainMenuCameraViewMatrix, ModelMatrix, ModelViewProjMatrix);
 
 				vkCmdPushConstants (MainMenuSwapchainCommandBuffers[i], MainMenuGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof (float) * 16, ModelViewProjMatrix);
 
@@ -1083,8 +1077,6 @@ int CreateMainMenuCommandBuffers ()
 			return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
 		}
 	}
-
-	//vkUnmapMemory (GraphicsDevice, MainMenuUniformBufferMemory);
 
 	return 0;
 }
@@ -1131,11 +1123,13 @@ int UpdateMainMenuUniformBufferViewProjMatrix ()
 {
 	OutputDebugString (L"UpdateMainMenuUniformBufferViewProjMatrix\n");
 
-	float Position[3] = { 0,0,10 };
-	float Rotation[4] = { 0,0,0,0 };
-	float Scale[3] = { 1,1,1 };
+	CreatePerspectiveProjectionMatrixGLM (45.f, (float)SurfaceExtent.width / (float)SurfaceExtent.height, 0.1f, 50.f, MainMenuCameraProjectionMatrix);
 
-	CreateViewProjectionMatrix (0.1f, 10.f, -2.f, 2.f, -2.f, 2.f, Position, Rotation, Scale, MainMenuCameraViewProjMat);
+	float Eye[3] = { 5,5,5 };
+	float Center[3] = { 0,0,0 };
+	float Up[3] = { 0,1,0 };
+
+	CreateLookatMatrixGLM (Eye, Center, Up, MainMenuCameraViewMatrix);
 
 	return 0;
 }
