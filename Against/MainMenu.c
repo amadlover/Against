@@ -13,6 +13,7 @@
 #include <math.h>
 
 #include <vulkan/vulkan.h>
+#include <stb_image.h>
 
 Node* MainMenuNodes;
 uint32_t MainMenuNodeCount;
@@ -46,7 +47,6 @@ VkDeviceMemory MainMenuHostVBIBMemory;
 VkDeviceMemory MainMenuHostTImageMemory;
 
 VkSampler MainMenuFallbackSampler;
-VkImageView MainMenuFallbackImageView;
 
 VkDescriptorPool MainMenuDescriptorPool;
 VkDescriptorSetLayout MainMenuUniformBufferDescriptorSetLayout;
@@ -77,7 +77,7 @@ float MainMenuCameraProjectionMatrix[16];
 
 float Glow;
 
-//TODO: Use device local memory where possible
+//TODO: Use DEVICE_LOCAL memory where possible
 
 int ImportMainMenuAssets ()
 {
@@ -108,6 +108,7 @@ int ImportMainMenuAssets ()
 	return 0;
 }
 
+//TODO: To be removed if not used. Using Push constants to transfer matrix data to the shaders.
 int CreateMainMenuUniformBuffer ()
 {
 	OutputDebugString (L"CreateMainScreenUniformBuffer\n");
@@ -418,11 +419,6 @@ int CreateMainMenuTextureImages ()
 		{
 			return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
 		}
-	}
-
-	if (vkCreateImageView (GraphicsDevice, &ImageViewCreateInfo, NULL, &MainMenuFallbackImageView) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
 	}
 
 	VkSamplerCreateInfo SamplerCreateInfo;
@@ -1358,11 +1354,6 @@ void DestroyMainMenuGraphics ()
 		}
 	}
 
-	if (MainMenuFallbackImageView != VK_NULL_HANDLE)
-	{
-		vkDestroyImageView (GraphicsDevice, MainMenuFallbackImageView, NULL);
-	}
-
 	if (MainMenuUniformBuffer != VK_NULL_HANDLE)
 	{
 		vkDestroyBuffer (GraphicsDevice, MainMenuUniformBuffer, NULL);
@@ -1542,7 +1533,7 @@ void DestroyMainMenuGraphics ()
 		{
 			if (MainMenuImages[i].Pixels)
 			{
-				free (MainMenuImages[i].Pixels);
+				stbi_image_free (MainMenuImages[i].Pixels);
 			}
 		}
 

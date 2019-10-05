@@ -48,6 +48,8 @@ VkImageView TextureImageView;
 
 Mesh SplashScreenMesh;
 
+//TODO: Use DEVICE_LOCAL memory where possible
+
 int CreateSplashScreenMesh ()
 {
 	OutputDebugString (L"CreateSplashScreenMesh\n");
@@ -863,7 +865,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	vkUnmapMemory (GraphicsDevice, SplashScreenTextureImageMemory);
 
-	free (Pixels);
+	stbi_image_free (Pixels);
 
 	VkCommandBuffer DataCopyCmdBuffer;
 
