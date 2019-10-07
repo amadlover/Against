@@ -27,7 +27,7 @@ VkShaderModule SplashScreenVertexShaderModule;
 VkShaderModule SplashScreenFragmentShaderModule;
 VkPipelineShaderStageCreateInfo PipelineShaderStages[2];
 VkFramebuffer* SwapchainFramebuffers;
-VkCommandPool GraphicsDeviceCommandPool;
+VkCommandPool SplashScreenCommandPool;
 VkCommandBuffer* SwapchainCommandBuffers;
 VkPipelineLayout GraphicsPipelineLayout;
 VkPipeline GraphicsPipeline;
@@ -421,8 +421,9 @@ int CreateSplashScreenCommandPool ()
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	CreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+	CreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	if (vkCreateCommandPool (GraphicsDevice, &CreateInfo, NULL, &GraphicsDeviceCommandPool) != VK_SUCCESS)
+	if (vkCreateCommandPool (GraphicsDevice, &CreateInfo, NULL, &SplashScreenCommandPool) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
 	}
@@ -431,7 +432,7 @@ int CreateSplashScreenCommandPool ()
 	memset (&AllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
 
 	AllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	AllocateInfo.commandPool = GraphicsDeviceCommandPool;
+	AllocateInfo.commandPool = SplashScreenCommandPool;
 	AllocateInfo.commandBufferCount = SwapchainImageCount;
 	AllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
@@ -800,6 +801,66 @@ int CreateSplashScreenHostTextureImage ()
 	
 	uint8_t* Pixels = stbi_load ((const char*)Filename, &Width, &Height, &BPP, 0);
 
+	VkBuffer StagingBuffer;
+
+	VkBufferCreateInfo StagingBufferCreateInfo;
+	memset (&StagingBufferCreateInfo, 0, sizeof (VkBufferCreateInfo));
+
+	StagingBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	StagingBufferCreateInfo.queueFamilyIndexCount = 1;
+	StagingBufferCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
+	StagingBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	StagingBufferCreateInfo.size = Width * Height * BPP * sizeof (float);
+
+	if (vkCreateBuffer (GraphicsDevice, &StagingBufferCreateInfo, NULL, &StagingBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
+	}
+
+	VkMemoryRequirements StagingBufferMemoryRequirments;
+	memset (&StagingBufferMemoryRequirments, 0, sizeof (VkMemoryRequirements));
+
+	vkGetBufferMemoryRequirements (GraphicsDevice, StagingBuffer, &StagingBufferMemoryRequirments);
+
+	VkDeviceMemory StagingBufferMemory;
+	VkMemoryAllocateInfo StagingBufferAllocateInfo;
+	memset (&StagingBufferAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+
+	StagingBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	StagingBufferAllocateInfo.allocationSize = StagingBufferMemoryRequirments.size;
+
+	uint32_t RequiredTypes = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if (StagingBufferMemoryRequirments.memoryTypeBits & (1 << i) && RequiredTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
+		{
+			StagingBufferAllocateInfo.memoryTypeIndex = i;
+			break;
+		}
+	}
+
+	if (vkAllocateMemory (GraphicsDevice, &StagingBufferAllocateInfo, NULL, &StagingBufferMemory) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_IMAGE_MEMORY;
+	}
+
+	if (vkBindBufferMemory (GraphicsDevice, StagingBuffer, StagingBufferMemory, 0) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
+	}
+
+	void* Data = NULL;
+	if (vkMapMemory (GraphicsDevice, StagingBufferMemory, 0, StagingBufferMemoryRequirments.size, 0, &Data) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_MAP_IMAGE_MEMORY;
+	}
+	memcpy (Data, Pixels, Width * Height * BPP * sizeof (uint8_t));
+
+	vkUnmapMemory (GraphicsDevice, StagingBufferMemory);
+
+	stbi_image_free (Pixels);
+
 	VkImageCreateInfo CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkImageCreateInfo));
 
@@ -812,14 +873,14 @@ int CreateSplashScreenHostTextureImage ()
 
 	CreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
 	CreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	CreateInfo.mipLevels = 1;
 	CreateInfo.queueFamilyIndexCount = 1;
 	CreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 	CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	CreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
-	CreateInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+	CreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	CreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
 	if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &SplashScreenTextureImage) != VK_SUCCESS)
 	{
@@ -835,7 +896,7 @@ int CreateSplashScreenHostTextureImage ()
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
 
-	uint32_t RequiredTypes = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	RequiredTypes = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
 	{
@@ -856,38 +917,27 @@ int CreateSplashScreenHostTextureImage ()
 		return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
 	}
 
-	void* Data = NULL;
-	if (vkMapMemory (GraphicsDevice, SplashScreenTextureImageMemory, 0, MemoryRequirements.size, 0, &Data) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_MAP_IMAGE_MEMORY;
-	}
-	memcpy (Data, Pixels, Width * Height * BPP * sizeof (uint8_t));
+	VkCommandBuffer LayoutChangeCmdBuffer;
 
-	vkUnmapMemory (GraphicsDevice, SplashScreenTextureImageMemory);
+	VkCommandBufferAllocateInfo LayoutChangeCmdBufferAllocateInfo;
+	memset (&LayoutChangeCmdBufferAllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
 
-	stbi_image_free (Pixels);
+	LayoutChangeCmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	LayoutChangeCmdBufferAllocateInfo.commandPool = SplashScreenCommandPool;
+	LayoutChangeCmdBufferAllocateInfo.commandBufferCount = 1;
 
-	VkCommandBuffer DataCopyCmdBuffer;
-
-	VkCommandBufferAllocateInfo CommandBufferAllocateInfo;
-	memset (&CommandBufferAllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
-
-	CommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	CommandBufferAllocateInfo.commandPool = GraphicsDeviceCommandPool;
-	CommandBufferAllocateInfo.commandBufferCount = 1;
-
-	if (vkAllocateCommandBuffers (GraphicsDevice, &CommandBufferAllocateInfo, &DataCopyCmdBuffer) != VK_SUCCESS)
+	if (vkAllocateCommandBuffers (GraphicsDevice, &LayoutChangeCmdBufferAllocateInfo, &LayoutChangeCmdBuffer) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
 	}
 
-	VkCommandBufferBeginInfo DataCopyCmdBufferBeginInfo;
-	memset (&DataCopyCmdBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
+	VkCommandBufferBeginInfo LayoutCmdBufferBeginInfo;
+	memset (&LayoutCmdBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
 
-	DataCopyCmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	DataCopyCmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	LayoutCmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	LayoutCmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	if (vkBeginCommandBuffer (DataCopyCmdBuffer, &DataCopyCmdBufferBeginInfo) != VK_SUCCESS)
+	if (vkBeginCommandBuffer (LayoutChangeCmdBuffer, &LayoutCmdBufferBeginInfo) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
 	}
@@ -905,24 +955,24 @@ int CreateSplashScreenHostTextureImage ()
 
 	MemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	MemoryBarrier.image = SplashScreenTextureImage;
-	MemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-	MemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	MemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
-	MemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	MemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	MemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	MemoryBarrier.srcAccessMask = 0;
+	MemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	MemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	MemoryBarrier.subresourceRange.baseMipLevel = 0;
 	MemoryBarrier.subresourceRange.levelCount = 1;
 	MemoryBarrier.subresourceRange.layerCount = 1;
 
-	vkCmdPipelineBarrier (DataCopyCmdBuffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &MemoryBarrier);
-	vkEndCommandBuffer (DataCopyCmdBuffer);
+	vkCmdPipelineBarrier (LayoutChangeCmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &MemoryBarrier);
+	vkEndCommandBuffer (LayoutChangeCmdBuffer);
 
 	VkSubmitInfo SubmitInfo;
 	memset (&SubmitInfo, 0, sizeof (VkSubmitInfo));
 
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	SubmitInfo.commandBufferCount = 1;
-	SubmitInfo.pCommandBuffers = &DataCopyCmdBuffer;
+	SubmitInfo.pCommandBuffers = &LayoutChangeCmdBuffer;
 
 	VkFence Fence;
 	VkFenceCreateInfo FenceCreateInfo;
@@ -939,6 +989,110 @@ int CreateSplashScreenHostTextureImage ()
 	{
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
 	}
+
+	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
+	}
+	
+	if (vkResetFences (GraphicsDevice, 1, &Fence) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_RESET_FENCE;
+	}
+
+	VkCommandBuffer CopyBufferToImageCmdBuffer;
+	VkCommandBufferAllocateInfo CopyBufferToImageCmdBufferAllocateInfo;
+	memset (&CopyBufferToImageCmdBufferAllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
+
+	CopyBufferToImageCmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	CopyBufferToImageCmdBufferAllocateInfo.commandBufferCount = 1;
+	CopyBufferToImageCmdBufferAllocateInfo.commandPool = SplashScreenCommandPool;
+
+	if (vkAllocateCommandBuffers (GraphicsDevice, &CopyBufferToImageCmdBufferAllocateInfo, &CopyBufferToImageCmdBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
+	}
+
+	VkCommandBufferBeginInfo CopyBufferToImageCmdBufferBeginInfo;
+	memset (&CopyBufferToImageCmdBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
+
+	CopyBufferToImageCmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	CopyBufferToImageCmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	if (vkBeginCommandBuffer (CopyBufferToImageCmdBuffer, &CopyBufferToImageCmdBufferBeginInfo) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
+	}
+
+	VkBufferImageCopy BufferImageCopy;
+	memset (&BufferImageCopy, 0, sizeof (VkBufferImageCopy));
+
+	BufferImageCopy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	BufferImageCopy.imageSubresource.layerCount = 1;
+	BufferImageCopy.bufferOffset = 0;
+	BufferImageCopy.bufferImageHeight = 0;
+	BufferImageCopy.bufferRowLength = 0;
+	BufferImageCopy.imageOffset.x = 0; BufferImageCopy.imageOffset.y = 0; BufferImageCopy.imageOffset.z = 0;
+	BufferImageCopy.imageExtent.height = Height;
+	BufferImageCopy.imageExtent.width = Width;
+	BufferImageCopy.imageExtent.depth = 1;
+
+	vkCmdCopyBufferToImage (CopyBufferToImageCmdBuffer, StagingBuffer, SplashScreenTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &BufferImageCopy);
+	vkEndCommandBuffer (CopyBufferToImageCmdBuffer);
+
+	SubmitInfo.pCommandBuffers = &CopyBufferToImageCmdBuffer;
+
+	if (vkQueueSubmit (GraphicsQueue, 1, &SubmitInfo, Fence) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
+	}
+
+	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
+	}
+
+	if (vkResetFences (GraphicsDevice, 1, &Fence) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_RESET_FENCE;
+	}
+
+	MemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	MemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	MemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	MemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+	if (vkResetCommandBuffer (LayoutChangeCmdBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRPAHICS_RESET_COMMAND_BUFFER;
+	}
+
+	if (vkBeginCommandBuffer (LayoutChangeCmdBuffer, &LayoutCmdBufferBeginInfo) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
+	}
+
+	vkCmdPipelineBarrier (LayoutChangeCmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &MemoryBarrier);
+	vkEndCommandBuffer (LayoutChangeCmdBuffer);
+
+	SubmitInfo.pCommandBuffers = &LayoutChangeCmdBuffer;
+
+	if (vkQueueSubmit (GraphicsQueue, 1, &SubmitInfo, Fence) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
+	}
+
+	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
+	}
+
+
+	vkFreeCommandBuffers (GraphicsDevice, SplashScreenCommandPool, 1, &LayoutChangeCmdBuffer);
+	vkFreeCommandBuffers (GraphicsDevice, SplashScreenCommandPool, 1, &CopyBufferToImageCmdBuffer);
+
+	vkFreeMemory (GraphicsDevice, StagingBufferMemory, NULL);
+	vkDestroyBuffer (GraphicsDevice, StagingBuffer, NULL);
 
 	VkSamplerCreateInfo SamplerCreateInfo;
 	memset (&SamplerCreateInfo, 0, sizeof (VkSamplerCreateInfo));
@@ -1192,13 +1346,13 @@ void DestroySplashScreenGraphics ()
 
 	if (SwapchainCommandBuffers)
 	{
-		vkFreeCommandBuffers (GraphicsDevice, GraphicsDeviceCommandPool, SwapchainImageCount, SwapchainCommandBuffers);
+		vkFreeCommandBuffers (GraphicsDevice, SplashScreenCommandPool, SwapchainImageCount, SwapchainCommandBuffers);
 		free (SwapchainCommandBuffers);
 	}
 
-	if (GraphicsDeviceCommandPool != VK_NULL_HANDLE)
+	if (SplashScreenCommandPool != VK_NULL_HANDLE)
 	{
-		vkDestroyCommandPool (GraphicsDevice, GraphicsDeviceCommandPool, NULL);
+		vkDestroyCommandPool (GraphicsDevice, SplashScreenCommandPool, NULL);
 	}
 
 	if (GraphicsPipeline != VK_NULL_HANDLE)
