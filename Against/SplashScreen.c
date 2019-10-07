@@ -1087,6 +1087,7 @@ int CreateSplashScreenHostTextureImage ()
 		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
 	}
 
+	vkDestroyFence (GraphicsDevice, Fence, NULL);
 
 	vkFreeCommandBuffers (GraphicsDevice, SplashScreenCommandPool, 1, &LayoutChangeCmdBuffer);
 	vkFreeCommandBuffers (GraphicsDevice, SplashScreenCommandPool, 1, &CopyBufferToImageCmdBuffer);
@@ -1136,13 +1137,6 @@ int CreateSplashScreenHostTextureImage ()
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
 	}
-
-	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
-	}
-
-	vkDestroyFence (GraphicsDevice, Fence, NULL);
 
 	return 0;
 }
