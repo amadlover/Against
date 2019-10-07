@@ -27,9 +27,6 @@ VkDebugUtilsMessengerEXT DebugUtilsMessenger;
 VkPhysicalDevice PhysicalDevice;
 VkSurfaceKHR Surface;
 VkPresentModeKHR ChosenPresentMode;
-VkDescriptorSetLayout DescriptorSetLayout;
-VkDescriptorPool DescriptorPool;
-VkDescriptorSet DescriptorSet;
 
 VkResult CreateDebugUtilsMessenger (VkInstance Instance, const VkDebugUtilsMessengerCreateInfoEXT* DebugUtilsMessengerCreateInfo, const VkAllocationCallbacks* AllocationCallbacks, VkDebugUtilsMessengerEXT* DebugUtilsMessenger)
 {
@@ -435,33 +432,6 @@ int CreateSwapchainImageViews ()
 		{
 			return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
 		}
-	}
-
-	return 0;
-}
-
-int CreateDescriptorSetLayout ()
-{
-	OutputDebugString (L"CreateDescriptorSetLayout\n");
-
-	VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding;
-	memset (&DescriptorSetLayoutBinding, 0, sizeof (VkDescriptorSetLayoutBinding));
-
-	DescriptorSetLayoutBinding.binding = 0;
-	DescriptorSetLayoutBinding.descriptorCount = 1;
-	DescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	DescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo;
-	memset (&DescriptorSetLayoutCreateInfo, 0, sizeof (VkDescriptorSetLayoutCreateInfo));
-
-	DescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	DescriptorSetLayoutCreateInfo.bindingCount = 1;
-	DescriptorSetLayoutCreateInfo.pBindings = &DescriptorSetLayoutBinding;
-
-	if (vkCreateDescriptorSetLayout (GraphicsDevice, &DescriptorSetLayoutCreateInfo, NULL, &DescriptorSetLayout) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT;
 	}
 
 	return 0;
