@@ -9,5 +9,5 @@ layout (location = 0) out vec4 OutColor;
 
 void main ()
 {
-	OutColor = vec4(1,1,1,1);//texture (ColorTexture, InUV) + InGlow;
+	OutColor = texture (ColorTexture, InUV) + InGlow;
 }

@@ -128,7 +128,7 @@ int CreateSplashScreenUniformBuffer ()
 
 	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &SplashScreenUniformBufferMemory) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_ALLOCATE_BUFFER_MEMORY;
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
 	}
 
 	if (vkBindBufferMemory (GraphicsDevice, SplashScreenUniformBuffer, SplashScreenUniformBufferMemory, 0) != VK_SUCCESS)
@@ -748,7 +748,7 @@ int CreateSplashScreenHostVBIB ()
 
 	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &SplasScreenHostVBIBMemory) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_ALLOCATE_BUFFER_MEMORY;
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
 	}
 
 	if (vkBindBufferMemory (GraphicsDevice, SplashScreenHostVBIB, SplasScreenHostVBIBMemory, 0) != VK_SUCCESS)
@@ -760,7 +760,7 @@ int CreateSplashScreenHostVBIB ()
 
 	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, 0, SplashScreenMesh.Primitives[0].PositionSize, 0, &Data) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
 
 	memcpy (Data, SplashScreenMesh.Primitives[0].Positions, SplashScreenMesh.Primitives[0].PositionSize);
@@ -768,7 +768,7 @@ int CreateSplashScreenHostVBIB ()
 
 	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.Primitives[0].PositionSize, SplashScreenMesh.Primitives[0].UV0Size, 0, &Data) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
 
 	memcpy (Data, SplashScreenMesh.Primitives[0].UV0s, SplashScreenMesh.Primitives[0].UV0Size);
@@ -776,7 +776,7 @@ int CreateSplashScreenHostVBIB ()
 
 	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.Primitives[0].PositionSize + SplashScreenMesh.Primitives[0].UV0Size, SplashScreenMesh.Primitives[0].IndexSize, 0, &Data) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY;
+		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
 
 	memcpy (Data, SplashScreenMesh.Primitives[0].Indices, SplashScreenMesh.Primitives[0].IndexSize);
@@ -842,7 +842,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	if (vkAllocateMemory (GraphicsDevice, &StagingBufferAllocateInfo, NULL, &StagingBufferMemory) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_ALLOCATE_IMAGE_MEMORY;
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
 	}
 
 	if (vkBindBufferMemory (GraphicsDevice, StagingBuffer, StagingBufferMemory, 0) != VK_SUCCESS)
@@ -853,7 +853,7 @@ int CreateSplashScreenHostTextureImage ()
 	void* Data = NULL;
 	if (vkMapMemory (GraphicsDevice, StagingBufferMemory, 0, StagingBufferMemoryRequirments.size, 0, &Data) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_MAP_IMAGE_MEMORY;
+		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
 	memcpy (Data, Pixels, Width * Height * BPP * sizeof (uint8_t));
 
@@ -909,7 +909,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &SplashScreenTextureImageMemory) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_ALLOCATE_IMAGE_MEMORY;
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
 	}
 
 	if (vkBindImageMemory (GraphicsDevice, SplashScreenTextureImage, SplashScreenTextureImageMemory, 0) != VK_SUCCESS)
@@ -992,7 +992,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
 	
 	if (vkResetFences (GraphicsDevice, 1, &Fence) != VK_SUCCESS)
@@ -1049,7 +1049,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
 
 	if (vkResetFences (GraphicsDevice, 1, &Fence) != VK_SUCCESS)
@@ -1064,7 +1064,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	if (vkResetCommandBuffer (LayoutChangeCmdBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRPAHICS_RESET_COMMAND_BUFFER;
+		return AGAINST_ERROR_GRAPHICS_RESET_COMMAND_BUFFER;
 	}
 
 	if (vkBeginCommandBuffer (LayoutChangeCmdBuffer, &LayoutCmdBufferBeginInfo) != VK_SUCCESS)
@@ -1084,7 +1084,7 @@ int CreateSplashScreenHostTextureImage ()
 
 	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
 
 	vkDestroyFence (GraphicsDevice, Fence, NULL);
@@ -1264,7 +1264,7 @@ int DrawSplashScreen (uint64_t ElapsedTime)
 
 	if (vkWaitForFences (GraphicsDevice, 1, &SplashScreenSwapchainFences[ImageIndex], VK_TRUE, UINT64_MAX) != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE;
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
 
 	if (vkResetFences (GraphicsDevice, 1, &SplashScreenSwapchainFences[ImageIndex]) != VK_SUCCESS)

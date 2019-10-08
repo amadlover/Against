@@ -65,7 +65,7 @@ int ImportMainMenuGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount,
 					char TextureFilename[MAX_PATH];
 					wcstombs (TextureFilename, TextureFile, MAX_PATH);
 					(*Images + i)->Pixels = stbi_load (TextureFilename, &(*Images + i)->Width, &(*Images + i)->Height, &(*Images + i)->BPP, 4);
-					(*Images + i)->PixelSize = (*Images + i)->Width * (*Images + i)->Height * 4 * sizeof (unsigned char);
+					(*Images + i)->Size = (*Images + i)->Width * (*Images + i)->Height * 4 * sizeof (unsigned char);
 
 					if (Image->name)
 					{

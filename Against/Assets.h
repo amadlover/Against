@@ -18,7 +18,7 @@ typedef struct _Image
 
 	unsigned char* Pixels;
 
-	uint32_t PixelSize;
+	uint32_t Size;
 
 	VkImageHandles VkHandles;
 }Image;

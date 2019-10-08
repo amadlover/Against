@@ -58,7 +58,7 @@ void LogError (AGAINSTRESULT Result)
 		OutputDebugString (L"Graphics Error: Create Buffer\n");
 		break;
 
-	case AGAINST_ERROR_GRAPHICS_ALLOCATE_BUFFER_MEMORY:
+	case AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY:
 		OutputDebugString (L"Graphics Error: Allocate Buffer Memory\n");
 		break;
 
@@ -70,20 +70,12 @@ void LogError (AGAINSTRESULT Result)
 		OutputDebugString (L"Graphics Error: Create Image\n");
 		break;
 
-	case AGAINST_ERROR_GRAPHICS_ALLOCATE_IMAGE_MEMORY:
-		OutputDebugString (L"Graphics Error: Allocate Image Memory\n");
-		break;
-
 	case AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY:
 		OutputDebugString (L"Graphics Error: Bind Image Memory\n");
 		break;
 
-	case AGAINST_ERROR_GRAPHICS_MAP_IMAGE_MEMORY:
+	case AGAINST_ERROR_GRAPHICS_MAP_MEMORY:
 		OutputDebugString (L"Graphics Error: Map Image Memory\n");
-		break;
-
-	case AGAINST_ERROR_GRAPHICS_MAP_BUFFER_MEMORY:
-		OutputDebugString (L"Graphics Error: Map Buffer Memory\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT:
@@ -142,7 +134,7 @@ void LogError (AGAINSTRESULT Result)
 		OutputDebugString (L"Graphics Error: Acquire Next Image\n");
 		break;
 
-	case AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCE:
+	case AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES:
 		OutputDebugString (L"Graphics Error: Wait for Fence\n");
 		break;
 
