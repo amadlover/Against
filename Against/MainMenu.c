@@ -59,6 +59,10 @@ VkShaderModule MainMenuVertexShaderModule;
 VkShaderModule MainMenuFragmentShaderModule;
 VkPipelineShaderStageCreateInfo MainMenuPipelineShaderStages[2];
 
+VkImage MainMenuDepthImage;
+VkDeviceMemory MainMenuDepthImageMemory;
+VkImageView MainMenuDepthImageView;
+
 VkFramebuffer* MainMenuSwapchainFramebuffers;
 VkRenderPass MainMenuRenderPass;
 
@@ -727,6 +731,169 @@ int CreateMainMenuTextureImages ()
 	return 0;
 }
 
+int CreateMainMenuDepthImage ()
+{
+	OutputDebugString (L"CreateMainMenuDepthImage\n");
+
+	VkImageCreateInfo DepthImageCreateInfo;
+	memset (&DepthImageCreateInfo, 0, sizeof (VkImageCreateInfo));
+
+	DepthImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	DepthImageCreateInfo.extent.width = SurfaceExtent.width;
+	DepthImageCreateInfo.extent.height = SurfaceExtent.height;
+	DepthImageCreateInfo.extent.depth = 1;
+	DepthImageCreateInfo.arrayLayers = 1;
+	DepthImageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	DepthImageCreateInfo.format = VK_FORMAT_D16_UNORM;
+	DepthImageCreateInfo.mipLevels = 1;
+	DepthImageCreateInfo.queueFamilyIndexCount = 1;
+	DepthImageCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
+	DepthImageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	DepthImageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	DepthImageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	DepthImageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	DepthImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+
+	if (vkCreateImage (GraphicsDevice, &DepthImageCreateInfo, NULL, &MainMenuDepthImage) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
+	}
+
+	VkMemoryRequirements MemoryRequirements;
+	memset (&MemoryRequirements, 0, sizeof (VkMemoryRequirements));
+
+	vkGetImageMemoryRequirements (GraphicsDevice, MainMenuDepthImage, &MemoryRequirements);
+
+	VkMemoryAllocateInfo MemoryAllocateInfo;
+	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+
+	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
+	
+	uint32_t RequiredTypes = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if (MemoryRequirements.memoryTypeBits & (1 << i) && RequiredTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
+		{
+			MemoryAllocateInfo.memoryTypeIndex = i;
+			break;
+		}
+	}
+
+	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, &MainMenuDepthImageMemory) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
+	}
+
+	if (vkBindImageMemory (GraphicsDevice, MainMenuDepthImage, MainMenuDepthImageMemory, 0) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
+	}
+
+	/*VkCommandBuffer LayoutChangeCmdBuffer;
+	VkCommandBufferAllocateInfo LayoutChangeCmdBufferAllocateInfo;
+	memset (&LayoutChangeCmdBufferAllocateInfo, 0, sizeof (LayoutChangeCmdBufferAllocateInfo));
+
+	LayoutChangeCmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	LayoutChangeCmdBufferAllocateInfo.commandPool = MainMenuCommandPool;
+	LayoutChangeCmdBufferAllocateInfo.commandBufferCount = 1;
+
+	if (vkAllocateCommandBuffers (GraphicsDevice, &LayoutChangeCmdBufferAllocateInfo, &LayoutChangeCmdBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
+	}
+
+	VkCommandBufferBeginInfo LayoutChangeCmdBufferBeginInfo;
+	memset (&LayoutChangeCmdBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
+
+	LayoutChangeCmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	LayoutChangeCmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	VkImageMemoryBarrier MemoryBarrier;
+	memset (&MemoryBarrier, 0, sizeof (VkImageMemoryBarrier));
+
+	MemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	MemoryBarrier.image = MainMenuDepthImage;
+	MemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	MemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	MemoryBarrier.srcAccessMask = 0;
+	MemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	MemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	MemoryBarrier.subresourceRange.baseMipLevel = 0;
+	MemoryBarrier.subresourceRange.layerCount = 1;
+	MemoryBarrier.subresourceRange.levelCount = 1;
+
+	if (vkBeginCommandBuffer (LayoutChangeCmdBuffer, &LayoutChangeCmdBufferBeginInfo) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
+	}
+
+	vkCmdPipelineBarrier (LayoutChangeCmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &MemoryBarrier);
+
+	if (vkEndCommandBuffer (LayoutChangeCmdBuffer) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
+	}
+
+	VkSubmitInfo SubmitInfo;
+	memset (&SubmitInfo, 0, sizeof (VkSubmitInfo));
+
+	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	SubmitInfo.commandBufferCount = 1;
+	SubmitInfo.pCommandBuffers = &LayoutChangeCmdBuffer;
+
+	VkFence Fence;
+	VkFenceCreateInfo FenceCreateInfo;
+	memset (&FenceCreateInfo, 0, sizeof (VkFenceCreateInfo));
+
+	FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+	if (vkCreateFence (GraphicsDevice, &FenceCreateInfo, NULL, &Fence) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_FENCE;
+	}
+
+	if (vkQueueSubmit (GraphicsQueue, 1, &SubmitInfo, Fence) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
+	}
+
+	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
+	}
+
+	vkFreeCommandBuffers (GraphicsDevice, MainMenuCommandPool, 1, &LayoutChangeCmdBuffer);
+	vkDestroyFence (GraphicsDevice, Fence, NULL);*/
+
+	VkImageViewCreateInfo DepthImageViewCreateInfo;
+	memset (&DepthImageViewCreateInfo, 0, sizeof (VkImageViewCreateInfo));
+
+	DepthImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	DepthImageViewCreateInfo.image = MainMenuDepthImage;
+	DepthImageViewCreateInfo.format = VK_FORMAT_D16_UNORM;
+	DepthImageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+	DepthImageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+	DepthImageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_G;
+	DepthImageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+	DepthImageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+
+	DepthImageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	DepthImageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	DepthImageViewCreateInfo.subresourceRange.layerCount = 1;
+	DepthImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	DepthImageViewCreateInfo.subresourceRange.levelCount = 1;
+
+	if (vkCreateImageView (GraphicsDevice, &DepthImageViewCreateInfo, NULL, &MainMenuDepthImageView) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
+	}
+
+	return 0;
+}
+
 int CreateMainMenuShaders ()
 {
 	OutputDebugString (L"CreateMainMenuShaders\n");
@@ -835,21 +1002,34 @@ int CreateMainMenuRenderPass ()
 {
 	OutputDebugString (L"CreateMainMenuRenderPass\n");
 
-	VkAttachmentDescription AttachmentDescription;
-	memset (&AttachmentDescription, 0, sizeof (VkAttachmentDescription));
+	VkAttachmentDescription AttachmentDescriptions[2];
+	memset (&AttachmentDescriptions, 0, sizeof (VkAttachmentDescription) * 2);
 
-	AttachmentDescription.format = ChosenSurfaceFormat.format;
-	AttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	AttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	AttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	AttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	AttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	AttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	AttachmentDescriptions[0].format = ChosenSurfaceFormat.format;
+	AttachmentDescriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	AttachmentDescriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	AttachmentDescriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	AttachmentDescriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	AttachmentDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	AttachmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	AttachmentDescriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
+
+	AttachmentDescriptions[1].format = VK_FORMAT_D16_UNORM;
+	AttachmentDescriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	AttachmentDescriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	AttachmentDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	AttachmentDescriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	AttachmentDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	AttachmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	AttachmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
 
 	VkAttachmentReference ColorReference;
 	ColorReference.attachment = 0;
 	ColorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference DepthReference;
+	DepthReference.attachment = 1;
+	DepthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	VkSubpassDescription SubpassDescription;
 	memset (&SubpassDescription, 0, sizeof (VkSubpassDescription));
@@ -859,6 +1039,7 @@ int CreateMainMenuRenderPass ()
 	SubpassDescription.preserveAttachmentCount = 0;
 	SubpassDescription.colorAttachmentCount = 1;
 	SubpassDescription.pColorAttachments = &ColorReference;
+	SubpassDescription.pDepthStencilAttachment = &DepthReference;
 
 	VkRenderPassCreateInfo CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkRenderPassCreateInfo));
@@ -866,8 +1047,8 @@ int CreateMainMenuRenderPass ()
 	CreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	CreateInfo.subpassCount = 1;
 	CreateInfo.pSubpasses = &SubpassDescription;
-	CreateInfo.attachmentCount = 1;
-	CreateInfo.pAttachments = &AttachmentDescription;
+	CreateInfo.attachmentCount = 2;
+	CreateInfo.pAttachments = AttachmentDescriptions;
 
 	if (vkCreateRenderPass (GraphicsDevice, &CreateInfo, NULL, &MainMenuRenderPass) != VK_SUCCESS)
 	{
@@ -886,7 +1067,7 @@ int CreateMainMenuFBs ()
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	CreateInfo.renderPass = MainMenuRenderPass;
-	CreateInfo.attachmentCount = 1;
+	CreateInfo.attachmentCount = 2;
 	CreateInfo.width = SurfaceExtent.width;
 	CreateInfo.height = SurfaceExtent.height;
 	CreateInfo.layers = 1;
@@ -895,7 +1076,8 @@ int CreateMainMenuFBs ()
 
 	for (uint32_t i = 0; i < SwapchainImageCount; i++)
 	{
-		CreateInfo.pAttachments = &SwapchainImageViews[i];
+		VkImageView Attachments[2] = { SwapchainImageViews[i] , MainMenuDepthImageView };
+		CreateInfo.pAttachments = Attachments;
 
 		if (vkCreateFramebuffer (GraphicsDevice, &CreateInfo, NULL, &MainMenuSwapchainFramebuffers[i]) != VK_SUCCESS)
 		{
@@ -1446,6 +1628,13 @@ int CreateMainMenuGraphics ()
 		return Result;
 	}
 
+	Result = CreateMainMenuDepthImage ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 	Result = CreateMainMenuDescriptorPool ();
 
 	if (Result != 0)
@@ -1516,7 +1705,6 @@ int CreateMainMenuGraphics ()
 		return Result;
 	}
 
-
 	return 0;
 }
 
@@ -1558,6 +1746,11 @@ int DrawMainMenu ()
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
 	}
 
+	if (vkWaitForFences (GraphicsDevice, 1, &MainMenuSwapchainFences[ImageIndex], VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
+	}
+
 	VkPresentInfoKHR PresentInfo;
 	memset (&PresentInfo, 0, sizeof (VkPresentInfoKHR));
 
@@ -1579,6 +1772,18 @@ int DrawMainMenu ()
 void DestroyMainMenuGraphics ()
 {
 	OutputDebugString (L"DestroyMainMenu\n");
+
+	if (MainMenuDepthImageView != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView (GraphicsDevice, MainMenuDepthImageView, NULL);
+	}
+
+	if (MainMenuDepthImage != VK_NULL_HANDLE)
+	{
+		vkDestroyImage (GraphicsDevice, MainMenuDepthImage, NULL);
+	}
+
+	vkFreeMemory (GraphicsDevice, MainMenuDepthImageMemory, NULL);
 
 	if (MainMenuSwapchainFences)
 	{
