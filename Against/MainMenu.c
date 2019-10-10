@@ -71,8 +71,8 @@ VkPipeline MainMenuGraphicsPipeline;
 VkCommandPool MainMenuCommandPool;
 VkCommandBuffer* MainMenuSwapchainCommandBuffers;
 
-VkSemaphore MainMenuWaitSemaphore;
-VkSemaphore MainMenuSignalSemaphore;
+VkSemaphore MainMenuImageAcquiredSemaphore;
+VkSemaphore MainMenuImageRenderedSemaphore;
 
 VkFence* MainMenuSwapchainFences;
 
@@ -1538,12 +1538,12 @@ int CreateMainMenuSyncObjects ()
 
 	SemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	if (vkCreateSemaphore (GraphicsDevice, &SemaphoreCreateInfo, NULL, &MainMenuWaitSemaphore) != VK_SUCCESS)
+	if (vkCreateSemaphore (GraphicsDevice, &SemaphoreCreateInfo, NULL, &MainMenuImageAcquiredSemaphore) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_SEMAPHORE;
 	}
 
-	if (vkCreateSemaphore (GraphicsDevice, &SemaphoreCreateInfo, NULL, &MainMenuSignalSemaphore) != VK_SUCCESS)
+	if (vkCreateSemaphore (GraphicsDevice, &SemaphoreCreateInfo, NULL, &MainMenuImageRenderedSemaphore) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_SEMAPHORE;
 	}
@@ -1712,19 +1712,18 @@ int DrawMainMenu ()
 {
 	uint32_t ImageIndex = 0;
 
-	if (vkAcquireNextImageKHR (GraphicsDevice, Swapchain, UINT64_MAX, MainMenuWaitSemaphore, VK_NULL_HANDLE, &ImageIndex) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE;
-	}
+	VkResult Result = vkAcquireNextImageKHR (GraphicsDevice, Swapchain, UINT64_MAX, MainMenuImageAcquiredSemaphore, VK_NULL_HANDLE, &ImageIndex);
 
-	if (vkWaitForFences (GraphicsDevice, 1, &MainMenuSwapchainFences[ImageIndex], VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	if (Result != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
-	}
-
-	if (vkResetFences (GraphicsDevice, 1, &MainMenuSwapchainFences[ImageIndex]) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_RESET_FENCE;
+		if (Result == VK_SUBOPTIMAL_KHR || Result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			return 0;
+		}
+		else
+		{
+			return AGAINST_ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE;
+		}
 	}
 
 	VkPipelineStageFlags WaitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -1734,12 +1733,17 @@ int DrawMainMenu ()
 
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	SubmitInfo.pWaitDstStageMask = &WaitStageMask;
-	SubmitInfo.pWaitSemaphores = &MainMenuWaitSemaphore;
+	SubmitInfo.pWaitSemaphores = &MainMenuImageAcquiredSemaphore;
 	SubmitInfo.waitSemaphoreCount = 1;
-	SubmitInfo.pSignalSemaphores = &MainMenuSignalSemaphore;
+	SubmitInfo.pSignalSemaphores = &MainMenuImageRenderedSemaphore;
 	SubmitInfo.signalSemaphoreCount = 1;
 	SubmitInfo.pCommandBuffers = &MainMenuSwapchainCommandBuffers[ImageIndex];
 	SubmitInfo.commandBufferCount = 1;
+
+	if (vkResetFences (GraphicsDevice, 1, &MainMenuSwapchainFences[ImageIndex]) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_RESET_FENCE;
+	}
 
 	if (vkQueueSubmit (GraphicsQueue, 1, &SubmitInfo, MainMenuSwapchainFences[ImageIndex]) != VK_SUCCESS)
 	{
@@ -1759,11 +1763,20 @@ int DrawMainMenu ()
 	PresentInfo.pSwapchains = &Swapchain;
 	PresentInfo.pImageIndices = &ImageIndex;
 	PresentInfo.waitSemaphoreCount = 1;
-	PresentInfo.pWaitSemaphores = &MainMenuSignalSemaphore;
+	PresentInfo.pWaitSemaphores = &MainMenuImageRenderedSemaphore;
 
-	if (vkQueuePresentKHR (GraphicsQueue, &PresentInfo) != VK_SUCCESS)
+	Result = vkQueuePresentKHR (GraphicsQueue, &PresentInfo);
+
+	if (Result != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_QUEUE_PRESENT;
+		if (Result == VK_SUBOPTIMAL_KHR || Result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			return 0;
+		}
+		else
+		{
+			return AGAINST_ERROR_GRAPHICS_QUEUE_PRESENT;
+		}
 	}
 
 	return 0;
@@ -1772,6 +1785,8 @@ int DrawMainMenu ()
 void DestroyMainMenuGraphics ()
 {
 	OutputDebugString (L"DestroyMainMenu\n");
+
+	vkWaitForFences (GraphicsDevice, SwapchainImageCount, MainMenuSwapchainFences, VK_TRUE, UINT64_MAX);
 
 	if (MainMenuDepthImageView != VK_NULL_HANDLE)
 	{
@@ -1800,14 +1815,14 @@ void DestroyMainMenuGraphics ()
 		free (MainMenuSwapchainFences);
 	}
 
-	if (MainMenuWaitSemaphore != VK_NULL_HANDLE)
+	if (MainMenuImageAcquiredSemaphore != VK_NULL_HANDLE)
 	{
-		vkDestroySemaphore (GraphicsDevice, MainMenuWaitSemaphore, NULL);
+		vkDestroySemaphore (GraphicsDevice, MainMenuImageAcquiredSemaphore, NULL);
 	}
 
-	if (MainMenuSignalSemaphore != VK_NULL_HANDLE)
+	if (MainMenuImageRenderedSemaphore != VK_NULL_HANDLE)
 	{
-		vkDestroySemaphore (GraphicsDevice, MainMenuSignalSemaphore, NULL);
+		vkDestroySemaphore (GraphicsDevice, MainMenuImageRenderedSemaphore, NULL);
 	}
 
 	if (MainMenuMeshes)

@@ -4,6 +4,7 @@
 
 #include "Game.h"
 #include "Error.h"
+#include "Utility.h"
 
 LRESULT CALLBACK WindowProc (HWND WindowHandle, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
@@ -25,13 +26,15 @@ LRESULT CALLBACK WindowProc (HWND WindowHandle, UINT Msg, WPARAM wParam, LPARAM 
 		}
 		break;
 
-	case WM_QUIT:
-		PostQuitMessage (0);
-		return 0;
-
 	case WM_DESTROY:
 		PostQuitMessage (0);
-		return 0;
+
+		break;
+
+	case WM_CLOSE:
+		PostQuitMessage (0);
+
+		break;
 
 	case WM_KEYDOWN:
 		ProcessKeyboardInput (wParam, lParam);
@@ -108,27 +111,27 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 	MSG Msg;
 	ZeroMemory (&Msg, sizeof (Msg));
 
-	while (TRUE)
+	while (Msg.message != WM_QUIT)
 	{
-		while (PeekMessage (&Msg, NULL, 0, 0, PM_REMOVE))
+		if (PeekMessage (&Msg, NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage (&Msg);
 			DispatchMessage (&Msg);
-		}
 
-		Result = GameMainLoop ();
+			Result = GameMainLoop ();
 
-		if (Result != 0)
-		{
-			wchar_t Buff[16];
-			swprintf_s (Buff, 16, L"Main Loop ");
-			OutputDebugString (Buff);
+			if (Result != 0)
+			{
+				wchar_t Buff[16];
+				swprintf_s (Buff, 16, L"Main Loop ");
+				OutputDebugString (Buff);
 
-			LogError (Result);
+				LogError (Result);
 
-			GameShutdown ();
+				GameShutdown ();
 
-			return Result;
+				return Result;
+			}
 		}
 	}
 

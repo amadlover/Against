@@ -1257,19 +1257,18 @@ int DrawSplashScreen (uint64_t ElapsedTime)
 {
 	uint32_t ImageIndex = 0;
 
-	if (vkAcquireNextImageKHR (GraphicsDevice, Swapchain, UINT64_MAX, SplashScreenWaitSemaphore, VK_NULL_HANDLE, &ImageIndex) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE;
-	}
+	VkResult Result = vkAcquireNextImageKHR (GraphicsDevice, Swapchain, UINT64_MAX, SplashScreenWaitSemaphore, VK_NULL_HANDLE, &ImageIndex);
 
-	if (vkWaitForFences (GraphicsDevice, 1, &SplashScreenSwapchainFences[ImageIndex], VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	if (Result != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
-	}
-
-	if (vkResetFences (GraphicsDevice, 1, &SplashScreenSwapchainFences[ImageIndex]) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_RESET_FENCE;
+		if (Result == VK_SUBOPTIMAL_KHR || Result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			return 0;
+		}
+		else
+		{
+			return AGAINST_ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE;
+		}
 	}
 
 	VkPipelineStageFlags WaitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -1286,9 +1285,19 @@ int DrawSplashScreen (uint64_t ElapsedTime)
 	SubmitInfo.pCommandBuffers = &SwapchainCommandBuffers[ImageIndex];
 	SubmitInfo.commandBufferCount = 1;
 
+	if (vkResetFences (GraphicsDevice, 1, &SplashScreenSwapchainFences[ImageIndex]) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_RESET_FENCE;
+	}
+
 	if (vkQueueSubmit (GraphicsQueue, 1, &SubmitInfo, SplashScreenSwapchainFences[ImageIndex]) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
+	}
+
+	if (vkWaitForFences (GraphicsDevice, 1, &SplashScreenSwapchainFences[ImageIndex], VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
 
 	VkPresentInfoKHR PresentInfo;
@@ -1301,9 +1310,18 @@ int DrawSplashScreen (uint64_t ElapsedTime)
 	PresentInfo.waitSemaphoreCount = 1;
 	PresentInfo.pWaitSemaphores = &SplashScreenSignalSemaphore;
 
-	if (vkQueuePresentKHR (GraphicsQueue, &PresentInfo) != VK_SUCCESS)
+	Result = vkQueuePresentKHR (GraphicsQueue, &PresentInfo);
+
+	if (Result != VK_SUCCESS)
 	{
-		return AGAINST_ERROR_GRAPHICS_QUEUE_PRESENT;
+		if (Result == VK_SUBOPTIMAL_KHR || Result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			return 0;
+		}
+		else
+		{
+			return AGAINST_ERROR_GRAPHICS_QUEUE_PRESENT;
+		}
 	}
 
 	return 0;
