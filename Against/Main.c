@@ -117,21 +117,21 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 		{
 			TranslateMessage (&Msg);
 			DispatchMessage (&Msg);
+		}
 
-			Result = GameMainLoop ();
+		Result = GameMainLoop ();
 
-			if (Result != 0)
-			{
-				wchar_t Buff[16];
-				swprintf_s (Buff, 16, L"Main Loop ");
-				OutputDebugString (Buff);
+		if (Result != 0)
+		{
+			wchar_t Buff[16];
+			swprintf_s (Buff, 16, L"Main Loop ");
+			OutputDebugString (Buff);
 
-				LogError (Result);
+			LogError (Result);
 
-				GameShutdown ();
+			GameShutdown ();
 
-				return Result;
-			}
+			return Result;
 		}
 	}
 
