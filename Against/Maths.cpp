@@ -46,7 +46,6 @@ void CreateTransformationMatrixGLM (float* Position, float* Rotation, float* Sca
 	
 	glm::mat4 ScaleMat = glm::scale (glm::mat4 (1.0), glm::make_vec3 (Scale));
 
-
 	memcpy (Result, glm::value_ptr (TranslationMat * RotationMat * ScaleMat), sizeof (float) * 16);
 }
 

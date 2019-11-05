@@ -7,8 +7,7 @@
 
 #include <stdio.h>
 
-#define MENU_NEW_GAME 1;
-#define MENU_EXIT_GAME 2;
+#include <Windowsx.h>
 
 enum _SceneState
 {
@@ -32,6 +31,9 @@ uint64_t StartupTickCount;
 uint64_t CurrentTickCount;
 uint64_t ElapsedTime;
 uint64_t SplashScreenThresholdTimeMS = 3000;
+
+uint32_t LastMouseX;
+uint32_t LastMouseY;
 
 int ProcessMouseLeftClick ()
 {
@@ -77,6 +79,41 @@ int ProcessMouseRightClick ()
 
 int ProcessMouseMovement (WPARAM wParam, LPARAM lParam)
 {
+	uint32_t CurrentX = GET_X_LPARAM (lParam);
+	uint32_t CurrentY = GET_Y_LPARAM (lParam);
+
+	switch (OverlayMenuState)
+	{
+	case NoMenu:
+		switch (SceneState)
+		{
+		case SplashScreen:
+			break;
+
+		case MainMenu:
+			MainMenuProcessMouseMovement (CurrentX, CurrentY, CurrentX - LastMouseX, CurrentY - LastMouseY);
+			break;
+
+		case MainGame:
+			break;
+
+		default:
+			break;
+		}
+
+	case QuitMenu:
+		break;
+
+	case PauseMenu:
+		break;
+
+	default:
+		break;
+	}
+
+	LastMouseX = CurrentX;
+	LastMouseY = CurrentY;
+
 	return 0;
 }
 

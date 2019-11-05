@@ -80,6 +80,8 @@ float MainMenuCameraViewMatrix[16];
 float MainMenuCameraProjectionMatrix[16];
 
 float Glow;
+uint32_t TotalMouseDeltaX;
+uint32_t TotalMouseDeltaY;
 
 //TODO: Use DEVICE_LOCAL memory where possible
 
@@ -391,21 +393,21 @@ int CreateMainMenuTextureImages ()
 		MapMemoryOffset += StagingBufferMemoryRequirements[i].size;
 	}
 
-	VkImageCreateInfo CreateInfo;
-	memset (&CreateInfo, 0, sizeof (VkImageCreateInfo));
+	VkImageCreateInfo ImageCreateInfo;
+	memset (&ImageCreateInfo, 0, sizeof (VkImageCreateInfo));
 
-	CreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	CreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-	CreateInfo.arrayLayers = 1;
-	CreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	CreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	CreateInfo.mipLevels = 1;
-	CreateInfo.queueFamilyIndexCount = 1;
-	CreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
-	CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	CreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	CreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	ImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	ImageCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+	ImageCreateInfo.arrayLayers = 1;
+	ImageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	ImageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	ImageCreateInfo.mipLevels = 1;
+	ImageCreateInfo.queueFamilyIndexCount = 1;
+	ImageCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
+	ImageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	ImageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	ImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	ImageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
 	MainMenuTImages = (VkImage*)malloc (sizeof (VkImage) * MainMenuImageCount);
 	MainMenuTImageViews = (VkImageView*)malloc (sizeof (VkImageView) * MainMenuImageCount);
@@ -417,11 +419,11 @@ int CreateMainMenuTextureImages ()
 
 	for (uint32_t i = 0; i < MainMenuImageCount; i++)
 	{
-		CreateInfo.extent.width = MainMenuImages[i].Width;
-		CreateInfo.extent.height = MainMenuImages[i].Height;
-		CreateInfo.extent.depth = 1;
+		ImageCreateInfo.extent.width = MainMenuImages[i].Width;
+		ImageCreateInfo.extent.height = MainMenuImages[i].Height;
+		ImageCreateInfo.extent.depth = 1;
 
-		if (vkCreateImage (GraphicsDevice, &CreateInfo, NULL, &MainMenuTImages[i]) != VK_SUCCESS)
+		if (vkCreateImage (GraphicsDevice, &ImageCreateInfo, NULL, &MainMenuTImages[i]) != VK_SUCCESS)
 		{
 			return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
 		}
@@ -467,13 +469,27 @@ int CreateMainMenuTextureImages ()
 		BindMemoryOffset += MainMenuImages[i].VkHandles.MemoryRequirements.size;
 	}
 
+	VkCommandPool MainMenuImageOpsCommandPool;
+
+	VkCommandPoolCreateInfo CommandPoolCreateInfo;
+	memset (&CommandPoolCreateInfo, 0, sizeof (VkCommandPoolCreateInfo));
+
+	CommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	CommandPoolCreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+	CommandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+	if (vkCreateCommandPool (GraphicsDevice, &CommandPoolCreateInfo, NULL, &MainMenuImageOpsCommandPool) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
+	}
+
 	VkCommandBuffer LayoutChangeCommandBuffer;
 	VkCommandBufferAllocateInfo LayoutChangeCommandBufferAllocateInfo;
 	memset (&LayoutChangeCommandBufferAllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
 
 	LayoutChangeCommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	LayoutChangeCommandBufferAllocateInfo.commandBufferCount = 1;
-	LayoutChangeCommandBufferAllocateInfo.commandPool = MainMenuCommandPool;
+	LayoutChangeCommandBufferAllocateInfo.commandPool = MainMenuImageOpsCommandPool;
 
 	if (vkAllocateCommandBuffers (GraphicsDevice, &LayoutChangeCommandBufferAllocateInfo, &LayoutChangeCommandBuffer) != VK_SUCCESS)
 	{
@@ -554,7 +570,7 @@ int CreateMainMenuTextureImages ()
 
 	CopyBufferToImageCmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	CopyBufferToImageCmdBufferAllocateInfo.commandBufferCount = 1;
-	CopyBufferToImageCmdBufferAllocateInfo.commandPool = MainMenuCommandPool;
+	CopyBufferToImageCmdBufferAllocateInfo.commandPool = MainMenuImageOpsCommandPool;
 
 	if (vkAllocateCommandBuffers (GraphicsDevice, &CopyBufferToImageCmdBufferAllocateInfo, &CopyBufferToImageCmdBuffer) != VK_SUCCESS)
 	{
@@ -653,8 +669,10 @@ int CreateMainMenuTextureImages ()
 
 	vkDestroyFence (GraphicsDevice, Fence, NULL);
 
-	vkFreeCommandBuffers (GraphicsDevice, MainMenuCommandPool, 1, &LayoutChangeCommandBuffer);
-	vkFreeCommandBuffers (GraphicsDevice, MainMenuCommandPool, 1, &CopyBufferToImageCmdBuffer);
+	vkFreeCommandBuffers (GraphicsDevice, MainMenuImageOpsCommandPool, 1, &LayoutChangeCommandBuffer);
+	vkFreeCommandBuffers (GraphicsDevice, MainMenuImageOpsCommandPool, 1, &CopyBufferToImageCmdBuffer);
+
+	vkDestroyCommandPool (GraphicsDevice, MainMenuImageOpsCommandPool, NULL);
 
 	vkFreeMemory (GraphicsDevice, StagingBufferMemory, NULL);
 	
@@ -790,82 +808,6 @@ int CreateMainMenuDepthImage ()
 	{
 		return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
 	}
-
-	/*VkCommandBuffer LayoutChangeCmdBuffer;
-	VkCommandBufferAllocateInfo LayoutChangeCmdBufferAllocateInfo;
-	memset (&LayoutChangeCmdBufferAllocateInfo, 0, sizeof (LayoutChangeCmdBufferAllocateInfo));
-
-	LayoutChangeCmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	LayoutChangeCmdBufferAllocateInfo.commandPool = MainMenuCommandPool;
-	LayoutChangeCmdBufferAllocateInfo.commandBufferCount = 1;
-
-	if (vkAllocateCommandBuffers (GraphicsDevice, &LayoutChangeCmdBufferAllocateInfo, &LayoutChangeCmdBuffer) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
-	}
-
-	VkCommandBufferBeginInfo LayoutChangeCmdBufferBeginInfo;
-	memset (&LayoutChangeCmdBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
-
-	LayoutChangeCmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	LayoutChangeCmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	VkImageMemoryBarrier MemoryBarrier;
-	memset (&MemoryBarrier, 0, sizeof (VkImageMemoryBarrier));
-
-	MemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	MemoryBarrier.image = MainMenuDepthImage;
-	MemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	MemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	MemoryBarrier.srcAccessMask = 0;
-	MemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	MemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	MemoryBarrier.subresourceRange.baseMipLevel = 0;
-	MemoryBarrier.subresourceRange.layerCount = 1;
-	MemoryBarrier.subresourceRange.levelCount = 1;
-
-	if (vkBeginCommandBuffer (LayoutChangeCmdBuffer, &LayoutChangeCmdBufferBeginInfo) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
-	}
-
-	vkCmdPipelineBarrier (LayoutChangeCmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &MemoryBarrier);
-
-	if (vkEndCommandBuffer (LayoutChangeCmdBuffer) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
-	}
-
-	VkSubmitInfo SubmitInfo;
-	memset (&SubmitInfo, 0, sizeof (VkSubmitInfo));
-
-	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	SubmitInfo.commandBufferCount = 1;
-	SubmitInfo.pCommandBuffers = &LayoutChangeCmdBuffer;
-
-	VkFence Fence;
-	VkFenceCreateInfo FenceCreateInfo;
-	memset (&FenceCreateInfo, 0, sizeof (VkFenceCreateInfo));
-
-	FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-	if (vkCreateFence (GraphicsDevice, &FenceCreateInfo, NULL, &Fence) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_FENCE;
-	}
-
-	if (vkQueueSubmit (GraphicsQueue, 1, &SubmitInfo, Fence) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
-	}
-
-	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
-	}
-
-	vkFreeCommandBuffers (GraphicsDevice, MainMenuCommandPool, 1, &LayoutChangeCmdBuffer);
-	vkDestroyFence (GraphicsDevice, Fence, NULL);*/
 
 	VkImageViewCreateInfo DepthImageViewCreateInfo;
 	memset (&DepthImageViewCreateInfo, 0, sizeof (VkImageViewCreateInfo));
@@ -1239,7 +1181,7 @@ int CreateMainMenuGraphicsPipelineLayout ()
 	memset (&PushConstantRange, 0, sizeof (VkPushConstantRange));
 
 	PushConstantRange.offset = 0;
-	PushConstantRange.size = sizeof (float) * 16 + sizeof (float) + sizeof (int);
+	PushConstantRange.size = (sizeof (float) * 16) + sizeof (float) + sizeof (int);
 	PushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 	VkPipelineLayoutCreateInfo PipelineCreateInfo;
@@ -1410,7 +1352,6 @@ int CreateMainMenuCommandPool ()
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	CreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
-	CreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	if (vkCreateCommandPool (GraphicsDevice, &CreateInfo, NULL, &MainMenuCommandPool) != VK_SUCCESS)
 	{
@@ -1431,6 +1372,13 @@ int CreateMainMenuCommandPool ()
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
 	}
+
+	return 0;
+}
+
+int CreateMainMenuImageTransferCommandPool ()
+{
+	OutputDebugString (L"CreateMainMenuImageTransferCommandPool\n");
 
 	return 0;
 }
@@ -1569,12 +1517,10 @@ int CreateMainMenuSyncObjects ()
 
 int UpdateMainMenuUniformBufferViewProjMatrix ()
 {
-	OutputDebugString (L"UpdateMainMenuUniformBufferViewProjMatrix\n");
-
 	CreatePerspectiveProjectionMatrixGLM (45.f, (float)SurfaceExtent.width / (float)SurfaceExtent.height, 0.1f, 50.f, MainMenuCameraProjectionMatrix);
 
 	float Eye[3] = { 0,0,10 };
-	float Center[3] = { 0,0,0 };
+	float Center[3] = { (float)TotalMouseDeltaX,(float)TotalMouseDeltaY,0 };
 	float Up[3] = { 0,1,0 };
 
 	CreateLookatMatrixGLM (Eye, Center, Up, MainMenuCameraViewMatrix);
@@ -1608,6 +1554,13 @@ int CreateMainMenuGraphics ()
 	}
 
 	Result = CreateMainMenuHostVBIBs ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = CreateMainMenuImageTransferCommandPool ();
 
 	if (Result != 0)
 	{
@@ -1708,8 +1661,23 @@ int CreateMainMenuGraphics ()
 	return 0;
 }
 
+void MainMenuProcessMouseMovement (uint32_t X, uint32_t Y, uint32_t DeltaX, uint32_t DeltaY)
+{
+	if (DeltaX != 0 && DeltaY != 0)
+	{
+		TotalMouseDeltaX += DeltaX;
+		TotalMouseDeltaY += DeltaY;
+
+		wchar_t Buff[64];
+		swprintf (Buff, 64, L"%d %d\n", TotalMouseDeltaX, TotalMouseDeltaY);
+		OutputDebugString (Buff);
+	}
+}
+
 int DrawMainMenu ()
 {
+	UpdateMainMenuUniformBufferViewProjMatrix ();
+
 	uint32_t ImageIndex = 0;
 
 	VkResult Result = vkAcquireNextImageKHR (GraphicsDevice, Swapchain, UINT64_MAX, MainMenuImageAcquiredSemaphore, VK_NULL_HANDLE, &ImageIndex);
