@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-int CreateMainMenuGraphics ();
+int InitMainMenuGraphics ();
 int DrawMainMenu ();
 void DestroyMainMenuGraphics ();
 

@@ -1,10 +1,6 @@
 #include "Graphics.h"
 #include "Error.h"
 
-#include "SplashScreen.h"
-#include "MainMenu.h"
-#include "MainGame.h"
-
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -513,27 +509,6 @@ int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 		return Result;
 	}
 
-	Result = CreateSplashScreenGraphics ();
-	
-	if (Result != 0)
-	{
-		return Result;
-	}
-
-	Result = CreateMainMenuGraphics ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
-	Result = SetupMainGame ();
-
-	if (Result != 0)
-	{
-		return Result;
-	}
-
 	return 0;
 }
 
@@ -541,10 +516,6 @@ void GraphicsShutdown ()
 {
 	OutputDebugString (L"GraphicsShutdown\n");
 	
-	DestroyMainGame ();
-	DestroyMainMenuGraphics ();
-	DestroySplashScreenGraphics ();
-
 	if (Swapchain != VK_NULL_HANDLE)
 	{
 		vkDestroySwapchainKHR (GraphicsDevice, Swapchain, NULL);

@@ -11,7 +11,7 @@
 #define STB_IMPLEMENTATION
 #include <stb_image.h>
 
-int ImportMainMenuGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material** Materials, uint32_t* MaterialCount, Texture** Textures, uint32_t* TextureCount, Image** Images, uint32_t* ImageCount, Sampler** Samplers, uint32_t* SamplerCount)
+int ImportGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material** Materials, uint32_t* MaterialCount, Texture** Textures, uint32_t* TextureCount, Image** Images, uint32_t* ImageCount, Sampler** Samplers, uint32_t* SamplerCount)
 {
 	cgltf_options Options = { 0 };
 	cgltf_data* Data = NULL;

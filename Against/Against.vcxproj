@@ -41,12 +41,14 @@
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeaderOutputFile>
     </ClCompile>
+    <ClCompile Include="Physics.c" />
     <ClCompile Include="SplashScreen.c" />
     <ClCompile Include="Test.c" />
     <ClCompile Include="Utility.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Assets.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Compute.h" />
     <ClInclude Include="Error.h" />
     <ClInclude Include="Game.h" />
@@ -56,6 +58,7 @@
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Maths.hpp" />
+    <ClInclude Include="Physics.h" />
     <ClInclude Include="SplashScreen.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="Utility.h" />

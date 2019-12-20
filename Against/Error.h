@@ -52,6 +52,7 @@ typedef enum _AGAINSTRESULT
 	// Network
 
 	// Physics
+
 } AGAINSTRESULT;
 
 void LogError (AGAINSTRESULT Result);

@@ -1141,7 +1141,7 @@ int CreateSplashScreenHostTextureImage ()
 	return 0;
 }
 
-int CreateSplashScreenGraphics ()
+int InitSplashScreenGraphics ()
 {
 	OutputDebugString (L"SetupSplashScreen\n");
 

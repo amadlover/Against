@@ -2,6 +2,6 @@
 
 #include <stdint.h>
 
-int CreateSplashScreenGraphics ();
+int InitSplashScreenGraphics ();
 int DrawSplashScreen (uint64_t ElapsedTime);
 void DestroySplashScreenGraphics ();

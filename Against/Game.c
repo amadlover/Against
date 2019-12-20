@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Physics.h"
 #include "Graphics.h"
 #include "GUI.h"
 #include "SplashScreen.h"
@@ -6,17 +7,18 @@
 #include "MainGame.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <Windowsx.h>
 
-enum _SceneState
+enum _CurrentScene
 {
 	SplashScreen,
 	MainMenu,
 	MainGame,
 };
 
-enum _SceneState SceneState = SplashScreen;
+enum _CurrentScene CurrentScene = SplashScreen;
 
 enum _OverlayMenuState
 {
@@ -26,6 +28,16 @@ enum _OverlayMenuState
 };
 
 enum _OverlayMenuState OverlayMenuState = NoMenu;
+
+enum _SceneState
+{
+	Exited,
+	Inited
+};
+
+enum _SceneState SplashScreenSceneState = Exited;
+enum _SceneState MainMenuSceneState = Exited;
+enum _SceneState MainGameSceneState = Exited;
 
 uint64_t StartupTickCount;
 uint64_t CurrentTickCount;
@@ -37,19 +49,7 @@ uint32_t LastMouseY;
 
 int ProcessMouseLeftClick ()
 {
-	switch (OverlayMenuState)
-	{
-	case QuitMenu:
-		break;
-
-	case PauseMenu:
-		break;
-
-	default:
-		break;
-	}
-
-	switch (SceneState)
+	switch (CurrentScene)
 	{
 	case SplashScreen:
 		break;
@@ -69,11 +69,41 @@ int ProcessMouseLeftClick ()
 
 int ProcessMouseMiddleClick ()
 {
+	switch (CurrentScene)
+	{
+	case SplashScreen:
+		break;
+
+	case MainMenu:
+		break;
+
+	case MainGame:
+		break;
+
+	default:
+		break;
+	}
+
 	return 0;
 }
 
 int ProcessMouseRightClick ()
 {
+	switch (CurrentScene)
+	{
+	case SplashScreen:
+		break;
+
+	case MainMenu:
+		break;
+
+	case MainGame:
+		break;
+
+	default:
+		break;
+	}
+
 	return 0;
 }
 
@@ -82,29 +112,15 @@ int ProcessMouseMovement (WPARAM wParam, LPARAM lParam)
 	uint32_t CurrentX = GET_X_LPARAM (lParam);
 	uint32_t CurrentY = GET_Y_LPARAM (lParam);
 
-	switch (OverlayMenuState)
+	switch (CurrentScene)
 	{
-	case NoMenu:
-		switch (SceneState)
-		{
-		case SplashScreen:
-			break;
-
-		case MainMenu:
-			MainMenuProcessMouseMovement (CurrentX, CurrentY, CurrentX - LastMouseX, CurrentY - LastMouseY);
-			break;
-
-		case MainGame:
-			break;
-
-		default:
-			break;
-		}
-
-	case QuitMenu:
+	case SplashScreen:
 		break;
 
-	case PauseMenu:
+	case MainMenu:
+		break;
+
+	case MainGame:
 		break;
 
 	default:
@@ -119,7 +135,33 @@ int ProcessMouseMovement (WPARAM wParam, LPARAM lParam)
 
 int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 {
-	switch (wParam)
+	switch (CurrentScene)
+	{
+	case SplashScreen:
+		switch (wParam)
+		{
+		case VK_ESCAPE:
+			DestroySplashScreenGraphics ();
+			SplashScreenSceneState = Exited;
+
+			CurrentScene = MainMenu;
+			break;
+		default:
+			break;
+		}
+		break;
+
+	case MainMenu:
+		break;
+
+	case MainGame:
+		break;
+
+	default:
+		break;
+	}
+
+	/*switch (wParam)
 	{
 	case 0x57:
 		OutputDebugString (L"W\n");
@@ -177,7 +219,7 @@ int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 
 	default:
 		break;
-	}
+	}*/
 
 	return 0;
 }
@@ -186,7 +228,14 @@ int GameInit (HINSTANCE HInstance, HWND HWnd)
 {
 	OutputDebugString (L"GameInit\n");
 
-	int Result = GraphicsInit (HInstance, HWnd);
+	int Result = PhysicsInit ();
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = GraphicsInit (HInstance, HWnd);
 
 	if (Result != 0)
 	{
@@ -205,17 +254,59 @@ int GameMainLoop ()
 
 	int Result = 0;
 
-	switch (SceneState)
+	switch (CurrentScene)
 	{
 	case SplashScreen:
 		if (ElapsedTime > SplashScreenThresholdTimeMS)
 		{
 			OutputDebugString (L"Switching to Main Menu\n");
-			SceneState = MainMenu;
+			CurrentScene = MainMenu;
+
+			DestroySplashScreenGraphics ();
+
+			SplashScreenSceneState = Exited;
 		}
 		else
 		{
-			Result = DrawSplashScreen (ElapsedTime);
+			if (SplashScreenSceneState == Exited)
+			{
+				Result = InitSplashScreenGraphics ();
+
+				if (Result != 0)
+				{
+					return Result;
+				}
+
+				SplashScreenSceneState = Inited;
+			}
+			else if (SplashScreenSceneState == Inited)
+			{
+				Result = DrawSplashScreen (ElapsedTime);
+
+				if (Result != 0)
+				{
+					return Result;
+				}
+			}
+		}
+
+		break;
+
+	case MainMenu:
+		if (MainMenuSceneState == Exited)
+		{
+			Result = InitMainMenuGraphics ();
+
+			if (Result != 0)
+			{
+				return Result;
+			}
+
+			MainMenuSceneState = Inited;
+		}
+		else if (MainMenuSceneState == Inited)
+		{
+			Result = DrawMainMenu ();
 
 			if (Result != 0)
 			{
@@ -225,46 +316,8 @@ int GameMainLoop ()
 
 		break;
 
-	case MainMenu:
-		Result = DrawMainMenu ();
-
-		if (Result != 0)
-		{
-			return Result;
-		}
-
-		break;
-
 	case MainGame:
 		Result = DrawMainGame ();
-
-		if (Result != 0)
-		{
-			return Result;
-		}
-
-		break;
-
-	default:
-		break;
-	}
-
-	switch (OverlayMenuState)
-	{
-	case NoMenu:
-		break;
-
-	case QuitMenu:
-		Result = DrawQuitMenu ();
-
-		if (Result != 0)
-		{
-			return Result;
-		}
-
-		break;
-	case PauseMenu:
-		Result = DrawPauseMenu ();
 
 		if (Result != 0)
 		{
@@ -284,7 +337,25 @@ void GameShutdown ()
 {
 	OutputDebugString (L"GameShutdown\n");
 
+	if (SplashScreenSceneState == Inited)
+	{
+		DestroySplashScreenGraphics ();
+		SplashScreenSceneState = Exited;
+	}
+
+	if (MainMenuSceneState == Inited)
+	{
+		DestroyMainMenuGraphics ();
+		MainMenuSceneState = Exited;
+	}
+
+	if (MainGameSceneState == Inited)
+	{
+		DestroyMainGameGraphics ();
+		MainGameSceneState = Exited;
+	}
+
 	GraphicsShutdown ();
-	
-	OutputDebugString (L"Finished GameShutdown\n");
+
+	PhysicsShutdown ();
 }

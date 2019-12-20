@@ -5,6 +5,6 @@ typedef struct _MainGame
 	int x;
 } MainGameObj;
 
-int SetupMainGame ();
+int CreateMainGameGraphics ();
 int DrawMainGame ();
-void DestroyMainGame ();
+void DestroyMainGameGraphics ();
