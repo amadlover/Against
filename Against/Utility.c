@@ -10,7 +10,7 @@ void GetApplicationFolder (TCHAR* Path)
 	PathRemoveFileSpec (Path);
 }
 
-void SetupLinkedList (int NumElements)
+void SetupLinkedList (LinkedList SomeList, int NumElements)
 {
 	for (int n = 0; n < NumElements; n++)
 	{

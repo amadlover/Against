@@ -785,9 +785,9 @@ int CreateSplashScreenHostVBIB ()
 	return 0;
 }
 
-int CreateSplashScreenHostTextureImage ()
+int CreateSplashScreenDeviceTextureImage ()
 {
-	OutputDebugString (L"CreateSplashScreenHostTextureImage\n");
+	OutputDebugString (L"CreateSplashScreenDeviceTextureImage\n");
 
 	TCHAR Path[MAX_PATH];
 	GetApplicationFolder (Path);
@@ -1194,7 +1194,7 @@ int InitSplashScreenGraphics ()
 		return Result;
 	}
 
-	Result = CreateSplashScreenHostTextureImage ();
+	Result = CreateSplashScreenDeviceTextureImage ();
 
 	if (Result != 0)
 	{

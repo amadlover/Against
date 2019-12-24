@@ -24,6 +24,7 @@
     <ClCompile Include="Error.c" />
     <ClCompile Include="Game.c" />
     <ClCompile Include="Graphics.c" />
+    <ClCompile Include="GraphicsUtilities.c" />
     <ClCompile Include="GUI.c" />
     <ClCompile Include="ImportAssets.c" />
     <ClCompile Include="Main.c" />
@@ -53,6 +54,7 @@
     <ClInclude Include="Error.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="GraphicsUtilities.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="ImportAssets.h" />
     <ClInclude Include="MainGame.h" />
