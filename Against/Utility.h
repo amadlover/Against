@@ -17,6 +17,6 @@ typedef struct _LinkedList
 	struct _LinkedListNode* Root;
 } LinkedList;
 
-void GetApplicationFolder (TCHAR* Path);
-
+void GetApplicationFolder (char* OutPath);
+void GetFullFilePath (char* OutFilePath, char* PartialFilePath);
 void SetupLinkedList (LinkedList SomeList, int NumElements);

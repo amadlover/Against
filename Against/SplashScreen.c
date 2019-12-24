@@ -281,13 +281,10 @@ int CreateSplashScreenShaders ()
 {
 	OutputDebugString (L"CreateSplashScreenShaders\n");
 
-	TCHAR VertPath[MAX_PATH];
-	GetApplicationFolder (VertPath);
-	StringCchCat (VertPath, MAX_PATH, L"\\Shaders\\SplashScreen\\vert.spv");
-	
+	char VertPartialFile[] = "\\Shaders\\SplashScreen\\vert.spv";
 	char VertFilename[MAX_PATH];
-	wcstombs_s (NULL, VertFilename, MAX_PATH, VertPath, MAX_PATH);
-
+	GetFullFilePath (VertFilename, VertPartialFile);
+	
 	FILE* VertFile = NULL;
 	errno_t Err = fopen_s (&VertFile, VertFilename, "rb");
 
@@ -320,12 +317,10 @@ int CreateSplashScreenShaders ()
 
 	free (Buffer);
 
-	TCHAR FragPath[MAX_PATH];
-	GetApplicationFolder (FragPath);
-	StringCchCat (FragPath, MAX_PATH, L"\\Shaders\\SplashScreen\\frag.spv");
-
+	char FragPartialFilePath[] = "\\Shaders\\SplashScreen\\frag.spv";
 	char FragFilename[MAX_PATH];
-	wcstombs_s (NULL, FragFilename, MAX_PATH, FragPath, MAX_PATH);
+
+	GetFullFilePath (FragFilename, FragPartialFilePath);
 
 	FILE* FragFile = NULL;
 	Err = fopen_s (&FragFile, FragFilename, "rb");
@@ -789,17 +784,14 @@ int CreateSplashScreenDeviceTextureImage ()
 {
 	OutputDebugString (L"CreateSplashScreenDeviceTextureImage\n");
 
-	TCHAR Path[MAX_PATH];
-	GetApplicationFolder (Path);
-	
-	StringCchCat (Path, MAX_PATH, L"\\Images\\SplashScreen\\SplashScreen.tga");
+	char PartialFilePath[] = "\\Images\\SplashScreen\\SplashScreen.tga";
+	char FullFilePath[MAX_PATH];
 
-	char Filename[MAX_PATH];
-	wcstombs_s (NULL, Filename, MAX_PATH, Path, MAX_PATH);
+	GetFullFilePath (FullFilePath, PartialFilePath);
 
 	int Width, Height, BPP;
 	
-	uint8_t* Pixels = stbi_load ((const char*)Filename, &Width, &Height, &BPP, 0);
+	uint8_t* Pixels = stbi_load ((const char*)FullFilePath, &Width, &Height, &BPP, 0);
 
 	VkBuffer StagingBuffer;
 

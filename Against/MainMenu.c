@@ -89,14 +89,11 @@ int ImportMainMenuAssets ()
 {
 	OutputDebugString (L"ImportMainMenuAssets\n");
 
-	TCHAR UIElementPath[MAX_PATH];
-	GetApplicationFolder (UIElementPath);
-	StringCchCat (UIElementPath, MAX_PATH, L"\\UIElements\\MainMenu\\MainMenu.gltf");
+	char PartialFilePath[] = "\\UIElements\\MainMenu\\MainMenu.gltf";
+	char FullFilePath[MAX_PATH];
+	GetFullFilePath (FullFilePath, PartialFilePath);
 
-	char UIElementFile[MAX_PATH];
-	wcstombs_s (NULL, UIElementFile, MAX_PATH, UIElementPath, MAX_PATH);
-
-	int Result = ImportGLTF (UIElementFile, &MainMenuNodes, &MainMenuNodeCount, &MainMenuMeshes, &MainMenuMeshCount, &MainMenuMaterials, &MainMenuMaterialCount, &MainMenuTextures, &MainMenuTextureCount, &MainMenuImages, &MainMenuImageCount, &MainMenuSamplers, &MainMenuSamplerCount);
+	int Result = ImportGLTF (FullFilePath, &MainMenuNodes, &MainMenuNodeCount, &MainMenuMeshes, &MainMenuMeshCount, &MainMenuMaterials, &MainMenuMaterialCount, &MainMenuTextures, &MainMenuTextureCount, &MainMenuImages, &MainMenuImageCount, &MainMenuSamplers, &MainMenuSamplerCount);
 
 	if (Result != 0)
 	{
@@ -840,12 +837,10 @@ int CreateMainMenuShaders ()
 {
 	OutputDebugString (L"CreateMainMenuShaders\n");
 
-	TCHAR VertPath[MAX_PATH];
-	GetApplicationFolder (VertPath);
-	StringCchCat (VertPath, MAX_PATH, L"\\Shaders\\MainMenu\\UI.vert.spv");
-
+	char VertPartialFilePath[] = "\\Shaders\\MainMenu\\UI.vert.spv";
 	char VertFilename[MAX_PATH];
-	wcstombs_s (NULL, VertFilename, MAX_PATH, VertPath, MAX_PATH);
+
+	GetFullFilePath (VertFilename, VertPartialFilePath);
 
 	FILE* VertFile = NULL;
 	errno_t Err = fopen_s (&VertFile, VertFilename, "rb");
@@ -879,12 +874,11 @@ int CreateMainMenuShaders ()
 
 	free (Buffer);
 
-	TCHAR FragPath[MAX_PATH];
-	GetApplicationFolder (FragPath);
-	StringCchCat (FragPath, MAX_PATH, L"\\Shaders\\MainMenu\\UI.frag.spv");
-
+	char FragPartialFilePath[] = "\\Shaders\\MainMenu\\UI.frag.spv";
 	char FragFilename[MAX_PATH];
-	wcstombs_s (NULL, FragFilename, MAX_PATH, FragPath, MAX_PATH);
+
+	GetFullFilePath (FragFilename, FragPartialFilePath);
+
 
 	FILE* FragFile = NULL;
 	Err = fopen_s (&FragFile, FragFilename, "rb");
