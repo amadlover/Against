@@ -1,6 +1,10 @@
 #include "GraphicsUtilities.h"
 #include "Error.h"
 #include "Graphics.h"
+#include "Utility.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 int CreateUniformBuffer (VkBuffer* UniformBuffer, VkDeviceMemory* UniformBufferMemory, VkDeviceSize Size, VkBufferUsageFlags Usage, VkMemoryPropertyFlags RequiredMemoryTypes)
 {
@@ -28,7 +32,7 @@ int CreateUniformBuffer (VkBuffer* UniformBuffer, VkDeviceMemory* UniformBufferM
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
 
-	uint32_t RequiredTypes = RequiredMemoryTypes;// VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	uint32_t RequiredTypes = RequiredMemoryTypes;
 
 	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
 	{
@@ -52,12 +56,86 @@ int CreateUniformBuffer (VkBuffer* UniformBuffer, VkDeviceMemory* UniformBufferM
 	return 0;
 }
 
-int CreateShader (char* FilePath, VkShaderStageFlags ShaderStage, VkPipelineShaderStageCreateInfo* ShaderStageCreateInfo)
+errno_t ReadShaderFile (char* FullFilePath, char** FileContents)
+{
+	FILE* VertFile = NULL;
+	errno_t Err = fopen_s (&VertFile, FullFilePath, "rb");
+
+	if (Err != 0)
+	{
+		return Err;
+	}
+
+	fseek (VertFile, 0, SEEK_END);
+
+	uint32_t FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
+	rewind (VertFile);
+
+	*FileContents = (char*)malloc (sizeof (uint32_t) * FileSize);
+	fread (*FileContents, sizeof (uint32_t), FileSize, VertFile);
+	fclose (VertFile);
+
+	return 0;
+}
+
+int CreateShader (char* FullFilePath, VkShaderStageFlags ShaderStage, VkPipelineShaderStageCreateInfo* ShaderStageCreateInfo)
+{
+	char* FileContents = NULL;
+	
+	FILE* VertFile = NULL;
+	errno_t Err = fopen_s (&VertFile, FullFilePath, "rb");
+
+	if (Err != 0)
+	{
+		return Err;
+	}
+
+	fseek (VertFile, 0, SEEK_END);
+
+	uint32_t FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
+	rewind (VertFile);
+
+	FileContents = (char*)malloc (sizeof (uint32_t) * FileSize);
+	fread (FileContents, sizeof (uint32_t), FileSize, VertFile);
+	fclose (VertFile);
+
+	VkShaderModuleCreateInfo ShaderModuleCreateInfo;
+	memset (&ShaderModuleCreateInfo, 0, sizeof (VkShaderModuleCreateInfo));
+
+	ShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	ShaderModuleCreateInfo.pCode = (uint32_t*)FileContents;
+	ShaderModuleCreateInfo.codeSize = sizeof (uint32_t) * FileSize;
+
+	VkShaderModule ShaderModule;
+
+	if (vkCreateShaderModule (GraphicsDevice, &ShaderModuleCreateInfo, NULL, &ShaderModule) != VK_SUCCESS)
+	{
+		free (FileContents);
+		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
+	}
+
+	free (FileContents);
+
+	if (ShaderStage == VK_SHADER_STAGE_VERTEX_BIT)
+	{
+		ShaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		ShaderStageCreateInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+		ShaderStageCreateInfo[0].module = ShaderModule;
+		ShaderStageCreateInfo[0].pName = "main";
+	}
+	else if (ShaderStage == VK_SHADER_STAGE_FRAGMENT_BIT)
+	{
+		ShaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		ShaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		ShaderStageCreateInfo[1].module = ShaderModule;
+		ShaderStageCreateInfo[1].pName = "main";
+	}
+
+	return 0;
+}
+
+int CreateTextureImageOnDevice (char* FilePath, VkImage* TextureImage, VkDeviceMemory* TextureImageMemory)
 {
 	return 0;
 }
 
-int CreateTextureOnDevice (char* FilePath, VkImage* TextureImage, VkDeviceMemory* TextureImageMemory)
-{
-	return 0;
-}

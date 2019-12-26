@@ -4,4 +4,4 @@
 
 int CreateUniformBuffer (VkBuffer* UniformBuffer, VkDeviceMemory* UniformBufferMemory, VkDeviceSize Size, VkBufferUsageFlags BufferUsage, VkMemoryPropertyFlags MemoryPropertyFlags);
 int CreateShader (char* FilePath, VkShaderStageFlags ShaderStage, VkPipelineShaderStageCreateInfo* ShaderStageCreateInfo);
-int CreateTextureOnDevice (char* FilePath, VkImage* TextureImage, VkDeviceMemory* TextureImageMemory);
+int CreateTextureImageOnDevice (char* FilePath, VkImage* TextureImage, VkDeviceMemory* TextureImageMemory);

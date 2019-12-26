@@ -4,6 +4,7 @@
 #include "Assets.h"
 #include "ImportAssets.h"
 #include "Utility.h"
+#include "GraphicsUtilities.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -284,94 +285,13 @@ int CreateSplashScreenShaders ()
 	char VertPartialFile[] = "\\Shaders\\SplashScreen\\vert.spv";
 	char VertFilename[MAX_PATH];
 	GetFullFilePath (VertFilename, VertPartialFile);
-	
-	FILE* VertFile = NULL;
-	errno_t Err = fopen_s (&VertFile, VertFilename, "rb");
-
-	if (Err != 0)
-	{
-		return Err;
-	}
-
-	fseek (VertFile, 0, SEEK_END);
-
-	uint32_t FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
-	rewind (VertFile);
-
-	char* Buffer = (char*)malloc (sizeof (uint32_t) * FileSize);
-	fread (Buffer, sizeof (uint32_t), FileSize, VertFile);
-	fclose (VertFile);
-
-	VkShaderModuleCreateInfo VertexShaderModuleCreateInfo;
-	memset (&VertexShaderModuleCreateInfo, 0, sizeof (VkShaderModuleCreateInfo));
-
-	VertexShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	VertexShaderModuleCreateInfo.pCode = (uint32_t*)Buffer;
-	VertexShaderModuleCreateInfo.codeSize = sizeof (uint32_t) * FileSize;
-
-	if (vkCreateShaderModule (GraphicsDevice, &VertexShaderModuleCreateInfo, NULL, &SplashScreenVertexShaderModule) != VK_SUCCESS)
-	{
-		free (Buffer);
-		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
-	}
-
-	free (Buffer);
+	CreateShader (VertFilename, VK_SHADER_STAGE_VERTEX_BIT, SplashScreenPipelineShaderStages);
 
 	char FragPartialFilePath[] = "\\Shaders\\SplashScreen\\frag.spv";
 	char FragFilename[MAX_PATH];
 
 	GetFullFilePath (FragFilename, FragPartialFilePath);
-
-	FILE* FragFile = NULL;
-	Err = fopen_s (&FragFile, FragFilename, "rb");
-
-	if (Err != 0)
-	{
-		return Err;
-	}
-
-	fseek (FragFile, 0, SEEK_END);
-
-	FileSize = (uint32_t)ftell (FragFile) / sizeof (uint32_t);
-	rewind (FragFile);
-
-	Buffer = (char*)malloc (sizeof (uint32_t) * FileSize);
-	fread (Buffer, sizeof (uint32_t), FileSize, FragFile);
-	fclose (FragFile);
-
-	VkShaderModuleCreateInfo FragmentShaderModuleCreateInfo;
-	memset (&FragmentShaderModuleCreateInfo, 0, sizeof (VkShaderModuleCreateInfo));
-
-	FragmentShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	FragmentShaderModuleCreateInfo.pCode = (uint32_t*)Buffer;
-	FragmentShaderModuleCreateInfo.codeSize = sizeof (uint32_t) * FileSize;
-
-	if (vkCreateShaderModule (GraphicsDevice, &FragmentShaderModuleCreateInfo, NULL, &SplashScreenFragmentShaderModule) != VK_SUCCESS)
-	{
-		free (Buffer);
-		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
-	}
-
-	free (Buffer);
-
-	VkPipelineShaderStageCreateInfo VertexShaderStageCreateInfo;
-	memset (&VertexShaderStageCreateInfo, 0, sizeof (VkPipelineShaderStageCreateInfo));
-
-	VertexShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	VertexShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	VertexShaderStageCreateInfo.module = SplashScreenVertexShaderModule;
-	VertexShaderStageCreateInfo.pName = "main";
-
-	VkPipelineShaderStageCreateInfo FragmentShaderStageCreateInfo;
-	memset (&FragmentShaderStageCreateInfo, 0, sizeof (VkPipelineShaderStageCreateInfo));
-
-	FragmentShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	FragmentShaderStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	FragmentShaderStageCreateInfo.module = SplashScreenFragmentShaderModule;
-	FragmentShaderStageCreateInfo.pName = "main";
-
-	SplashScreenPipelineShaderStages[0] = VertexShaderStageCreateInfo;
-	SplashScreenPipelineShaderStages[1] = FragmentShaderStageCreateInfo;
+	CreateShader (FragFilename, VK_SHADER_STAGE_FRAGMENT_BIT, SplashScreenPipelineShaderStages);
 
 	return 0;
 }
