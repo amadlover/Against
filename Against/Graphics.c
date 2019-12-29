@@ -107,10 +107,6 @@ int PopulateInstanceLayersAndExtensions ()
 		{
 			RequestedInstanceExtensions[RequestedInstanceExtensionCount++] = "VK_KHR_win32_surface";
 		}
-		else if (strcmp (ExtensionProperties[e].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
-		{
-			RequestedInstanceExtensions[RequestedInstanceExtensionCount++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-		}
 
 		if (IsValidationNeeded)
 		{
