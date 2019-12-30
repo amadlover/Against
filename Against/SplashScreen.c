@@ -854,14 +854,6 @@ int CreateSplashScreenDeviceTextureImage ()
 		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
 	}
 
-	VkImageSubresourceRange SubresourceRange;
-	memset (&SubresourceRange, 0, sizeof (VkImageSubresource));
-
-	SubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	SubresourceRange.baseMipLevel = 0;
-	SubresourceRange.layerCount = 1;
-	SubresourceRange.levelCount = 1;
-
 	VkImageMemoryBarrier MemoryBarrier;
 	memset (&MemoryBarrier, 0, sizeof (VkImageMemoryBarrier));
 
