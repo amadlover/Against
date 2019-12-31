@@ -65,7 +65,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback (VkDebugUtilsMessageSeveri
 		OutputDebugString (buff);
 	}
 
-	return VK_FALSE;
+	return 0;
 }
 
 int PopulateInstanceLayersAndExtensions ()
@@ -357,7 +357,7 @@ int CreateSwapChain ()
 	CreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	CreateInfo.surface = Surface;
 
-	CreateInfo.clipped = VK_TRUE;
+	CreateInfo.clipped = 1;
 	CreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	CreateInfo.imageArrayLayers = 1;
 	CreateInfo.imageColorSpace = ChosenSurfaceFormat.colorSpace;

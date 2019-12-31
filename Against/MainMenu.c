@@ -551,7 +551,7 @@ int CreateMainMenuTextureImages ()
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
 	}
 
-	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	if (vkWaitForFences (GraphicsDevice, 1, &Fence, 1, UINT64_MAX) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
@@ -616,7 +616,7 @@ int CreateMainMenuTextureImages ()
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
 	}
 
-	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	if (vkWaitForFences (GraphicsDevice, 1, &Fence, 1, UINT64_MAX) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
@@ -659,7 +659,7 @@ int CreateMainMenuTextureImages ()
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
 	}
 
-	if (vkWaitForFences (GraphicsDevice, 1, &Fence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	if (vkWaitForFences (GraphicsDevice, 1, &Fence, 1, UINT64_MAX) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
@@ -720,7 +720,7 @@ int CreateMainMenuTextureImages ()
 	SamplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	SamplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	SamplerCreateInfo.mipLodBias = 0;
-	SamplerCreateInfo.compareEnable = VK_TRUE;
+	SamplerCreateInfo.compareEnable = 1;
 	SamplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 
 	if (vkCreateSampler (GraphicsDevice, &SamplerCreateInfo, NULL, &MainMenuFallbackSampler) != VK_SUCCESS)
@@ -1237,7 +1237,7 @@ int CreateMainMenuGraphicsPipeline ()
 
 	InputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	InputAssemblyCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	InputAssemblyCreateInfo.primitiveRestartEnable = VK_FALSE;
+	InputAssemblyCreateInfo.primitiveRestartEnable = 0;
 
 	VkPipelineRasterizationStateCreateInfo RasterizationStateCreateInfo;
 	memset (&RasterizationStateCreateInfo, 0, sizeof (VkPipelineRasterizationStateCreateInfo));;
@@ -1246,9 +1246,9 @@ int CreateMainMenuGraphicsPipeline ()
 	RasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	RasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
 	RasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-	RasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-	RasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
-	RasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+	RasterizationStateCreateInfo.rasterizerDiscardEnable = 0;
+	RasterizationStateCreateInfo.depthClampEnable = 0;
+	RasterizationStateCreateInfo.depthBiasEnable = 0;
 	RasterizationStateCreateInfo.depthBiasClamp = 0;
 	RasterizationStateCreateInfo.depthBiasSlopeFactor = 0;
 	RasterizationStateCreateInfo.depthBiasConstantFactor = 0;
@@ -1258,7 +1258,7 @@ int CreateMainMenuGraphicsPipeline ()
 	memset (&ColorBlendAttachmentState, 0, sizeof (VkPipelineColorBlendAttachmentState));
 
 	ColorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	ColorBlendAttachmentState.blendEnable = VK_FALSE;
+	ColorBlendAttachmentState.blendEnable = 0;
 
 	VkPipelineColorBlendStateCreateInfo ColorBlendStateCreateInfo;
 	memset (&ColorBlendStateCreateInfo, 0, sizeof (VkPipelineColorBlendStateCreateInfo));
@@ -1266,7 +1266,7 @@ int CreateMainMenuGraphicsPipeline ()
 	ColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	ColorBlendStateCreateInfo.attachmentCount = 1;
 	ColorBlendStateCreateInfo.pAttachments = &ColorBlendAttachmentState;
-	ColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
+	ColorBlendStateCreateInfo.logicOpEnable = 0;
 	ColorBlendStateCreateInfo.blendConstants[0] = 1.f;
 	ColorBlendStateCreateInfo.blendConstants[1] = 1.f;
 	ColorBlendStateCreateInfo.blendConstants[2] = 1.f;
@@ -1276,11 +1276,11 @@ int CreateMainMenuGraphicsPipeline ()
 	memset (&DepthStencilStateCreateInfo, 0, sizeof (VkPipelineDepthStencilStateCreateInfo));
 
 	DepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	DepthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
-	DepthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+	DepthStencilStateCreateInfo.depthTestEnable = 1;
+	DepthStencilStateCreateInfo.depthWriteEnable = 1;
 	DepthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
-	DepthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
-	DepthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+	DepthStencilStateCreateInfo.depthBoundsTestEnable = 0;
+	DepthStencilStateCreateInfo.stencilTestEnable = 0;
 
 	VkViewport Viewport;
 	Viewport.x = 0;
@@ -1309,9 +1309,9 @@ int CreateMainMenuGraphicsPipeline ()
 
 	MultisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	MultisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-	MultisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
-	MultisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;
-	MultisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;
+	MultisampleStateCreateInfo.sampleShadingEnable = 0;
+	MultisampleStateCreateInfo.alphaToOneEnable = 0;
+	MultisampleStateCreateInfo.alphaToCoverageEnable = 0;
 
 	VkGraphicsPipelineCreateInfo CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkGraphicsPipelineCreateInfo));
@@ -1712,7 +1712,7 @@ int DrawMainMenu ()
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
 	}
 
-	if (vkWaitForFences (GraphicsDevice, 1, &MainMenuSwapchainFences[ImageIndex], VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+	if (vkWaitForFences (GraphicsDevice, 1, &MainMenuSwapchainFences[ImageIndex], 1, UINT64_MAX) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
@@ -1748,7 +1748,7 @@ void DestroyMainMenuGraphics ()
 {
 	OutputDebugString (L"DestroyMainMenu\n");
 
-	vkWaitForFences (GraphicsDevice, SwapchainImageCount, MainMenuSwapchainFences, VK_TRUE, UINT64_MAX);
+	vkWaitForFences (GraphicsDevice, SwapchainImageCount, MainMenuSwapchainFences, 1, UINT64_MAX);
 
 	if (MainMenuDepthImageView != VK_NULL_HANDLE)
 	{
@@ -1764,7 +1764,7 @@ void DestroyMainMenuGraphics ()
 
 	if (MainMenuSwapchainFences)
 	{
-		vkWaitForFences (GraphicsDevice, SwapchainImageCount, MainMenuSwapchainFences, VK_TRUE, UINT64_MAX);
+		vkWaitForFences (GraphicsDevice, SwapchainImageCount, MainMenuSwapchainFences, 1, UINT64_MAX);
 
 		for (uint32_t i = 0; i < SwapchainImageCount; i++)
 		{

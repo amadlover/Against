@@ -133,6 +133,8 @@ int CreateShader (char* FullFilePath, VkShaderStageFlagBits ShaderStage, VkPipel
 		ShaderStageCreateInfos[1] = ShaderStageCreateInfo;
 	}
 
+	vkDestroyShaderModule (GraphicsDevice, ShaderModule, NULL);
+
 	return 0;
 }
 
