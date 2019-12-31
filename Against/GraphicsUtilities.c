@@ -78,7 +78,7 @@ errno_t ReadShaderFile (char* FullFilePath, char** FileContents)
 	return 0;
 }
 
-int CreateShader (char* FullFilePath, VkShaderStageFlags ShaderStage, VkPipelineShaderStageCreateInfo* ShaderStageCreateInfo)
+int CreateShader (char* FullFilePath, VkShaderStageFlagBits ShaderStage, VkPipelineShaderStageCreateInfo* ShaderStageCreateInfos)
 {
 	char* FileContents = NULL;
 	
@@ -92,10 +92,10 @@ int CreateShader (char* FullFilePath, VkShaderStageFlags ShaderStage, VkPipeline
 
 	fseek (VertFile, 0, SEEK_END);
 
-	uint32_t FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
+	uint32_t FileSize = (uint32_t)ftell (VertFile);
 	rewind (VertFile);
 
-	FileContents = (char*)malloc (sizeof (uint32_t) * FileSize);
+	FileContents = (char*)malloc (FileSize);
 	fread (FileContents, sizeof (uint32_t), FileSize, VertFile);
 	fclose (VertFile);
 
@@ -104,7 +104,7 @@ int CreateShader (char* FullFilePath, VkShaderStageFlags ShaderStage, VkPipeline
 
 	ShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	ShaderModuleCreateInfo.pCode = (uint32_t*)FileContents;
-	ShaderModuleCreateInfo.codeSize = sizeof (uint32_t) * FileSize;
+	ShaderModuleCreateInfo.codeSize = FileSize;
 
 	VkShaderModule ShaderModule;
 
@@ -116,19 +116,21 @@ int CreateShader (char* FullFilePath, VkShaderStageFlags ShaderStage, VkPipeline
 
 	free (FileContents);
 
+	VkPipelineShaderStageCreateInfo ShaderStageCreateInfo;
+	memset (&ShaderStageCreateInfo, 0, sizeof (VkPipelineShaderStageCreateInfo));
+
+	ShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	ShaderStageCreateInfo.stage = ShaderStage;
+	ShaderStageCreateInfo.module = ShaderModule;
+	ShaderStageCreateInfo.pName = "main";
+
 	if (ShaderStage == VK_SHADER_STAGE_VERTEX_BIT)
 	{
-		ShaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		ShaderStageCreateInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-		ShaderStageCreateInfo[0].module = ShaderModule;
-		ShaderStageCreateInfo[0].pName = "main";
+		ShaderStageCreateInfos[0] = ShaderStageCreateInfo;
 	}
 	else if (ShaderStage == VK_SHADER_STAGE_FRAGMENT_BIT)
 	{
-		ShaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		ShaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		ShaderStageCreateInfo[1].module = ShaderModule;
-		ShaderStageCreateInfo[1].pName = "main";
+		ShaderStageCreateInfos[1] = ShaderStageCreateInfo;
 	}
 
 	return 0;
