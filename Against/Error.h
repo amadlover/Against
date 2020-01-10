@@ -53,6 +53,9 @@ typedef enum _AGAINSTRESULT
 
 	// Physics
 
+	// System
+	AGAINST_ERROR_SYSTEM_ALLOCATE_MEMORY
+
 } AGAINSTRESULT;
 
 void LogError (AGAINSTRESULT Result);

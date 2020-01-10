@@ -98,12 +98,32 @@ typedef struct _Node
 
 typedef struct _PrimitiveGraphicsData
 {
-	int x;
+	float* Positions;
+	float* UV0s;
+	float* Normals;
+
+	uint32_t PositionSize;
+	uint32_t UV0Size;
+	uint32_t NormalSize;
+	uint32_t IndexSize;
+
+	uint32_t IndexCount;
+	uint32_t* Indices;
+
+	Material* Material;
+
+	VkPrimitiveHandles VkHandles;
 } PrimitiveGraphicsData;
 
 typedef struct _PrimitivePhysicsData
 {
-	int DUMMY;
+	float* Positions;
+
+	uint32_t PositionsSize;
+
+	uint32_t IndexCount;
+	uint32_t* Indices;
+
 } PrimitivePhysicsData;
 
 typedef struct _Asset
@@ -113,3 +133,5 @@ typedef struct _Asset
 
 	uint32_t PrimitiveCount;
 } Asset;
+
+int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount);

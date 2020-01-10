@@ -141,7 +141,7 @@ int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case VK_ESCAPE:
-			DestroySplashScreenGraphics ();
+			DestroySplashScreen ();
 
 			SplashScreenSceneState = Exited;
 			CurrentScene = MainMenuScene;
@@ -283,7 +283,7 @@ int GameMainLoop ()
 		{*/
 			if (SplashScreenSceneState == Exited)
 			{
-				Result = InitSplashScreenGraphics ();
+				Result = InitSplashScreen ();
 
 				if (Result != 0)
 				{
@@ -352,7 +352,7 @@ void GameShutdown ()
 
 	if (SplashScreenSceneState == Inited)
 	{
-		DestroySplashScreenGraphics ();
+		DestroySplashScreen ();
 		SplashScreenSceneState = Exited;
 	}
 

@@ -65,7 +65,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 					char TextureFilename[MAX_PATH];
 					wcstombs (TextureFilename, TextureFile, MAX_PATH);
 					(*Images + i)->Pixels = stbi_load (TextureFilename, &(*Images + i)->Width, &(*Images + i)->Height, &(*Images + i)->BPP, 4);
-					(*Images + i)->Size = (*Images + i)->Width * (*Images + i)->Height * 4 * sizeof (unsigned char);
+					(*Images + i)->Size = (*Images + i)->Width * (*Images + i)->Height * 4;
 
 					if (Image->name)
 					{
@@ -292,31 +292,6 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 	else
 	{
 		return AGAINST_ERROR_GLTF_COULD_NOT_IMPORT;
-	}
-
-	return 0;
-}
-
-int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount)
-{
-	cgltf_options Options = { 0 };
-	cgltf_data* Data = NULL;
-
-	cgltf_result Result = cgltf_parse_file (&Options, FilePath, &Data);
-
-	if (Result == cgltf_result_success)
-	{
-		Result = cgltf_load_buffers (&Options, Data, FilePath);
-
-		if (Result == cgltf_result_success)
-		{
-			Result = cgltf_validate (Data);
-
-			if (Result == cgltf_result_success)
-			{
-				cgltf_free (Data);
-			}
-		}
 	}
 
 	return 0;

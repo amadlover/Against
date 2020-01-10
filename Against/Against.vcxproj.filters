@@ -72,6 +72,9 @@
     <ClCompile Include="SplashScreenGraphics.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Asset.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">

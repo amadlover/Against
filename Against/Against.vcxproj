@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Asset.c" />
     <ClCompile Include="Compute.c" />
     <ClCompile Include="Error.c" />
     <ClCompile Include="Game.c" />

@@ -4,7 +4,6 @@
 #include "Error.h"
 #include "GraphicsUtilities.h"
 #include "Utility.h"
-#include "ImportAssets.h"
 
 #include <stdlib.h>
 
@@ -40,12 +39,6 @@ VkDeviceMemory SplashScreenTextureImageMemory;
 VkImageView SplashScreenTextureImageView;
 
 Mesh SplashScreenMesh;
-
-Asset* Assets;
-uint32_t AssetCount;
-
-Actor* Actors;
-uint32_t ActorCount;
 
 //TODO: Use DEVICE_LOCAL memory where possible
 
@@ -89,16 +82,9 @@ int CreateSplashScreenMesh ()
 }
 
 
-int ImportSplashScreenAssets ()
+int CreateGraphicsHandlesForAssets (Asset* Assets, uint32_t AssetCount)
 {
-	OutputDebugString (L"ImportSplashScreenAssets\n");
-
-	int Result = ImportAssets ("\\UIElements\\SplashScreen\\SplashScreen.gltf", &Assets, &AssetCount);
-
-	if (Result != 0)
-	{
-		return Result;
-	}
+	OutputDebugString (L"CreateGraphicsHandlesForAssets\n");
 
 	return 0;
 }
@@ -735,7 +721,7 @@ int CreateSplashScreenDeviceTextureImage ()
 	StagingBufferCreateInfo.queueFamilyIndexCount = 1;
 	StagingBufferCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 	StagingBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-	StagingBufferCreateInfo.size = Width * Height * BPP * sizeof (float);
+	StagingBufferCreateInfo.size = (VkDeviceSize)Width * (VkDeviceSize)Height * (VkDeviceSize)BPP;
 
 	if (vkCreateBuffer (GraphicsDevice, &StagingBufferCreateInfo, NULL, &StagingBuffer) != VK_SUCCESS)
 	{
@@ -780,7 +766,7 @@ int CreateSplashScreenDeviceTextureImage ()
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
-	memcpy (Data, Pixels, Width * Height * BPP * sizeof (uint8_t));
+	memcpy (Data, Pixels, Width * Height * BPP);
 
 	vkUnmapMemory (GraphicsDevice, StagingBufferMemory);
 
@@ -1133,7 +1119,7 @@ int DrawSplashScreenGraphics ()
 
 }
 
-int InitSplashScreenGraphics ()
+int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount)
 {
 	OutputDebugString (L"SetupSplashScreen\n");
 
@@ -1144,7 +1130,7 @@ int InitSplashScreenGraphics ()
 		return Result;
 	}
 
-	Result = ImportSplashScreenAssets ();
+	Result = CreateGraphicsHandlesForAssets (Assets, AssetCount);
 
 	if (Result != 0)
 	{

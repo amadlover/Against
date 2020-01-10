@@ -90,10 +90,10 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 		return -1;
 	}
 
+	int Result = GameInit (HInstance, WindowHandle);
+
 	ShowWindow (WindowHandle, CmdShow);
 	UpdateWindow (WindowHandle);
-
-	int Result = GameInit (HInstance, WindowHandle);
 
 	if (Result != 0)
 	{

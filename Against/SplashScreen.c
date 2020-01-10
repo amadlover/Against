@@ -19,15 +19,28 @@
 #include <Shlwapi.h>
 #include <strsafe.h>
 
+SplashScreen* SplashScreenObj;
 
 int InitSplashScreen ()
 {
-	int Result = InitSplashScreenGraphics ();
+	SplashScreenObj = (SplashScreen*)calloc (1, sizeof (SplashScreen));
+
+	if (SplashScreenObj == NULL)
+	{
+		return AGAINST_ERROR_SYSTEM_ALLOCATE_MEMORY;
+	}
+	
+	char FilePath[MAX_PATH];
+	GetFullFilePath (FilePath, "\\UIElements\\SplashScreen\\SplashScreen.gltf");
+
+	int Result = ImportAssets (FilePath, &SplashScreenObj->Assets, &SplashScreenObj->AssetCount);
 
 	if (Result != 0)
 	{
 		return Result;
 	}
+
+	InitSplashScreenGraphics (SplashScreenObj->Assets, SplashScreenObj->AssetCount);
 
 	return 0;
 }
@@ -47,4 +60,25 @@ int DrawSplashScreen (uint64_t ElapsedTime)
 void DestroySplashScreen ()
 {
 	DestroySplashScreenGraphics ();
+
+	if (SplashScreenObj != NULL)
+	{
+		for (uint32_t i = 0; i < SplashScreenObj->ActorCount; i++)
+		{
+			if ((SplashScreenObj->Actors + i) != NULL)
+			{
+				free (SplashScreenObj->Actors + i);
+			}
+		}
+
+		for (uint32_t i = 0; i < SplashScreenObj->AssetCount; i++)
+		{
+			if ((SplashScreenObj->Assets + i) != NULL)
+			{
+				free (SplashScreenObj->Assets + i);
+			}
+		}
+
+		free (SplashScreenObj);
+	}
 }
