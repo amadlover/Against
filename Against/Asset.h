@@ -95,3 +95,21 @@ typedef struct _Node
 
 	Mesh* Mesh;
 } Node;
+
+typedef struct _PrimitiveGraphicsData
+{
+	int x;
+} PrimitiveGraphicsData;
+
+typedef struct _PrimitivePhysicsData
+{
+	int DUMMY;
+} PrimitivePhysicsData;
+
+typedef struct _Asset
+{
+	PrimitiveGraphicsData* GraphicsData;
+	PrimitivePhysicsData* PhysicaData;
+
+	uint32_t PrimitiveCount;
+} Asset;

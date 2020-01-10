@@ -13,12 +13,12 @@
 
 enum _CurrentScene
 {
-	SplashScreen,
-	MainMenu,
-	MainGame,
+	SplashScreenScene,
+	MainMenuScene,
+	MainGameScene,
 };
 
-enum _CurrentScene CurrentScene = SplashScreen;
+enum _CurrentScene CurrentScene = SplashScreenScene;
 
 enum _OverlayMenuState
 {
@@ -51,13 +51,13 @@ int ProcessMouseLeftClick ()
 {
 	switch (CurrentScene)
 	{
-	case SplashScreen:
+	case SplashScreenScene:
 		break;
 
-	case MainMenu:
+	case MainMenuScene:
 		break;
 
-	case MainGame:
+	case MainGameScene:
 		break;
 
 	default:
@@ -71,13 +71,13 @@ int ProcessMouseMiddleClick ()
 {
 	switch (CurrentScene)
 	{
-	case SplashScreen:
+	case SplashScreenScene:
 		break;
 
-	case MainMenu:
+	case MainMenuScene:
 		break;
 
-	case MainGame:
+	case MainGameScene:
 		break;
 
 	default:
@@ -91,13 +91,13 @@ int ProcessMouseRightClick ()
 {
 	switch (CurrentScene)
 	{
-	case SplashScreen:
+	case SplashScreenScene:
 		break;
 
-	case MainMenu:
+	case MainMenuScene:
 		break;
 
-	case MainGame:
+	case MainGameScene:
 		break;
 
 	default:
@@ -114,13 +114,13 @@ int ProcessMouseMovement (WPARAM wParam, LPARAM lParam)
 
 	switch (CurrentScene)
 	{
-	case SplashScreen:
+	case SplashScreenScene:
 		break;
 
-	case MainMenu:
+	case MainMenuScene:
 		break;
 
-	case MainGame:
+	case MainGameScene:
 		break;
 
 	default:
@@ -137,24 +137,37 @@ int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 {
 	switch (CurrentScene)
 	{
-	case SplashScreen:
+	case SplashScreenScene:
 		switch (wParam)
 		{
 		case VK_ESCAPE:
 			DestroySplashScreenGraphics ();
-			SplashScreenSceneState = Exited;
 
-			CurrentScene = MainMenu;
+			SplashScreenSceneState = Exited;
+			CurrentScene = MainMenuScene;
+
 			break;
 		default:
 			break;
 		}
 		break;
 
-	case MainMenu:
+	case MainMenuScene:
+		switch (wParam)
+		{
+		case VK_ESCAPE:
+			DestroyMainMenuGraphics ();
+
+			MainMenuSceneState = Exited;
+			CurrentScene = SplashScreenScene;
+			break;
+
+		default:
+			break;
+		}
 		break;
 
-	case MainGame:
+	case MainGameScene:
 		break;
 
 	default:
@@ -184,15 +197,15 @@ int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 
 		switch (SceneState)
 		{
-		case SplashScreen:
-			SceneState = MainMenu;
+		case SplashScreenScene:
+			SceneState = MainMenuScene;
 			break;
 
-		case MainMenu:
+		case MainMenuScene:
 			OverlayMenuState = QuitMenu;
 			break;
 
-		case MainGame:
+		case MainGameScene:
 			OverlayMenuState = PauseMenu;
 			break;
 
@@ -256,18 +269,18 @@ int GameMainLoop ()
 
 	switch (CurrentScene)
 	{
-	case SplashScreen:
-		if (ElapsedTime > SplashScreenThresholdTimeMS)
+	case SplashScreenScene:
+		/*if (ElapsedTime > SplashScreenThresholdTimeMS)
 		{
 			OutputDebugString (L"Switching to Main Menu\n");
-			CurrentScene = MainMenu;
+			CurrentScene = MainMenuScene;
 
 			DestroySplashScreenGraphics ();
 
 			SplashScreenSceneState = Exited;
 		}
 		else
-		{
+		{*/
 			if (SplashScreenSceneState == Exited)
 			{
 				Result = InitSplashScreenGraphics ();
@@ -288,11 +301,11 @@ int GameMainLoop ()
 					return Result;
 				}
 			}
-		}
+		//}
 
 		break;
 
-	case MainMenu:
+	case MainMenuScene:
 		if (MainMenuSceneState == Exited)
 		{
 			Result = InitMainMenuGraphics ();
@@ -316,7 +329,7 @@ int GameMainLoop ()
 
 		break;
 
-	case MainGame:
+	case MainGameScene:
 		Result = DrawMainGame ();
 
 		if (Result != 0)

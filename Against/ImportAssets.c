@@ -11,16 +11,16 @@
 #define STB_IMPLEMENTATION
 #include <stb_image.h>
 
-int ImportGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material** Materials, uint32_t* MaterialCount, Texture** Textures, uint32_t* TextureCount, Image** Images, uint32_t* ImageCount, Sampler** Samplers, uint32_t* SamplerCount)
+int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material** Materials, uint32_t* MaterialCount, Texture** Textures, uint32_t* TextureCount, Image** Images, uint32_t* ImageCount, Sampler** Samplers, uint32_t* SamplerCount)
 {
 	cgltf_options Options = { 0 };
 	cgltf_data* Data = NULL;
 
-	cgltf_result Result = cgltf_parse_file (&Options, Filename, &Data);
+	cgltf_result Result = cgltf_parse_file (&Options, FilePath, &Data);
 
 	if (Result == cgltf_result_success)
 	{
-		Result = cgltf_load_buffers (&Options, Data, Filename);
+		Result = cgltf_load_buffers (&Options, Data, FilePath);
 
 		if (Result == cgltf_result_success)
 		{
@@ -50,7 +50,7 @@ int ImportGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount, Mesh** 
 					cgltf_image* Image = Data->images + i;
 
 					TCHAR TextureFile[MAX_PATH];
-					mbstowcs (TextureFile, Filename, MAX_PATH);
+					mbstowcs (TextureFile, FilePath, MAX_PATH);
 
 					PathRemoveFileSpec (TextureFile);
 					TCHAR URI[MAX_PATH];
@@ -168,6 +168,10 @@ int ImportGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount, Mesh** 
 									(*Meshes + m)->Primitives[p].UV0s = (float*)malloc (BufferView->size);
 
 									memcpy ((*Meshes + m)->Primitives[p].UV0s, UVs, BufferView->size);
+								}
+								else if (strcmp (Attribute->name, "TEXCOORD_1") == 0)
+								{
+
 								}
 							}
 						}
@@ -288,6 +292,31 @@ int ImportGLTF (const char* Filename, Node** Nodes, uint32_t* NodeCount, Mesh** 
 	else
 	{
 		return AGAINST_ERROR_GLTF_COULD_NOT_IMPORT;
+	}
+
+	return 0;
+}
+
+int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount)
+{
+	cgltf_options Options = { 0 };
+	cgltf_data* Data = NULL;
+
+	cgltf_result Result = cgltf_parse_file (&Options, FilePath, &Data);
+
+	if (Result == cgltf_result_success)
+	{
+		Result = cgltf_load_buffers (&Options, Data, FilePath);
+
+		if (Result == cgltf_result_success)
+		{
+			Result = cgltf_validate (Data);
+
+			if (Result == cgltf_result_success)
+			{
+				cgltf_free (Data);
+			}
+		}
 	}
 
 	return 0;

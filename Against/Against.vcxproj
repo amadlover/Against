@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Assets.c" />
     <ClCompile Include="Compute.c" />
     <ClCompile Include="Error.c" />
     <ClCompile Include="Game.c" />
@@ -44,11 +43,13 @@
     </ClCompile>
     <ClCompile Include="Physics.c" />
     <ClCompile Include="SplashScreen.c" />
+    <ClCompile Include="SplashScreenGraphics.c" />
     <ClCompile Include="Test.c" />
     <ClCompile Include="Utility.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Assets.h" />
+    <ClInclude Include="Actor.h" />
+    <ClInclude Include="Asset.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Compute.h" />
     <ClInclude Include="Error.h" />
@@ -62,6 +63,7 @@
     <ClInclude Include="Maths.hpp" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="SplashScreen.h" />
+    <ClInclude Include="SplashScreenGraphics.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>

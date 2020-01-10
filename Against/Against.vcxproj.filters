@@ -48,9 +48,6 @@
     <ClCompile Include="MainGame.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Assets.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ImportAssets.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -70,6 +67,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsUtilities.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SplashScreenGraphics.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,9 +98,6 @@
     <ClInclude Include="SplashScreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Assets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ImportAssets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -120,6 +117,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsUtilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SplashScreenGraphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Asset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

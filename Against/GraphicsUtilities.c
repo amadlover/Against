@@ -6,52 +6,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int CreateUniformBuffer (VkBuffer* UniformBuffer, VkDeviceMemory* UniformBufferMemory, VkDeviceSize Size, VkBufferUsageFlags Usage, VkMemoryPropertyFlags RequiredMemoryTypes)
+int CreateBufferAndBufferMemory (VkDevice GraphicsDevice, VkDeviceSize Size, VkBufferUsageFlags Usage, VkSharingMode SharingMode, uint32_t GraphicsQueueFamilyIndex, VkMemoryPropertyFlags RequiredTypes, VkBuffer* OutBuffer, VkDeviceMemory* OutBufferMemory)
 {
-	OutputDebugString (L"CreateUniformBuffer\n");
+	VkBufferCreateInfo BufferCreateInfo;
+	memset (&BufferCreateInfo, 0, sizeof (VkBufferCreateInfo));
 
-	VkBufferCreateInfo CreateInfo;
-	memset (&CreateInfo, 0, sizeof (VkBufferCreateInfo));
+	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	BufferCreateInfo.size = Size;
+	BufferCreateInfo.queueFamilyIndexCount = 1;
+	BufferCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
+	BufferCreateInfo.usage = Usage;
 
-	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	CreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	CreateInfo.size = Size;
-	CreateInfo.usage = Usage;
-
-	if (vkCreateBuffer (GraphicsDevice, &CreateInfo, NULL, UniformBuffer) != VK_SUCCESS)
+	if (vkCreateBuffer (GraphicsDevice, &BufferCreateInfo, NULL, OutBuffer) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
 	}
-
+	
 	VkMemoryRequirements MemoryRequirements;
-	vkGetBufferMemoryRequirements (GraphicsDevice, *UniformBuffer, &MemoryRequirements);
+	vkGetBufferMemoryRequirements (GraphicsDevice, *OutBuffer, &MemoryRequirements);
 
 	VkMemoryAllocateInfo MemoryAllocateInfo;
 	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
 
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
-
-	uint32_t RequiredTypes = RequiredMemoryTypes;
-
-	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
-	{
-		if (MemoryRequirements.memoryTypeBits & (1 << i) && RequiredTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
-		{
-			MemoryAllocateInfo.memoryTypeIndex = i;
-			break;
-		}
-	}
-
-	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, UniformBufferMemory) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
-	}
-
-	if (vkBindBufferMemory (GraphicsDevice, *UniformBuffer, *UniformBufferMemory, 0) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
-	}
+	GetMemoryTypeIndex (MemoryRequirements, PhysicalDeviceMemoryProperties, RequiredTypes, &MemoryAllocateInfo.memoryTypeIndex);
 
 	return 0;
 }
@@ -78,7 +57,7 @@ errno_t ReadShaderFile (char* FullFilePath, char** FileContents)
 	return 0;
 }
 
-int CreateShader (char* FullFilePath, VkShaderStageFlagBits ShaderStage, VkPipelineShaderStageCreateInfo* ShaderStageCreateInfos)
+int CreateShader (char* FullFilePath, VkShaderStageFlagBits ShaderStage, VkShaderModule* ShaderModule, VkPipelineShaderStageCreateInfo* ShaderStageCreateInfos)
 {
 	char* FileContents = NULL;
 	
@@ -106,9 +85,7 @@ int CreateShader (char* FullFilePath, VkShaderStageFlagBits ShaderStage, VkPipel
 	ShaderModuleCreateInfo.pCode = (uint32_t*)FileContents;
 	ShaderModuleCreateInfo.codeSize = FileSize;
 
-	VkShaderModule ShaderModule;
-
-	if (vkCreateShaderModule (GraphicsDevice, &ShaderModuleCreateInfo, NULL, &ShaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule (GraphicsDevice, &ShaderModuleCreateInfo, NULL, ShaderModule) != VK_SUCCESS)
 	{
 		free (FileContents);
 		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
@@ -121,19 +98,17 @@ int CreateShader (char* FullFilePath, VkShaderStageFlagBits ShaderStage, VkPipel
 
 	ShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	ShaderStageCreateInfo.stage = ShaderStage;
-	ShaderStageCreateInfo.module = ShaderModule;
+	ShaderStageCreateInfo.module = *ShaderModule;
 	ShaderStageCreateInfo.pName = "main";
 
 	if (ShaderStage == VK_SHADER_STAGE_VERTEX_BIT)
 	{
-		ShaderStageCreateInfos[0] = ShaderStageCreateInfo;
+		*ShaderStageCreateInfos = ShaderStageCreateInfo;
 	}
 	else if (ShaderStage == VK_SHADER_STAGE_FRAGMENT_BIT)
 	{
-		ShaderStageCreateInfos[1] = ShaderStageCreateInfo;
+		*ShaderStageCreateInfos = ShaderStageCreateInfo;
 	}
-
-	vkDestroyShaderModule (GraphicsDevice, ShaderModule, NULL);
 
 	return 0;
 }
@@ -143,3 +118,16 @@ int CreateTextureImageOnDevice (char* FilePath, VkImage* TextureImage, VkDeviceM
 	return 0;
 }
 
+int GetMemoryTypeIndex (VkMemoryRequirements MemoryRequirements, VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, VkMemoryPropertyFlags RequiredMemoryTypes, uint32_t* MemoryTypeIndex)
+{
+	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if (MemoryRequirements.memoryTypeBits & (1 << i) && RequiredMemoryTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
+		{
+			*MemoryTypeIndex = i;
+			break;
+		}
+	}
+
+	return 0;
+}
