@@ -38,10 +38,10 @@ void ImportAttribute ()
 
 void ImportGraphicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Data)
 {
+	uint32_t CurrentMeshAssetCount = 0;
+
 	for (uint32_t n = 0; n < Data->nodes_count; n++)
 	{
-		uint32_t CurrentMeshAssetCount = 0;
-
 		cgltf_node* Node = Data->nodes + n;
 
 		if (Node->mesh == NULL) continue;
@@ -81,6 +81,7 @@ void ImportGraphicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* D
 						{
 							char* DataStart = (char*)BufferView->buffer->data;
 							float* UVs = (float*)(DataStart + Accessor->offset + BufferView->offset);
+
 							CurrentGraphicsPrimitive->UV0Size = BufferView->size;
 							CurrentGraphicsPrimitive->UV0s = (float*)malloc (BufferView->size);
 
@@ -138,9 +139,10 @@ void ImportGraphicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* D
 
 void ImportPhysicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Data)
 {
+	uint32_t CurrentMeshAssetCount = 0;
+
 	for (uint32_t n = 0; n < Data->nodes_count; n++)
 	{
-		uint32_t CurrentMeshAssetCount = 0;
 		cgltf_node* Node = Data->nodes + n;
 
 		if (Node->mesh == NULL) continue;
@@ -274,7 +276,7 @@ int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount)
 				*Assets = (Asset*)calloc ((size_t)(*AssetCount), sizeof (Asset));
 				
 				ImportGraphicsPrimitives (*Assets, *AssetCount, Data);
-				ImportPhysicsPrimitives (*Assets, *AssetCount, Data);
+				//ImportPhysicsPrimitives (*Assets, *AssetCount, Data);
 			}
 		}
 	}

@@ -68,6 +68,50 @@ void DestroySplashScreen ()
 
 		if (SplashScreenObj->Assets)
 		{
+			for (uint32_t a = 0; a < SplashScreenObj->AssetCount; a++)
+			{
+				if ((SplashScreenObj->Assets + a)->GraphicsPrimitives)
+				{
+					for (uint32_t i = 0; i < (SplashScreenObj->Assets + a)->GraphicsPrimitiveCount; i++)
+					{
+						if (((SplashScreenObj->Assets + a)->GraphicsPrimitives + i)->Indices)
+						{
+							free ((SplashScreenObj->Assets->GraphicsPrimitives + i)->Indices);
+						}
+
+						if (((SplashScreenObj->Assets + a)->GraphicsPrimitives + i)->Positions)
+						{
+							free ((SplashScreenObj->Assets->GraphicsPrimitives + i)->Positions);
+						}
+
+						if (((SplashScreenObj->Assets + a)->GraphicsPrimitives + i)->UV0s)
+						{
+							free ((SplashScreenObj->Assets->GraphicsPrimitives + i)->UV0s);
+						}
+
+						free ((SplashScreenObj->Assets + a)->GraphicsPrimitives + i);
+					}
+				}
+
+				if ((SplashScreenObj->Assets + a)->PhysicsPrimitives)
+				{
+					for (uint32_t i = 0; i < (SplashScreenObj->Assets + a)->PhysicsPrimitiveCount; i++)
+					{
+						if (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Indices)
+						{
+							free (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Indices);
+						}
+
+						if (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Positions)
+						{
+							free (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Positions);
+						}
+
+						free ((SplashScreenObj->Assets + a)->PhysicsPrimitives + i);
+					}
+				}
+			}
+
 			free (SplashScreenObj->Assets);
 		}
 
