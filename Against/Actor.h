@@ -1,6 +1,6 @@
 #pragma once
 
-typedef struct _Actor
+typedef struct
 {
 	int x;
 } Actor;

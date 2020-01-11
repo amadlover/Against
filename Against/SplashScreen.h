@@ -6,7 +6,7 @@
 #include "Asset.h"
 #include "Actor.h"
 
-typedef struct _SplashScreen
+typedef struct
 {
 	_SplashScreenGraphics SplashScreenGraphics;
 

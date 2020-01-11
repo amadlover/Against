@@ -20,12 +20,7 @@
         },
         {
             "mesh" : 1,
-            "name" : "CS_Cube",
-            "scale" : [
-                0.25093841552734375,
-                0.25093841552734375,
-                0.25093841552734375
-            ]
+            "name" : "CS_Plane_00"
         }
     ],
     "materials" : [
@@ -57,14 +52,14 @@
             ]
         },
         {
-            "name" : "Cube",
+            "name" : "CS_Plane",
             "primitives" : [
                 {
                     "attributes" : {
                         "POSITION" : 3,
                         "TEXCOORD_0" : 4
                     },
-                    "indices" : 5
+                    "indices" : 2
                 }
             ]
         }
@@ -113,15 +108,15 @@
         {
             "bufferView" : 3,
             "componentType" : 5126,
-            "count" : 24,
+            "count" : 4,
             "max" : [
                 1,
-                1,
+                0,
                 1
             ],
             "min" : [
                 -1,
-                -1,
+                0,
                 -1
             ],
             "type" : "VEC3"
@@ -129,14 +124,8 @@
         {
             "bufferView" : 4,
             "componentType" : 5126,
-            "count" : 24,
+            "count" : 4,
             "type" : "VEC2"
-        },
-        {
-            "bufferView" : 5,
-            "componentType" : 5123,
-            "count" : 36,
-            "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
@@ -157,23 +146,18 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 288,
+            "byteLength" : 48,
             "byteOffset" : 92
         },
         {
             "buffer" : 0,
-            "byteLength" : 192,
-            "byteOffset" : 380
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 72,
-            "byteOffset" : 572
+            "byteLength" : 32,
+            "byteOffset" : 140
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 644,
+            "byteLength" : 172,
             "uri" : "SplashScreen.bin"
         }
     ]

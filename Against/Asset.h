@@ -4,12 +4,12 @@
 
 #include <vulkan/vulkan.h>
 
-typedef struct _VkImageHandles
+typedef struct
 {
 	VkMemoryRequirements MemoryRequirements;
 } VkImageHandles;
 
-typedef struct _Image
+typedef struct
 {
 	char Name[256];
 	unsigned int Width;
@@ -21,9 +21,9 @@ typedef struct _Image
 	uint32_t Size;
 
 	VkImageHandles VkHandles;
-}Image;
+} Image;
 
-typedef struct _Sampler
+typedef struct
 {
 	int MinFilter;
 	int MagFilter;
@@ -38,13 +38,13 @@ typedef struct _Texture
 	Sampler* Sampler;
 } Texture;
 
-typedef struct _Material
+typedef struct
 {
 	char Name[256];
 	Texture* BaseColorTexture;
 } Material;
 
-typedef struct _VkPrimitiveHandles
+typedef struct
 {
 	//TODO: Pointers or values;
 	VkBuffer VBIB;
@@ -55,7 +55,7 @@ typedef struct _VkPrimitiveHandles
 	VkMemoryRequirements MemoryRequirements;
 } VkPrimitiveHandles;
 
-typedef struct _Primitive_Orig
+typedef struct
 {
 	float* Positions;
 	float* UV0s;
@@ -74,7 +74,7 @@ typedef struct _Primitive_Orig
 	VkPrimitiveHandles VkHandles;
 } Primitive_Orig;
 
-typedef struct _Mesh
+typedef struct
 {
 	char Name[256];
 	uint32_t ID;
@@ -96,7 +96,7 @@ typedef struct _Node
 	Mesh* Mesh;
 } Node;
 
-typedef struct _GraphicsPrimitive
+typedef struct
 {
 	float* Positions;
 	float* UV0s;
@@ -115,18 +115,19 @@ typedef struct _GraphicsPrimitive
 	VkPrimitiveHandles VkHandles;
 } GraphicsPrimitive;
 
-typedef struct _PhysicsPrimitive
+typedef struct
 {
 	float* Positions;
 
 	uint32_t PositionsSize;
+	uint32_t IndexSize;
 
 	uint32_t IndexCount;
 	uint32_t* Indices;
 
 } PhysicsPrimitive;
 
-typedef struct _Asset
+typedef struct
 {
 	char Name[256];
 	uint32_t ID;

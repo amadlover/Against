@@ -1,6 +1,6 @@
 #pragma once
 
-typedef enum _AGAINSTRESULT
+typedef enum
 {
 	AGAINST_SUCCESS,
 

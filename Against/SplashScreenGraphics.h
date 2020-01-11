@@ -4,7 +4,7 @@
 #include "Asset.h"
 #include "Actor.h"
 
-typedef struct __SplashScreenGraphics
+typedef struct
 {
 	int DUMMY;
 }_SplashScreenGraphics;

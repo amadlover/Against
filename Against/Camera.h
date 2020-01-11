@@ -2,7 +2,7 @@
 
 #include "Maths.hpp"
 
-typedef struct _Camera
+typedef struct
 {
 	float TransformationMatrix[16];
 

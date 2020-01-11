@@ -1,6 +1,6 @@
 #pragma once
 
-typedef struct _MainGame
+typedef struct
 {
 	int x;
 } MainGameObj;
