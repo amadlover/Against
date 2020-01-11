@@ -1,8 +1,8 @@
 #pragma once
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <vulkan/vulkan.h>
-
 
 typedef struct _VkImageHandles
 {
@@ -55,7 +55,7 @@ typedef struct _VkPrimitiveHandles
 	VkMemoryRequirements MemoryRequirements;
 } VkPrimitiveHandles;
 
-typedef struct _Primitive
+typedef struct _Primitive_Orig
 {
 	float* Positions;
 	float* UV0s;
@@ -72,14 +72,14 @@ typedef struct _Primitive
 	Material* Material;
 
 	VkPrimitiveHandles VkHandles;
-} Primitive;
+} Primitive_Orig;
 
 typedef struct _Mesh
 {
 	char Name[256];
 	uint32_t ID;
 
-	Primitive* Primitives;
+	Primitive_Orig* Primitives;
 	uint32_t PrimitiveCount;
 } Mesh;
 
@@ -96,7 +96,7 @@ typedef struct _Node
 	Mesh* Mesh;
 } Node;
 
-typedef struct _PrimitiveGraphicsData
+typedef struct _GraphicsPrimitive
 {
 	float* Positions;
 	float* UV0s;
@@ -110,12 +110,12 @@ typedef struct _PrimitiveGraphicsData
 	uint32_t IndexCount;
 	uint32_t* Indices;
 
-	Material* Material;
+	Material Material;
 
 	VkPrimitiveHandles VkHandles;
-} PrimitiveGraphicsData;
+} GraphicsPrimitive;
 
-typedef struct _PrimitivePhysicsData
+typedef struct _PhysicsPrimitive
 {
 	float* Positions;
 
@@ -124,14 +124,18 @@ typedef struct _PrimitivePhysicsData
 	uint32_t IndexCount;
 	uint32_t* Indices;
 
-} PrimitivePhysicsData;
+} PhysicsPrimitive;
 
 typedef struct _Asset
 {
-	PrimitiveGraphicsData* GraphicsData;
-	PrimitivePhysicsData* PhysicaData;
+	char Name[256];
+	uint32_t ID;
 
-	uint32_t PrimitiveCount;
+	PhysicsPrimitive* PhysicsPrimitives;
+	GraphicsPrimitive* GraphicsPrimitives;
+
+	uint32_t PhysicsPrimitiveCount;
+	uint32_t GraphicsPrimitiveCount;
 } Asset;
 
 int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount);

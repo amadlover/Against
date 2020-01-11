@@ -29,7 +29,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 			if (Result == cgltf_result_success)
 			{
 				*SamplerCount = Data->samplers_count;
-				*Samplers = (Sampler*)malloc (sizeof (Sampler) * Data->samplers_count);
+				*Samplers = (Sampler*)malloc (Data->samplers_count * sizeof (Sampler));
 
 				for (uint32_t s = 0; s < Data->samplers_count; s++)
 				{
@@ -42,8 +42,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 				}
 
 				*ImageCount = Data->images_count;
-				*Images = (Image*)malloc (sizeof (Image) * Data->images_count);
-				memset (*Images, 0, sizeof (Image) * Data->images_count);
+				*Images = (Image*)malloc (Data->images_count * sizeof (Image));
 
 				for (uint32_t i = 0; i < Data->images_count; i++)
 				{
@@ -74,8 +73,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 				}
 
 				*TextureCount = Data->textures_count;
-				*Textures = (Texture*)malloc (sizeof (Texture) * Data->textures_count);
-				memset (*Textures, 0, sizeof (Texture) * Data->textures_count);
+				*Textures = (Texture*)malloc (Data->textures_count * sizeof (Texture));
 
 				for (uint32_t t = 0; t < Data->textures_count; t++)
 				{
@@ -104,8 +102,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 				}
 
 				*MaterialCount = Data->materials_count;
-				*Materials = (Material*)malloc (sizeof (Material) * Data->materials_count);
-				memset (*Materials, 0, sizeof (Material) * Data->materials_count);
+				*Materials = (Material*)malloc (Data->materials_count * sizeof (Material));
 
 				for (uint32_t m = 0; m < Data->materials_count; m++)
 				{
@@ -126,16 +123,14 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 				}
 
 				*MeshCount = Data->meshes_count;
-				*Meshes = (Mesh*)malloc (sizeof (Mesh) * Data->meshes_count);
-				memset (*Meshes, 0, sizeof (Mesh) * Data->meshes_count);
+				*Meshes = (Mesh*)malloc (Data->meshes_count * sizeof (Mesh));
 
 				for (uint32_t m = 0; m < Data->meshes_count; m++)
 				{
 					cgltf_mesh* Mesh = Data->meshes + m;
 
 					(*Meshes + m)->PrimitiveCount = Mesh->primitives_count;
-					(*Meshes + m)->Primitives = (Primitive*)malloc (sizeof (Primitive) * Mesh->primitives_count);
-					memset ((*Meshes + m)->Primitives, 0, sizeof (Primitive) * Mesh->primitives_count);
+					(*Meshes + m)->Primitives = (Primitive_Orig*)malloc (Mesh->primitives_count * sizeof (Primitive_Orig));
 
 					for (uint32_t p = 0; p < Mesh->primitives_count; p++)
 					{
@@ -227,8 +222,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 				}
 
 				*NodeCount = Data->nodes_count;
-				*Nodes = (Node*)malloc (sizeof (Node) * Data->nodes_count);
-				memset (*Nodes, 0, sizeof (Node) * Data->nodes_count);
+				*Nodes = (Node*)malloc (Data->nodes_count * sizeof (Node));
 				
 				for (uint32_t n = 0; n < Data->nodes_count; n++)
 				{

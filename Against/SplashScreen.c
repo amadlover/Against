@@ -59,26 +59,20 @@ int DrawSplashScreen (uint64_t ElapsedTime)
 
 void DestroySplashScreen ()
 {
-	DestroySplashScreenGraphics ();
-
-	if (SplashScreenObj != NULL)
+	if (SplashScreenObj )
 	{
-		for (uint32_t i = 0; i < SplashScreenObj->ActorCount; i++)
+		if (SplashScreenObj->Actors)
 		{
-			if ((SplashScreenObj->Actors + i) != NULL)
-			{
-				free (SplashScreenObj->Actors + i);
-			}
+			free (SplashScreenObj->Actors);
 		}
 
-		for (uint32_t i = 0; i < SplashScreenObj->AssetCount; i++)
+		if (SplashScreenObj->Assets)
 		{
-			if ((SplashScreenObj->Assets + i) != NULL)
-			{
-				free (SplashScreenObj->Assets + i);
-			}
+			free (SplashScreenObj->Assets);
 		}
 
 		free (SplashScreenObj);
 	}
+
+	DestroySplashScreenGraphics ();
 }

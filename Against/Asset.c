@@ -48,36 +48,38 @@ int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount)
 
 			if (Result == cgltf_result_success)
 			{
-				for (uint32_t i = 0; i < Data->images_count; i++)
-				{
-					cgltf_image* Image = Data->images + i;
-					char TexturePath[MAX_PATH];
-					GetFullTexturePath (FilePath, (const char*)Image->uri, TexturePath);
-
-					int W, H, BPP;
-					stbi_load (TexturePath, &W, &H, &BPP, 4);
-				}
-
 				for (uint32_t n = 0; n < Data->nodes_count; n++)
 				{
 					cgltf_node* Node = Data->nodes + n;
 
-					if (strstr (Node->name, "CS_") != NULL)
-					{
-						continue;
-					}
+					if (Node->mesh == NULL) continue;
 
-					for (uint32_t p = 0; p < Node->mesh->primitives_count; p++)
-					{
-						cgltf_primitive* Primitive = Node->mesh->primitives + p;
-
-						for (uint32_t a = 0; a < Primitive->attributes_count; a++)
-						{
-							cgltf_attribute* Attribute = Primitive->attributes + a;
-						}
-					}
+					++(*AssetCount);
 				}
 
+				*Assets = (Asset*)calloc ((size_t)*AssetCount, sizeof (Asset));
+
+				for (uint32_t n = 0; n < Data->nodes_count; n++)
+				{
+					uint32_t CurrentAssetCount = 0;
+
+					cgltf_node* Node = Data->nodes + n;
+
+					if (Node->mesh == NULL) continue;
+
+					if (strstr (Node->name, "CS_") != NULL)
+					{
+						(*Assets + CurrentAssetCount)->PhysicsPrimitiveCount = Node->mesh->primitives_count;
+						(*Assets + CurrentAssetCount)->GraphicsPrimitiveCount = 0;
+					}
+					else
+					{
+						(*Assets + CurrentAssetCount)->PhysicsPrimitiveCount = 0;
+						(*Assets + CurrentAssetCount)->GraphicsPrimitiveCount = Node->mesh->primitives_count;
+					}
+
+					++CurrentAssetCount;
+				}
 			}
 		}
 	}

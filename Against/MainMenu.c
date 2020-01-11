@@ -100,6 +100,8 @@ int ImportMainMenuAssets ()
 		return Result;
 	}
 
+	MainMenuBufferCount = 0;
+
 	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
 	{
 		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
@@ -116,8 +118,7 @@ int CreateMainMenuUniformBuffer ()
 {
 	OutputDebugString (L"CreateMainScreenUniformBuffer\n");
 
-	VkBufferCreateInfo CreateInfo;
-	memset (&CreateInfo, 0, sizeof (VkBufferCreateInfo));
+	VkBufferCreateInfo CreateInfo = { 0 };
 	
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	CreateInfo.size = sizeof (float) * 16 + sizeof (float) + sizeof (int);
@@ -131,13 +132,11 @@ int CreateMainMenuUniformBuffer ()
 		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
 	}
 
-	VkMemoryRequirements MemoryRequirements;
-	memset (&MemoryRequirements, 0, sizeof (VkMemoryRequirements));
+	VkMemoryRequirements MemoryRequirements = { 0 };
 
 	vkGetBufferMemoryRequirements (GraphicsDevice, MainMenuUniformBuffer, &MemoryRequirements);
 
-	VkMemoryAllocateInfo AllocateInfo;
-	memset (&AllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+	VkMemoryAllocateInfo AllocateInfo = { 0 };
 
 	AllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	AllocateInfo.allocationSize = MemoryRequirements.size;
@@ -170,8 +169,7 @@ int CreateMainMenuHostVBIBs ()
 {
 	OutputDebugString (L"CreateMainMenuHostVBIBs\n");
 
-	VkBufferCreateInfo VBIBCreateInfo;
-	memset (&VBIBCreateInfo, 0, sizeof (VkBufferCreateInfo));
+	VkBufferCreateInfo VBIBCreateInfo = { 0 };
 
 	VBIBCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	VBIBCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
@@ -180,8 +178,7 @@ int CreateMainMenuHostVBIBs ()
 	
 	MainMenuHostVBIBs = (VkBuffer*)malloc (sizeof (VkBuffer) * MainMenuBufferCount);
 
-	VkMemoryAllocateInfo VBIBMemoryAllocateInfo;
-	memset (&VBIBMemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+	VkMemoryAllocateInfo VBIBMemoryAllocateInfo = { 0 };
 
 	VBIBMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
@@ -305,8 +302,7 @@ int CreateMainMenuTextureImages ()
 {
 	OutputDebugString (L"CreateMainMenuTextureImages\n");
 
-	VkBufferCreateInfo BufferCreateInfo;
-	memset (&BufferCreateInfo, 0, sizeof (VkBufferCreateInfo));
+	VkBufferCreateInfo BufferCreateInfo = { 0 };
 
 	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	BufferCreateInfo.queueFamilyIndexCount = 1;
@@ -317,8 +313,7 @@ int CreateMainMenuTextureImages ()
 	VkBuffer* StagingBuffers = (VkBuffer*)malloc (sizeof (VkBuffer) * MainMenuImageCount);
 	VkMemoryRequirements* StagingBufferMemoryRequirements = (VkMemoryRequirements*)malloc (sizeof (VkMemoryRequirements) * MainMenuImageCount);
 
-	VkMemoryAllocateInfo StagingMemoryAllocateInfo;
-	memset (&StagingMemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+	VkMemoryAllocateInfo StagingMemoryAllocateInfo = { 0 };
 	StagingMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
 	for (uint32_t i = 0; i < MainMenuImageCount; i++)
@@ -390,8 +385,7 @@ int CreateMainMenuTextureImages ()
 		MapMemoryOffset += StagingBufferMemoryRequirements[i].size;
 	}
 
-	VkImageCreateInfo ImageCreateInfo;
-	memset (&ImageCreateInfo, 0, sizeof (VkImageCreateInfo));
+	VkImageCreateInfo ImageCreateInfo = { 0 };
 
 	ImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	ImageCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -409,8 +403,7 @@ int CreateMainMenuTextureImages ()
 	MainMenuTImages = (VkImage*)malloc (sizeof (VkImage) * MainMenuImageCount);
 	MainMenuTImageViews = (VkImageView*)malloc (sizeof (VkImageView) * MainMenuImageCount);
 
-	VkMemoryAllocateInfo MemoryAllocateInfo;
-	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+	VkMemoryAllocateInfo MemoryAllocateInfo = { 0 };
 
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
@@ -468,8 +461,7 @@ int CreateMainMenuTextureImages ()
 
 	VkCommandPool MainMenuImageOpsCommandPool;
 
-	VkCommandPoolCreateInfo CommandPoolCreateInfo;
-	memset (&CommandPoolCreateInfo, 0, sizeof (VkCommandPoolCreateInfo));
+	VkCommandPoolCreateInfo CommandPoolCreateInfo = { 0 };
 
 	CommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	CommandPoolCreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
@@ -481,8 +473,7 @@ int CreateMainMenuTextureImages ()
 	}
 
 	VkCommandBuffer LayoutChangeCommandBuffer;
-	VkCommandBufferAllocateInfo LayoutChangeCommandBufferAllocateInfo;
-	memset (&LayoutChangeCommandBufferAllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
+	VkCommandBufferAllocateInfo LayoutChangeCommandBufferAllocateInfo = { 0 };
 
 	LayoutChangeCommandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	LayoutChangeCommandBufferAllocateInfo.commandBufferCount = 1;
@@ -493,8 +484,7 @@ int CreateMainMenuTextureImages ()
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
 	}
 
-	VkImageMemoryBarrier MemoryBarrier;
-	memset (&MemoryBarrier, 0, sizeof (VkImageMemoryBarrier));
+	VkImageMemoryBarrier MemoryBarrier = { 0 };
 
 	MemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	MemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -506,8 +496,7 @@ int CreateMainMenuTextureImages ()
 	MemoryBarrier.subresourceRange.levelCount = 1;
 	MemoryBarrier.subresourceRange.layerCount = 1;
 
-	VkCommandBufferBeginInfo LayoutChangeCmdBufferBeginInfo;
-	memset (&LayoutChangeCmdBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
+	VkCommandBufferBeginInfo LayoutChangeCmdBufferBeginInfo = { 0 };
 
 	LayoutChangeCmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	LayoutChangeCmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -528,16 +517,14 @@ int CreateMainMenuTextureImages ()
 		return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
 	}
 
-	VkSubmitInfo SubmitInfo;
-	memset (&SubmitInfo, 0, sizeof (VkSubmitInfo));
-
+	VkSubmitInfo SubmitInfo = { 0 };
+	
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	SubmitInfo.commandBufferCount = 1;
 	SubmitInfo.pCommandBuffers = &LayoutChangeCommandBuffer;
 
 	VkFence Fence;
-	VkFenceCreateInfo FenceCreateInfo;
-	memset (&FenceCreateInfo, 0, sizeof (VkFenceCreateInfo));
+	VkFenceCreateInfo FenceCreateInfo = { 0 };
 
 	FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	
@@ -562,8 +549,7 @@ int CreateMainMenuTextureImages ()
 	}
 
 	VkCommandBuffer CopyBufferToImageCmdBuffer;
-	VkCommandBufferAllocateInfo CopyBufferToImageCmdBufferAllocateInfo;
-	memset (&CopyBufferToImageCmdBufferAllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
+	VkCommandBufferAllocateInfo CopyBufferToImageCmdBufferAllocateInfo = { 0 };
 
 	CopyBufferToImageCmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	CopyBufferToImageCmdBufferAllocateInfo.commandBufferCount = 1;
@@ -574,8 +560,7 @@ int CreateMainMenuTextureImages ()
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
 	}
 
-	VkCommandBufferBeginInfo CopyBufferToImageCmdBufferBeginInfo;
-	memset (&CopyBufferToImageCmdBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
+	VkCommandBufferBeginInfo CopyBufferToImageCmdBufferBeginInfo = { 0 };
 
 	CopyBufferToImageCmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	CopyBufferToImageCmdBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -585,8 +570,7 @@ int CreateMainMenuTextureImages ()
 		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
 	}
 
-	VkBufferImageCopy BufferImageCopy;
-	memset (&BufferImageCopy, 0, sizeof (VkBufferImageCopy));
+	VkBufferImageCopy BufferImageCopy = { 0 };
 
 	BufferImageCopy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	BufferImageCopy.imageSubresource.layerCount = 1;
@@ -681,8 +665,7 @@ int CreateMainMenuTextureImages ()
 	free (StagingBuffers);
 	free (StagingBufferMemoryRequirements);
 
-	VkImageViewCreateInfo ImageViewCreateInfo;
-	memset (&ImageViewCreateInfo, 0, sizeof (VkImageViewCreateInfo));
+	VkImageViewCreateInfo ImageViewCreateInfo = { 0 };
 
 	ImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	ImageViewCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -709,8 +692,7 @@ int CreateMainMenuTextureImages ()
 		}
 	}
 
-	VkSamplerCreateInfo SamplerCreateInfo;
-	memset (&SamplerCreateInfo, 0, sizeof (VkSamplerCreateInfo));
+	VkSamplerCreateInfo SamplerCreateInfo = { 0 };
 
 	SamplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	SamplerCreateInfo.magFilter = VK_FILTER_LINEAR;
@@ -750,8 +732,7 @@ int CreateMainMenuDepthImage ()
 {
 	OutputDebugString (L"CreateMainMenuDepthImage\n");
 
-	VkImageCreateInfo DepthImageCreateInfo;
-	memset (&DepthImageCreateInfo, 0, sizeof (VkImageCreateInfo));
+	VkImageCreateInfo DepthImageCreateInfo = { 0 };
 
 	DepthImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	DepthImageCreateInfo.extent.width = SurfaceExtent.width;
@@ -774,13 +755,11 @@ int CreateMainMenuDepthImage ()
 		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
 	}
 
-	VkMemoryRequirements MemoryRequirements;
-	memset (&MemoryRequirements, 0, sizeof (VkMemoryRequirements));
+	VkMemoryRequirements MemoryRequirements = { 0 };
 
 	vkGetImageMemoryRequirements (GraphicsDevice, MainMenuDepthImage, &MemoryRequirements);
 
-	VkMemoryAllocateInfo MemoryAllocateInfo;
-	memset (&MemoryAllocateInfo, 0, sizeof (VkMemoryAllocateInfo));
+	VkMemoryAllocateInfo MemoryAllocateInfo = { 0 };
 
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
@@ -806,8 +785,7 @@ int CreateMainMenuDepthImage ()
 		return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
 	}
 
-	VkImageViewCreateInfo DepthImageViewCreateInfo;
-	memset (&DepthImageViewCreateInfo, 0, sizeof (VkImageViewCreateInfo));
+	VkImageViewCreateInfo DepthImageViewCreateInfo = { 0 };
 
 	DepthImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	DepthImageViewCreateInfo.image = MainMenuDepthImage;
@@ -859,8 +837,7 @@ int CreateMainMenuShaders ()
 	fread (Buffer, sizeof (uint32_t), FileSize, VertFile);
 	fclose (VertFile);
 
-	VkShaderModuleCreateInfo VertexShaderModuleCreateInfo;
-	memset (&VertexShaderModuleCreateInfo, 0, sizeof (VkShaderModuleCreateInfo));
+	VkShaderModuleCreateInfo VertexShaderModuleCreateInfo = { 0 };
 
 	VertexShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	VertexShaderModuleCreateInfo.pCode = (uint32_t*)Buffer;
@@ -897,8 +874,7 @@ int CreateMainMenuShaders ()
 	fread (Buffer, sizeof (uint32_t), FileSize, FragFile);
 	fclose (FragFile);
 
-	VkShaderModuleCreateInfo FragmentShaderModuleCreateInfo;
-	memset (&FragmentShaderModuleCreateInfo, 0, sizeof (VkShaderModuleCreateInfo));
+	VkShaderModuleCreateInfo FragmentShaderModuleCreateInfo = { 0 };
 
 	FragmentShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	FragmentShaderModuleCreateInfo.pCode = (uint32_t*)Buffer;
@@ -912,16 +888,14 @@ int CreateMainMenuShaders ()
 
 	free (Buffer);
 
-	VkPipelineShaderStageCreateInfo VertexShaderStageCreateInfo;
-	memset (&VertexShaderStageCreateInfo, 0, sizeof (VkPipelineShaderStageCreateInfo));
+	VkPipelineShaderStageCreateInfo VertexShaderStageCreateInfo = { 0 };
 
 	VertexShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	VertexShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
 	VertexShaderStageCreateInfo.module = MainMenuVertexShaderModule;
 	VertexShaderStageCreateInfo.pName = "main";
 
-	VkPipelineShaderStageCreateInfo FragmentShaderStageCreateInfo;
-	memset (&FragmentShaderStageCreateInfo, 0, sizeof (VkPipelineShaderStageCreateInfo));
+	VkPipelineShaderStageCreateInfo FragmentShaderStageCreateInfo = { 0 };
 
 	FragmentShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	FragmentShaderStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -938,8 +912,7 @@ int CreateMainMenuRenderPass ()
 {
 	OutputDebugString (L"CreateMainMenuRenderPass\n");
 
-	VkAttachmentDescription AttachmentDescriptions[2];
-	memset (&AttachmentDescriptions, 0, sizeof (VkAttachmentDescription) * 2);
+	VkAttachmentDescription AttachmentDescriptions[2] = { 0 };
 
 	AttachmentDescriptions[0].format = ChosenSurfaceFormat.format;
 	AttachmentDescriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -967,8 +940,7 @@ int CreateMainMenuRenderPass ()
 	DepthReference.attachment = 1;
 	DepthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-	VkSubpassDescription SubpassDescription;
-	memset (&SubpassDescription, 0, sizeof (VkSubpassDescription));
+	VkSubpassDescription SubpassDescription = { 0 };
 
 	SubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	SubpassDescription.inputAttachmentCount = 0;
@@ -977,8 +949,7 @@ int CreateMainMenuRenderPass ()
 	SubpassDescription.pColorAttachments = &ColorReference;
 	SubpassDescription.pDepthStencilAttachment = &DepthReference;
 
-	VkRenderPassCreateInfo CreateInfo;
-	memset (&CreateInfo, 0, sizeof (VkRenderPassCreateInfo));
+	VkRenderPassCreateInfo CreateInfo = { 0 };
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	CreateInfo.subpassCount = 1;
@@ -998,8 +969,7 @@ int CreateMainMenuFBs ()
 {
 	OutputDebugString (L"CreateMainMenuFBs\n");
 
-	VkFramebufferCreateInfo CreateInfo;
-	memset (&CreateInfo, 0, sizeof (VkFramebufferCreateInfo));
+	VkFramebufferCreateInfo CreateInfo = { 0 };
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	CreateInfo.renderPass = MainMenuRenderPass;
@@ -1028,8 +998,7 @@ int CreateMainMenuDescriptorPool ()
 {
 	OutputDebugString (L"CreateMainMenuDescriptorPool\n");
 
-	VkDescriptorPoolSize PoolSizes[2];
-	memset (&PoolSizes, 0, sizeof (VkDescriptorPoolSize) * 2);
+	VkDescriptorPoolSize PoolSizes[2] = { 0 };
 
 	PoolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	PoolSizes[0].descriptorCount = 1;
@@ -1037,8 +1006,7 @@ int CreateMainMenuDescriptorPool ()
 	PoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	PoolSizes[1].descriptorCount = 1;
 
-	VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo;
-	memset (&DescriptorPoolCreateInfo, 0, sizeof (VkDescriptorPoolCreateInfo));
+	VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo = { 0 };
 
 	DescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	DescriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
@@ -1058,16 +1026,14 @@ int CreateMainMenuDescriptorSetLayout ()
 {
 	OutputDebugString (L"CreateMainMenuDescriptorSetLayout\n");
 
-	VkDescriptorSetLayoutBinding LayoutBinding;
-	memset (&LayoutBinding, 0, sizeof (VkDescriptorSetLayoutBinding));
+	VkDescriptorSetLayoutBinding LayoutBinding = { 0 };
 
 	LayoutBinding.binding = 0;
 	LayoutBinding.descriptorCount = 1;
 	LayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	LayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo;
-	memset (&DescriptorSetLayoutCreateInfo, 0, sizeof (VkDescriptorSetLayoutCreateInfo));
+	VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo = { 0 };
 
 	DescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	DescriptorSetLayoutCreateInfo.bindingCount = 1;
@@ -1098,8 +1064,7 @@ int CreateMainMenuDescriptorSet ()
 {
 	OutputDebugString (L"CreateMainMenuDescriptorSet\n");
 
-	VkDescriptorSetAllocateInfo AllocateInfo;
-	memset (&AllocateInfo, 0, sizeof (VkDescriptorSetAllocateInfo));
+	VkDescriptorSetAllocateInfo AllocateInfo = { 0 };
 
 	AllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	AllocateInfo.descriptorPool = MainMenuDescriptorPool;
@@ -1111,14 +1076,12 @@ int CreateMainMenuDescriptorSet ()
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SET;
 	}
 
-	VkDescriptorBufferInfo MatBufferInfo;
-	memset (&MatBufferInfo, 0, sizeof (VkDescriptorBufferInfo));
+	VkDescriptorBufferInfo MatBufferInfo = { 0 };
 
 	MatBufferInfo.buffer = MainMenuUniformBuffer;
 	MatBufferInfo.range = VK_WHOLE_SIZE;
 
-	VkWriteDescriptorSet WriteDescriptorValues;
-	memset (&WriteDescriptorValues, 0, sizeof (VkWriteDescriptorSet));
+	VkWriteDescriptorSet WriteDescriptorValues = { 0 };
 
 	WriteDescriptorValues.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	WriteDescriptorValues.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1142,14 +1105,12 @@ int CreateMainMenuDescriptorSet ()
 				return AGAINST_ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SET;
 			}
 
-			VkDescriptorImageInfo ImageInfo;
-			memset (&ImageInfo, 0, sizeof (VkDescriptorImageInfo));
+			VkDescriptorImageInfo ImageInfo = { 0 };
 			ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			ImageInfo.sampler = MainMenuFallbackSampler;
 			ImageInfo.imageView = *MainMenuMeshes[m].Primitives[p].VkHandles.ImageView;
 
-			VkWriteDescriptorSet DescriptorWrite;
-			memset (&DescriptorWrite, 0, sizeof (VkWriteDescriptorSet));
+			VkWriteDescriptorSet DescriptorWrite = { 0 };
 
 			DescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			DescriptorWrite.dstSet = *MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet;
@@ -1171,15 +1132,13 @@ int CreateMainMenuGraphicsPipelineLayout ()
 
 	VkDescriptorSetLayout SetLayouts[2] = { MainMenuUniformBufferDescriptorSetLayout, MainMenuColorTextureDescriptorSetLayout };
 
-	VkPushConstantRange PushConstantRange;
-	memset (&PushConstantRange, 0, sizeof (VkPushConstantRange));
+	VkPushConstantRange PushConstantRange = { 0 };
 
 	PushConstantRange.offset = 0;
 	PushConstantRange.size = (sizeof (float) * 16) + sizeof (float) + sizeof (int);
 	PushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-	VkPipelineLayoutCreateInfo PipelineCreateInfo;
-	memset (&PipelineCreateInfo, 0, sizeof (VkPipelineLayoutCreateInfo));
+	VkPipelineLayoutCreateInfo PipelineCreateInfo = { 0 };
 
 	PipelineCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	PipelineCreateInfo.setLayoutCount = 2;
@@ -1199,8 +1158,7 @@ int CreateMainMenuGraphicsPipeline ()
 {
 	OutputDebugString (L"CreateMainMenuGraphicsPipeline\n");
 
-	VkVertexInputBindingDescription VertexInputBindingDescription[2];
-	memset (&VertexInputBindingDescription, 0, sizeof (VkVertexInputBindingDescription) * 2);
+	VkVertexInputBindingDescription VertexInputBindingDescription[2] = { 0 };
 
 	VertexInputBindingDescription[0].binding = 0;
 	VertexInputBindingDescription[0].stride = sizeof (float) * 3;
@@ -1210,8 +1168,7 @@ int CreateMainMenuGraphicsPipeline ()
 	VertexInputBindingDescription[1].stride = sizeof (float) * 2;
 	VertexInputBindingDescription[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	VkVertexInputAttributeDescription VertexInputAttributeDescriptions[2];
-	memset (&VertexInputAttributeDescriptions, 0, sizeof (VkVertexInputAttributeDescription) * 2);
+	VkVertexInputAttributeDescription VertexInputAttributeDescriptions[2] = { 0 };
 
 	VertexInputAttributeDescriptions[0].binding = 0;
 	VertexInputAttributeDescriptions[0].location = 0;
@@ -1223,8 +1180,7 @@ int CreateMainMenuGraphicsPipeline ()
 	VertexInputAttributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
 	VertexInputAttributeDescriptions[1].offset = 0;
 
-	VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo;
-	memset (&VertexInputStateCreateInfo, 0, sizeof (VkPipelineVertexInputStateCreateInfo));
+	VkPipelineVertexInputStateCreateInfo VertexInputStateCreateInfo = { 0 };
 
 	VertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	VertexInputStateCreateInfo.vertexBindingDescriptionCount = 2;
@@ -1232,15 +1188,13 @@ int CreateMainMenuGraphicsPipeline ()
 	VertexInputStateCreateInfo.vertexAttributeDescriptionCount = 2;
 	VertexInputStateCreateInfo.pVertexAttributeDescriptions = VertexInputAttributeDescriptions;
 
-	VkPipelineInputAssemblyStateCreateInfo InputAssemblyCreateInfo;
-	memset (&InputAssemblyCreateInfo, 0, sizeof (VkPipelineInputAssemblyStateCreateInfo));
+	VkPipelineInputAssemblyStateCreateInfo InputAssemblyCreateInfo = { 0 };
 
 	InputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	InputAssemblyCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	InputAssemblyCreateInfo.primitiveRestartEnable = 0;
 
-	VkPipelineRasterizationStateCreateInfo RasterizationStateCreateInfo;
-	memset (&RasterizationStateCreateInfo, 0, sizeof (VkPipelineRasterizationStateCreateInfo));;
+	VkPipelineRasterizationStateCreateInfo RasterizationStateCreateInfo = { 0 };
 
 	RasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	RasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
@@ -1254,14 +1208,12 @@ int CreateMainMenuGraphicsPipeline ()
 	RasterizationStateCreateInfo.depthBiasConstantFactor = 0;
 	RasterizationStateCreateInfo.lineWidth = 1;
 
-	VkPipelineColorBlendAttachmentState ColorBlendAttachmentState;
-	memset (&ColorBlendAttachmentState, 0, sizeof (VkPipelineColorBlendAttachmentState));
+	VkPipelineColorBlendAttachmentState ColorBlendAttachmentState = { 0 };
 
 	ColorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	ColorBlendAttachmentState.blendEnable = 0;
 
-	VkPipelineColorBlendStateCreateInfo ColorBlendStateCreateInfo;
-	memset (&ColorBlendStateCreateInfo, 0, sizeof (VkPipelineColorBlendStateCreateInfo));
+	VkPipelineColorBlendStateCreateInfo ColorBlendStateCreateInfo = { 0 };
 
 	ColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	ColorBlendStateCreateInfo.attachmentCount = 1;
@@ -1272,8 +1224,7 @@ int CreateMainMenuGraphicsPipeline ()
 	ColorBlendStateCreateInfo.blendConstants[2] = 1.f;
 	ColorBlendStateCreateInfo.blendConstants[3] = 1.f;
 
-	VkPipelineDepthStencilStateCreateInfo DepthStencilStateCreateInfo;
-	memset (&DepthStencilStateCreateInfo, 0, sizeof (VkPipelineDepthStencilStateCreateInfo));
+	VkPipelineDepthStencilStateCreateInfo DepthStencilStateCreateInfo = { 0 };
 
 	DepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	DepthStencilStateCreateInfo.depthTestEnable = 1;
@@ -1295,8 +1246,7 @@ int CreateMainMenuGraphicsPipeline ()
 	Scissors.offset.y = 0;
 	Scissors.extent = SurfaceExtent;
 
-	VkPipelineViewportStateCreateInfo ViewportStateCreateInfo;
-	memset (&ViewportStateCreateInfo, 0, sizeof (VkPipelineViewportStateCreateInfo));
+	VkPipelineViewportStateCreateInfo ViewportStateCreateInfo = { 0 };
 
 	ViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	ViewportStateCreateInfo.viewportCount = 1;
@@ -1304,8 +1254,7 @@ int CreateMainMenuGraphicsPipeline ()
 	ViewportStateCreateInfo.scissorCount = 1;
 	ViewportStateCreateInfo.pScissors = &Scissors;
 
-	VkPipelineMultisampleStateCreateInfo MultisampleStateCreateInfo;
-	memset (&MultisampleStateCreateInfo, 0, sizeof (VkPipelineMultisampleStateCreateInfo));
+	VkPipelineMultisampleStateCreateInfo MultisampleStateCreateInfo = { 0 };
 
 	MultisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	MultisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -1313,8 +1262,7 @@ int CreateMainMenuGraphicsPipeline ()
 	MultisampleStateCreateInfo.alphaToOneEnable = 0;
 	MultisampleStateCreateInfo.alphaToCoverageEnable = 0;
 
-	VkGraphicsPipelineCreateInfo CreateInfo;
-	memset (&CreateInfo, 0, sizeof (VkGraphicsPipelineCreateInfo));
+	VkGraphicsPipelineCreateInfo CreateInfo = { 0 };
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	CreateInfo.layout = MainMenuGraphicsPipelineLayout;
@@ -1341,8 +1289,7 @@ int CreateMainMenuCommandPool ()
 {
 	OutputDebugString (L"CreateMainMenuCommandPool\n");
 
-	VkCommandPoolCreateInfo CreateInfo;
-	memset (&CreateInfo, 0, sizeof (VkCommandPoolCreateInfo));
+	VkCommandPoolCreateInfo CreateInfo = { 0 };
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	CreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
@@ -1352,8 +1299,7 @@ int CreateMainMenuCommandPool ()
 		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
 	}
 
-	VkCommandBufferAllocateInfo AllocateInfo;
-	memset (&AllocateInfo, 0, sizeof (VkCommandBufferAllocateInfo));
+	VkCommandBufferAllocateInfo AllocateInfo = { 0 };
 
 	AllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	AllocateInfo.commandPool = MainMenuCommandPool;
@@ -1390,8 +1336,7 @@ int CreateMainMenuCommandBuffers ()
 	ClearValues[1].depthStencil.depth = 1;
 	ClearValues[1].depthStencil.stencil = 0;
 
-	VkRenderPassBeginInfo RenderPassBeginInfo;
-	memset (&RenderPassBeginInfo, 0, sizeof (VkRenderPassBeginInfo));
+	VkRenderPassBeginInfo RenderPassBeginInfo = { 0 };
 
 	RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	RenderPassBeginInfo.renderPass = MainMenuRenderPass;
@@ -1399,8 +1344,7 @@ int CreateMainMenuCommandBuffers ()
 	RenderPassBeginInfo.clearValueCount = 2;
 	RenderPassBeginInfo.pClearValues = ClearValues;
 
-	VkCommandBufferBeginInfo CommandBufferBeginInfo;
-	memset (&CommandBufferBeginInfo, 0, sizeof (VkCommandBufferBeginInfo));
+	VkCommandBufferBeginInfo CommandBufferBeginInfo = { 0 };
 
 	CommandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	CommandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
@@ -1475,8 +1419,7 @@ int CreateMainMenuSyncObjects ()
 {
 	OutputDebugString (L"CreateMainMenuSyncObjects\n");
 
-	VkSemaphoreCreateInfo SemaphoreCreateInfo;
-	memset (&SemaphoreCreateInfo, 0, sizeof (VkSemaphoreCreateInfo));
+	VkSemaphoreCreateInfo SemaphoreCreateInfo = { 0 };
 
 	SemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -1490,8 +1433,7 @@ int CreateMainMenuSyncObjects ()
 		return AGAINST_ERROR_GRAPHICS_CREATE_SEMAPHORE;
 	}
 
-	VkFenceCreateInfo FenceCreateInfo;
-	memset (&FenceCreateInfo, 0, sizeof (VkFenceCreateInfo));
+	VkFenceCreateInfo FenceCreateInfo = { 0 };
 
 	FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	FenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -1690,8 +1632,7 @@ int DrawMainMenu ()
 
 	VkPipelineStageFlags WaitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
-	VkSubmitInfo SubmitInfo;
-	memset (&SubmitInfo, 0, sizeof (VkSubmitInfo));
+	VkSubmitInfo SubmitInfo = { 0 };
 
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	SubmitInfo.pWaitDstStageMask = &WaitStageMask;
@@ -1717,8 +1658,7 @@ int DrawMainMenu ()
 		return AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES;
 	}
 
-	VkPresentInfoKHR PresentInfo;
-	memset (&PresentInfo, 0, sizeof (VkPresentInfoKHR));
+	VkPresentInfoKHR PresentInfo = { 0 };
 
 	PresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	PresentInfo.swapchainCount = 1;
