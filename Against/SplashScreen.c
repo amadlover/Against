@@ -23,7 +23,7 @@ SplashScreen* SplashScreenObj;
 
 int InitSplashScreen ()
 {
-	SplashScreenObj = (SplashScreen*)calloc (1, sizeof (SplashScreen));
+	SplashScreenObj = (SplashScreen*)MyCalloc (1, sizeof (SplashScreen));
 
 	if (SplashScreenObj == NULL)
 	{
@@ -63,7 +63,7 @@ void DestroySplashScreen ()
 	{
 		if (SplashScreenObj->Actors)
 		{
-			free (SplashScreenObj->Actors);
+			MyFree (SplashScreenObj->Actors);
 		}
 
 		if (SplashScreenObj->Assets)
@@ -76,20 +76,20 @@ void DestroySplashScreen ()
 					{
 						if (((SplashScreenObj->Assets + a)->GraphicsPrimitives + i)->Indices)
 						{
-							free ((SplashScreenObj->Assets->GraphicsPrimitives + i)->Indices);
+							MyFree ((SplashScreenObj->Assets->GraphicsPrimitives + i)->Indices);
 						}
 
 						if (((SplashScreenObj->Assets + a)->GraphicsPrimitives + i)->Positions)
 						{
-							free ((SplashScreenObj->Assets->GraphicsPrimitives + i)->Positions);
+							MyFree ((SplashScreenObj->Assets->GraphicsPrimitives + i)->Positions);
 						}
 
 						if (((SplashScreenObj->Assets + a)->GraphicsPrimitives + i)->UV0s)
 						{
-							free ((SplashScreenObj->Assets->GraphicsPrimitives + i)->UV0s);
+							MyFree ((SplashScreenObj->Assets->GraphicsPrimitives + i)->UV0s);
 						}
 
-						free ((SplashScreenObj->Assets + a)->GraphicsPrimitives + i);
+						MyFree ((SplashScreenObj->Assets + a)->GraphicsPrimitives + i);
 					}
 				}
 
@@ -99,23 +99,23 @@ void DestroySplashScreen ()
 					{
 						if (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Indices)
 						{
-							free (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Indices);
+							MyFree (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Indices);
 						}
 
 						if (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Positions)
 						{
-							free (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Positions);
+							MyFree (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Positions);
 						}
 
-						free ((SplashScreenObj->Assets + a)->PhysicsPrimitives + i);
+						MyFree ((SplashScreenObj->Assets + a)->PhysicsPrimitives + i);
 					}
 				}
 			}
 
-			free (SplashScreenObj->Assets);
+			MyFree (SplashScreenObj->Assets);
 		}
 
-		free (SplashScreenObj);
+		MyFree (SplashScreenObj);
 	}
 
 	DestroySplashScreenGraphics ();

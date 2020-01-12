@@ -119,13 +119,19 @@ typedef struct
 {
 	float* Positions;
 
-	uint32_t PositionsSize;
+	uint32_t PositionSize;
 	uint32_t IndexSize;
 
 	uint32_t IndexCount;
 	uint32_t* Indices;
 
 } PhysicsPrimitive;
+
+typedef struct
+{
+	GraphicsPrimitive* GraphicsPrimPtr;
+	PhysicsPrimitive* PhysicsPrimPtr;
+} PrimitivePtr;
 
 typedef struct
 {

@@ -2,6 +2,7 @@
 #include "Error.h"
 
 #include "GraphicsUtilities.h"
+#include "Utility.h"
 
 #include <Windows.h>
 #include <Shlwapi.h>
@@ -11,6 +12,12 @@
 
 #include <cgltf.h>
 #include <stb_image.h>
+
+typedef enum
+{
+	GraphicsPrimitiveType,
+	PhysicsPrimitiveType
+} EPrimitiveType;
 
 int GetFullTexturePath (const char* FilePath, const char* URI, char* FullFilePath)
 {
@@ -31,9 +38,126 @@ int GetFullTexturePath (const char* FilePath, const char* URI, char* FullFilePat
 	return 0;
 }
 
-void ImportAttribute ()
+void ImportAttribute (PrimitivePtr* PrimPtr, const cgltf_attribute* Attribute, EPrimitiveType PrimType)
 {
+	cgltf_accessor* Accessor = Attribute->data;
+	cgltf_buffer_view* BufferView = Accessor->buffer_view;
 
+	if (Attribute->type == cgltf_attribute_type_position)
+	{
+		char* DataStart = (char*)BufferView->buffer->data;
+		float* Positions = (float*)(DataStart + Accessor->offset + BufferView->offset);
+
+		if (PrimType == GraphicsPrimitiveType)
+		{
+			PrimPtr->GraphicsPrimPtr->PositionSize = BufferView->size;
+			PrimPtr->GraphicsPrimPtr->Positions = (float*)MyMalloc (BufferView->size);
+			memcpy (PrimPtr->GraphicsPrimPtr->Positions, Positions, BufferView->size);
+		}
+		else if (PrimType == PhysicsPrimitiveType)
+		{
+			PrimPtr->PhysicsPrimPtr->PositionSize = BufferView->size;
+			PrimPtr->PhysicsPrimPtr->Positions = (float*)MyMalloc (BufferView->size);
+			memcpy (PrimPtr->PhysicsPrimPtr->Positions, Positions, BufferView->size);
+		}
+
+	}
+	else if (Attribute->type == cgltf_attribute_type_texcoord)
+	{
+		if (strcmp (Attribute->name, "TEXCOORD_0") == 0)
+		{
+			char* DataStart = (char*)BufferView->buffer->data;
+			float* UVs = (float*)(DataStart + Accessor->offset + BufferView->offset);
+
+			if (PrimType == GraphicsPrimitiveType)
+			{
+				PrimPtr->GraphicsPrimPtr->UV0Size = BufferView->size;
+				PrimPtr->GraphicsPrimPtr->UV0s = (float*)MyMalloc (BufferView->size);
+				memcpy (PrimPtr->GraphicsPrimPtr->UV0s, UVs, BufferView->size);
+			}
+		}
+	}
+	else if (Attribute->type == cgltf_attribute_type_normal)
+	{
+
+	}
+}
+
+void ImportIndices (PrimitivePtr* PrimPtr, const cgltf_primitive* Primitive, EPrimitiveType PrimType)
+{
+	cgltf_accessor* Accessor = Primitive->indices;
+
+	if (PrimType == GraphicsPrimitiveType)
+	{
+		PrimPtr->GraphicsPrimPtr->IndexCount = Accessor->count;
+	}
+	else if (PrimType = PhysicsPrimitiveType)
+	{
+		PrimPtr->PhysicsPrimPtr->IndexCount = Accessor->count;
+	}
+
+	cgltf_buffer_view* BufferView = Accessor->buffer_view;
+
+	char* DataStart = (char*)BufferView->buffer->data;
+
+	switch (Accessor->component_type)
+	{
+	case cgltf_component_type_r_16u:
+		if (PrimType == GraphicsPrimitiveType)
+		{
+			PrimPtr->GraphicsPrimPtr->IndexSize = BufferView->size * 2;
+			PrimPtr->GraphicsPrimPtr->Indices = (uint32_t*)MyMalloc (2 * BufferView->size);
+		}
+		else if (PrimType == PhysicsPrimitiveType)
+		{
+			PrimPtr->PhysicsPrimPtr->IndexSize = BufferView->size * 2;
+			PrimPtr->PhysicsPrimPtr->Indices = (uint32_t*)MyMalloc (2 * BufferView->size);
+		}
+
+		uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
+
+		for (uint32_t i = 0; i < Accessor->count; i++)
+		{
+			if (PrimType == GraphicsPrimitiveType)
+			{
+				PrimPtr->GraphicsPrimPtr->Indices[i] = I16[i];
+			}
+			else if (PrimType == PhysicsPrimitiveType)
+			{
+				PrimPtr->PhysicsPrimPtr->Indices[i] = I16[i];
+			}
+		}
+
+		break;
+
+	case cgltf_component_type_r_32u:
+		if (PrimType == GraphicsPrimitiveType)
+		{
+			PrimPtr->GraphicsPrimPtr->IndexSize = BufferView->size;
+			PrimPtr->GraphicsPrimPtr->Indices = (uint32_t*)MyMalloc (BufferView->size);
+		}
+		else if (PrimType == PhysicsPrimitiveType)
+		{
+			PrimPtr->PhysicsPrimPtr->IndexSize = BufferView->size;
+			PrimPtr->PhysicsPrimPtr->Indices = (uint32_t*)MyMalloc (BufferView->size);
+		}
+
+		uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
+
+		if (PrimType == GraphicsPrimitiveType)
+		{
+			memcpy (PrimPtr->GraphicsPrimPtr->Indices, I32, BufferView->size);
+		}
+		else if (PrimType == PhysicsPrimitiveType)
+		{
+			memcpy (PrimPtr->PhysicsPrimPtr->Indices, I32, BufferView->size);
+		}
+
+		break;
+
+	default:
+		break;
+	}
 }
 
 void ImportGraphicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Data)
@@ -52,82 +176,23 @@ void ImportGraphicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* D
 			strcpy (TmpAsset.Name, Node->name);
 
 			TmpAsset.GraphicsPrimitiveCount = Node->mesh->primitives_count;
-			TmpAsset.GraphicsPrimitives = (GraphicsPrimitive*)calloc (Node->mesh->primitives_count, sizeof (GraphicsPrimitive));
+			TmpAsset.GraphicsPrimitives = (GraphicsPrimitive*)MyCalloc (Node->mesh->primitives_count, sizeof (GraphicsPrimitive));
 			
 			for (uint32_t p = 0; p < Node->mesh->primitives_count; p++)
 			{
 				cgltf_primitive* Primitive = Node->mesh->primitives + p;
 				GraphicsPrimitive* CurrentGraphicsPrimitive = TmpAsset.GraphicsPrimitives + p;
+				
+				PrimitivePtr PrimPtr = { 0 };
+				PrimPtr.GraphicsPrimPtr = CurrentGraphicsPrimitive;
 
 				for (uint32_t a = 0; a < Primitive->attributes_count; a++)
 				{
 					cgltf_attribute* Attribute = Primitive->attributes + a;
-					cgltf_accessor* Accessor = Attribute->data;
-					cgltf_buffer_view* BufferView = Accessor->buffer_view;
-
-					if (Attribute->type == cgltf_attribute_type_position)
-					{
-						char* DataStart = (char*)BufferView->buffer->data;
-						float* Positions = (float*)(DataStart + Accessor->offset + BufferView->offset);
-
-						CurrentGraphicsPrimitive->PositionSize = BufferView->size;
-						CurrentGraphicsPrimitive->Positions = (float*)malloc (BufferView->size);
-
-						memcpy (CurrentGraphicsPrimitive->Positions, Positions, BufferView->size);
-					}
-					else if (Attribute->type == cgltf_attribute_type_texcoord)
-					{
-						if (strcmp (Attribute->name, "TEXCOORD_0") == 0)
-						{
-							char* DataStart = (char*)BufferView->buffer->data;
-							float* UVs = (float*)(DataStart + Accessor->offset + BufferView->offset);
-
-							CurrentGraphicsPrimitive->UV0Size = BufferView->size;
-							CurrentGraphicsPrimitive->UV0s = (float*)malloc (BufferView->size);
-
-							memcpy (CurrentGraphicsPrimitive->UV0s, UVs, BufferView->size);
-						}
-					}
-					else if (Attribute->type == cgltf_attribute_type_normal)
-					{
-
-					}
+					ImportAttribute (&PrimPtr, Attribute, GraphicsPrimitiveType);
 				}
 
-				cgltf_accessor* Accessor = Primitive->indices;
-				CurrentGraphicsPrimitive->IndexCount = Accessor->count;
-
-				cgltf_buffer_view* BufferView = Accessor->buffer_view;
-
-				char* DataStart = (char*)BufferView->buffer->data;
-
-				switch (Accessor->component_type)
-				{
-				case cgltf_component_type_r_16u:
-					CurrentGraphicsPrimitive->IndexSize = BufferView->size * 2;
-					CurrentGraphicsPrimitive->Indices = (uint32_t*)malloc (2 * BufferView->size);
-
-					uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
-
-					for (uint32_t i = 0; i < Accessor->count; i++)
-					{
-						CurrentGraphicsPrimitive->Indices[i] = I16[i];
-					}
-
-					break;
-
-				case cgltf_component_type_r_32u:
-					CurrentGraphicsPrimitive->IndexSize = BufferView->size;
-					CurrentGraphicsPrimitive->Indices = (uint32_t*)malloc (BufferView->size);
-
-					uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
-					memcpy (CurrentGraphicsPrimitive->Indices, I32, BufferView->size);
-
-					break;
-
-				default:
-					break;
-				}
+				ImportIndices (&PrimPtr, Primitive, GraphicsPrimitiveType);
 			}
 
 			memcpy ((Assets + CurrentMeshAssetCount), &TmpAsset, sizeof (Asset));
@@ -177,7 +242,7 @@ void ImportPhysicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Da
 					}
 					else
 					{
-						CurrentAsset->PhysicsPrimitives = (PhysicsPrimitive*)calloc (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount, sizeof (PhysicsPrimitive));
+						CurrentAsset->PhysicsPrimitives = (PhysicsPrimitive*)MyCalloc (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount, sizeof (PhysicsPrimitive));
 					}
 
 					CurrentAsset->PhysicsPrimitiveCount = CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount;
@@ -188,58 +253,16 @@ void ImportPhysicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Da
 
 						cgltf_primitive* Primitive = Mesh->primitives + p;
 
+						PrimitivePtr PrimPtr = { 0 };
+						PrimPtr.PhysicsPrimPtr = CurrentPhysicsPrimitive;
+
 						for (uint32_t a = 0; a < Primitive->attributes_count; a++)
 						{
 							cgltf_attribute* Attribute = Primitive->attributes + a;
-							cgltf_accessor* Accessor = Attribute->data;
-							cgltf_buffer_view* BufferView = Accessor->buffer_view;
-
-							if (Attribute->type == cgltf_attribute_type_position)
-							{
-								char* DataStart = (char*)BufferView->buffer->data;
-								float* Positions = (float*)(DataStart + Accessor->offset + BufferView->offset);
-
-								CurrentPhysicsPrimitive->PositionsSize = BufferView->size;
-								CurrentPhysicsPrimitive->Positions = (float*)malloc (BufferView->size);
-
-								memcpy (CurrentPhysicsPrimitive->Positions, Positions, BufferView->size);
-							}
+							ImportAttribute (&PrimPtr, Attribute, PhysicsPrimitiveType);
 						}
 
-						cgltf_accessor* Accessor = Primitive->indices;
-						CurrentPhysicsPrimitive->IndexCount = Accessor->count;
-
-						cgltf_buffer_view* BufferView = Accessor->buffer_view;
-
-						char* DataStart = (char*)BufferView->buffer->data;
-
-						switch (Accessor->component_type)
-						{
-						case cgltf_component_type_r_16u:
-							CurrentPhysicsPrimitive->IndexSize = BufferView->size * 2;
-							CurrentPhysicsPrimitive->Indices = (uint32_t*)malloc (2 * BufferView->size);
-
-							uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
-
-							for (uint32_t i = 0; i < Accessor->count; i++)
-							{
-								CurrentPhysicsPrimitive->Indices[i] = I16[i];
-							}
-
-							break;
-
-						case cgltf_component_type_r_32u:
-							CurrentPhysicsPrimitive->IndexSize = BufferView->size;
-							CurrentPhysicsPrimitive->Indices = (uint32_t*)malloc (BufferView->size);
-
-							uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
-							memcpy (CurrentPhysicsPrimitive->Indices, I32, BufferView->size);
-
-							break;
-
-						default:
-							break;
-						}
+						ImportIndices (&PrimPtr, Primitive, PhysicsPrimitiveType);
 					}
 				}
 			}
@@ -273,10 +296,10 @@ int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount)
 					++(*AssetCount);
 				}
 
-				*Assets = (Asset*)calloc ((size_t)(*AssetCount), sizeof (Asset));
+				*Assets = (Asset*)MyCalloc ((size_t)(*AssetCount), sizeof (Asset));
 				
 				ImportGraphicsPrimitives (*Assets, *AssetCount, Data);
-				//ImportPhysicsPrimitives (*Assets, *AssetCount, Data);
+				ImportPhysicsPrimitives (*Assets, *AssetCount, Data);
 			}
 		}
 	}

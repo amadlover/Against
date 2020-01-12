@@ -50,7 +50,7 @@ errno_t ReadShaderFile (char* FullFilePath, char** FileContents)
 	uint32_t FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
 	rewind (VertFile);
 
-	*FileContents = (char*)malloc (sizeof (uint32_t) * FileSize);
+	*FileContents = (char*)MyMalloc (sizeof (uint32_t) * FileSize);
 	fread (*FileContents, sizeof (uint32_t), FileSize, VertFile);
 	fclose (VertFile);
 
@@ -74,7 +74,7 @@ int CreateShader (char* FullFilePath, VkShaderStageFlagBits ShaderStage, VkShade
 	uint32_t FileSize = (uint32_t)ftell (VertFile);
 	rewind (VertFile);
 
-	FileContents = (char*)malloc (FileSize);
+	FileContents = (char*)MyMalloc (FileSize);
 	fread (FileContents, sizeof (uint32_t), FileSize, VertFile);
 	fclose (VertFile);
 
@@ -87,11 +87,11 @@ int CreateShader (char* FullFilePath, VkShaderStageFlagBits ShaderStage, VkShade
 
 	if (vkCreateShaderModule (GraphicsDevice, &ShaderModuleCreateInfo, NULL, ShaderModule) != VK_SUCCESS)
 	{
-		free (FileContents);
+		MyFree (FileContents);
 		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
 	}
 
-	free (FileContents);
+	MyFree (FileContents);
 
 	VkPipelineShaderStageCreateInfo ShaderStageCreateInfo;
 	memset (&ShaderStageCreateInfo, 0, sizeof (VkPipelineShaderStageCreateInfo));

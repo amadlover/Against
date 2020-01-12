@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include "Error.h"
+#include "Utility.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -76,7 +77,7 @@ int PopulateInstanceLayersAndExtensions ()
 	{
 		uint32_t LayerCount = 0;
 		vkEnumerateInstanceLayerProperties (&LayerCount, NULL);
-		VkLayerProperties* LayerProperties = (VkLayerProperties*)malloc (sizeof (VkLayerProperties) * LayerCount);
+		VkLayerProperties* LayerProperties = (VkLayerProperties*)MyMalloc (sizeof (VkLayerProperties) * LayerCount);
 		vkEnumerateInstanceLayerProperties (&LayerCount, LayerProperties);
 
 		for (uint32_t l = 0; l < LayerCount; l++)
@@ -88,13 +89,13 @@ int PopulateInstanceLayersAndExtensions ()
 			}
 		}
 
-		free (LayerProperties);
+		MyFree (LayerProperties);
 	}
 
 	uint32_t ExtensionCount = 0;
 	vkEnumerateInstanceExtensionProperties (NULL, &ExtensionCount, NULL);
 
-	VkExtensionProperties* ExtensionProperties = (VkExtensionProperties*)malloc (sizeof (VkExtensionProperties) * ExtensionCount);
+	VkExtensionProperties* ExtensionProperties = (VkExtensionProperties*)MyMalloc (sizeof (VkExtensionProperties) * ExtensionCount);
 	vkEnumerateInstanceExtensionProperties (NULL, &ExtensionCount, ExtensionProperties);
 
 	for (uint32_t e = 0; e < ExtensionCount; e++)
@@ -117,7 +118,7 @@ int PopulateInstanceLayersAndExtensions ()
 		}
 	}
 
-	free (ExtensionProperties);
+	MyFree (ExtensionProperties);
 
 	return 0;
 }
@@ -183,7 +184,7 @@ int GetPhysicalDevice ()
 	uint32_t PhysicalDeviceCount = 0;
 	vkEnumeratePhysicalDevices (Instance, &PhysicalDeviceCount, NULL);
 
-	VkPhysicalDevice* PhysicalDevices = (VkPhysicalDevice*)malloc (sizeof (VkPhysicalDevice) * PhysicalDeviceCount);
+	VkPhysicalDevice* PhysicalDevices = (VkPhysicalDevice*)MyMalloc (sizeof (VkPhysicalDevice) * PhysicalDeviceCount);
 	vkEnumeratePhysicalDevices (Instance, &PhysicalDeviceCount, PhysicalDevices);
 
 	if (PhysicalDeviceCount == 0)
@@ -198,7 +199,7 @@ int GetPhysicalDevice ()
 
 	uint32_t QueueFamilyCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties (PhysicalDevice, &QueueFamilyCount, NULL);
-	VkQueueFamilyProperties* QueueFamilyProperties = (VkQueueFamilyProperties*)malloc (sizeof (VkQueueFamilyProperties) * QueueFamilyCount);
+	VkQueueFamilyProperties* QueueFamilyProperties = (VkQueueFamilyProperties*)MyMalloc (sizeof (VkQueueFamilyProperties) * QueueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties (PhysicalDevice, &QueueFamilyCount, QueueFamilyProperties);
 
 	for (uint32_t i = 0; i < QueueFamilyCount; i++)
@@ -216,8 +217,8 @@ int GetPhysicalDevice ()
 	vkGetPhysicalDeviceProperties (PhysicalDevice, &DeviceProperties);
 	PhysicalDeviceLimits = DeviceProperties.limits;
 
-	free (PhysicalDevices);
-	free (QueueFamilyProperties);
+	MyFree (PhysicalDevices);
+	MyFree (QueueFamilyProperties);
 
 	return 0;
 }
@@ -248,7 +249,7 @@ int PopulateGraphicsDeviceExtensions ()
 	uint32_t ExtensionCount = 0;
 	vkEnumerateDeviceExtensionProperties (PhysicalDevice, NULL, &ExtensionCount, NULL);
 
-	VkExtensionProperties* ExtensionProperties = (VkExtensionProperties*)malloc (sizeof (VkExtensionProperties) * ExtensionCount);
+	VkExtensionProperties* ExtensionProperties = (VkExtensionProperties*)MyMalloc (sizeof (VkExtensionProperties) * ExtensionCount);
 	vkEnumerateDeviceExtensionProperties (PhysicalDevice, NULL, &ExtensionCount, ExtensionProperties);
 
 	for (uint32_t e = 0; e < ExtensionCount; e++)
@@ -260,7 +261,7 @@ int PopulateGraphicsDeviceExtensions ()
 		}
 	}
 
-	free (ExtensionProperties);
+	MyFree (ExtensionProperties);
 
 	return 0;
 }
@@ -322,7 +323,7 @@ int CreateSwapChain ()
 	uint32_t SurfaceFormatCount = 0;
 	vkGetPhysicalDeviceSurfaceFormatsKHR (PhysicalDevice, Surface, &SurfaceFormatCount, NULL);
 
-	VkSurfaceFormatKHR* SurfaceFormats = (VkSurfaceFormatKHR*)malloc (sizeof (VkSurfaceFormatKHR) * SurfaceFormatCount);
+	VkSurfaceFormatKHR* SurfaceFormats = (VkSurfaceFormatKHR*)MyMalloc (sizeof (VkSurfaceFormatKHR) * SurfaceFormatCount);
 	vkGetPhysicalDeviceSurfaceFormatsKHR (PhysicalDevice, Surface, &SurfaceFormatCount, SurfaceFormats);
 
 	for (uint32_t s = 0; s < SurfaceFormatCount; s++)
@@ -337,7 +338,7 @@ int CreateSwapChain ()
 	uint32_t PresentModeCount = 0;
 	vkGetPhysicalDeviceSurfacePresentModesKHR (PhysicalDevice, Surface, &PresentModeCount, NULL);
 
-	VkPresentModeKHR* PresentModes = (VkPresentModeKHR*)malloc (sizeof (VkPresentModeKHR) * PresentModeCount);
+	VkPresentModeKHR* PresentModes = (VkPresentModeKHR*)MyMalloc (sizeof (VkPresentModeKHR) * PresentModeCount);
 	vkGetPhysicalDeviceSurfacePresentModesKHR (PhysicalDevice, Surface, &PresentModeCount, PresentModes);
 
 	for (uint32_t p = 0; p < PresentModeCount; p++)
@@ -372,18 +373,18 @@ int CreateSwapChain ()
 
 	if (vkCreateSwapchainKHR (GraphicsDevice, &CreateInfo, NULL, &Swapchain) != VK_SUCCESS)
 	{
-		free (SurfaceFormats);
-		free (PresentModes);
+		MyFree (SurfaceFormats);
+		MyFree (PresentModes);
 
 		return AGAINST_ERROR_GRAPHICS_CREATE_SWAPCHAIN;
 	}
 
 	vkGetSwapchainImagesKHR (GraphicsDevice, Swapchain, &SwapchainImageCount, NULL);
-	SwapchainImages = (VkImage*)malloc (sizeof (VkImage) * SwapchainImageCount);
+	SwapchainImages = (VkImage*)MyMalloc (sizeof (VkImage) * SwapchainImageCount);
 
 	vkGetSwapchainImagesKHR (GraphicsDevice, Swapchain, &SwapchainImageCount, SwapchainImages);
 
-	SwapchainImageViews = (VkImageView*)malloc (sizeof (VkImageView) * SwapchainImageCount);
+	SwapchainImageViews = (VkImageView*)MyMalloc (sizeof (VkImageView) * SwapchainImageCount);
 
 	return 0;
 }
@@ -527,12 +528,12 @@ void GraphicsShutdown ()
 			}
 		}
 
-		free (SwapchainImageViews);
+		MyFree (SwapchainImageViews);
 	}
 
 	if (SwapchainImages)
 	{
-		free (SwapchainImages);
+		MyFree (SwapchainImages);
 	}
 
 	if (GraphicsDevice != VK_NULL_HANDLE)

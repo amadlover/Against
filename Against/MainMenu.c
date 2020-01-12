@@ -176,7 +176,7 @@ int CreateMainMenuHostVBIBs ()
 	VBIBCreateInfo.queueFamilyIndexCount = 1;
 	VBIBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
 	
-	MainMenuHostVBIBs = (VkBuffer*)malloc (sizeof (VkBuffer) * MainMenuBufferCount);
+	MainMenuHostVBIBs = (VkBuffer*)MyMalloc (sizeof (VkBuffer) * MainMenuBufferCount);
 
 	VkMemoryAllocateInfo VBIBMemoryAllocateInfo = { 0 };
 
@@ -310,8 +310,8 @@ int CreateMainMenuTextureImages ()
 	BufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	VkBuffer* StagingBuffers = (VkBuffer*)malloc (sizeof (VkBuffer) * MainMenuImageCount);
-	VkMemoryRequirements* StagingBufferMemoryRequirements = (VkMemoryRequirements*)malloc (sizeof (VkMemoryRequirements) * MainMenuImageCount);
+	VkBuffer* StagingBuffers = (VkBuffer*)MyMalloc (sizeof (VkBuffer) * MainMenuImageCount);
+	VkMemoryRequirements* StagingBufferMemoryRequirements = (VkMemoryRequirements*)MyMalloc (sizeof (VkMemoryRequirements) * MainMenuImageCount);
 
 	VkMemoryAllocateInfo StagingMemoryAllocateInfo = { 0 };
 	StagingMemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -400,8 +400,8 @@ int CreateMainMenuTextureImages ()
 	ImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	ImageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-	MainMenuTImages = (VkImage*)malloc (sizeof (VkImage) * MainMenuImageCount);
-	MainMenuTImageViews = (VkImageView*)malloc (sizeof (VkImageView) * MainMenuImageCount);
+	MainMenuTImages = (VkImage*)MyMalloc (sizeof (VkImage) * MainMenuImageCount);
+	MainMenuTImageViews = (VkImageView*)MyMalloc (sizeof (VkImageView) * MainMenuImageCount);
 
 	VkMemoryAllocateInfo MemoryAllocateInfo = { 0 };
 
@@ -662,8 +662,8 @@ int CreateMainMenuTextureImages ()
 		vkDestroyBuffer (GraphicsDevice, StagingBuffers[i], NULL);
 	}
 
-	free (StagingBuffers);
-	free (StagingBufferMemoryRequirements);
+	MyFree (StagingBuffers);
+	MyFree (StagingBufferMemoryRequirements);
 
 	VkImageViewCreateInfo ImageViewCreateInfo = { 0 };
 
@@ -833,7 +833,7 @@ int CreateMainMenuShaders ()
 	uint32_t FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
 	rewind (VertFile);
 
-	char* Buffer = (char*)malloc (sizeof (uint32_t) * FileSize);
+	char* Buffer = (char*)MyMalloc (sizeof (uint32_t) * FileSize);
 	fread (Buffer, sizeof (uint32_t), FileSize, VertFile);
 	fclose (VertFile);
 
@@ -845,11 +845,11 @@ int CreateMainMenuShaders ()
 
 	if (vkCreateShaderModule (GraphicsDevice, &VertexShaderModuleCreateInfo, NULL, &MainMenuVertexShaderModule) != VK_SUCCESS)
 	{
-		free (Buffer);
+		MyFree (Buffer);
 		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
 	}
 
-	free (Buffer);
+	MyFree (Buffer);
 
 	char FragPartialFilePath[] = "\\Shaders\\MainMenu\\UI.frag.spv";
 	char FragFilename[MAX_PATH];
@@ -870,7 +870,7 @@ int CreateMainMenuShaders ()
 	FileSize = (uint32_t)ftell (FragFile) / sizeof (uint32_t);
 	rewind (FragFile);
 
-	Buffer = (char*)malloc (sizeof (uint32_t) * FileSize);
+	Buffer = (char*)MyMalloc (sizeof (uint32_t) * FileSize);
 	fread (Buffer, sizeof (uint32_t), FileSize, FragFile);
 	fclose (FragFile);
 
@@ -882,11 +882,11 @@ int CreateMainMenuShaders ()
 
 	if (vkCreateShaderModule (GraphicsDevice, &FragmentShaderModuleCreateInfo, NULL, &MainMenuFragmentShaderModule) != VK_SUCCESS)
 	{
-		free (Buffer);
+		MyFree (Buffer);
 		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
 	}
 
-	free (Buffer);
+	MyFree (Buffer);
 
 	VkPipelineShaderStageCreateInfo VertexShaderStageCreateInfo = { 0 };
 
@@ -978,7 +978,7 @@ int CreateMainMenuFBs ()
 	CreateInfo.height = SurfaceExtent.height;
 	CreateInfo.layers = 1;
 
-	MainMenuSwapchainFramebuffers = (VkFramebuffer*)malloc (sizeof (VkFramebuffer) * SwapchainImageCount);
+	MainMenuSwapchainFramebuffers = (VkFramebuffer*)MyMalloc (sizeof (VkFramebuffer) * SwapchainImageCount);
 
 	for (uint32_t i = 0; i < SwapchainImageCount; i++)
 	{
@@ -1098,7 +1098,7 @@ int CreateMainMenuDescriptorSet ()
 		{
 			AllocateInfo.pSetLayouts = &MainMenuColorTextureDescriptorSetLayout;
 
-			MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet = (VkDescriptorSet*)malloc (sizeof (VkDescriptorSet));
+			MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet = (VkDescriptorSet*)MyMalloc (sizeof (VkDescriptorSet));
 
 			if (vkAllocateDescriptorSets (GraphicsDevice, &AllocateInfo, MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet) != VK_SUCCESS)
 			{
@@ -1306,7 +1306,7 @@ int CreateMainMenuCommandPool ()
 	AllocateInfo.commandBufferCount = SwapchainImageCount;
 	AllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-	MainMenuSwapchainCommandBuffers = (VkCommandBuffer*)malloc (sizeof (VkCommandBuffer) * SwapchainImageCount);
+	MainMenuSwapchainCommandBuffers = (VkCommandBuffer*)MyMalloc (sizeof (VkCommandBuffer) * SwapchainImageCount);
 
 	if (vkAllocateCommandBuffers (GraphicsDevice, &AllocateInfo, MainMenuSwapchainCommandBuffers) != VK_SUCCESS)
 	{
@@ -1438,7 +1438,7 @@ int CreateMainMenuSyncObjects ()
 	FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	FenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	MainMenuSwapchainFences = (VkFence*)malloc (sizeof (VkFence) * SwapchainImageCount);
+	MainMenuSwapchainFences = (VkFence*)MyMalloc (sizeof (VkFence) * SwapchainImageCount);
 
 	for (uint32_t i = 0; i < SwapchainImageCount; i++)
 	{
@@ -1714,7 +1714,7 @@ void DestroyMainMenuGraphics ()
 			}
 		}
 
-		free (MainMenuSwapchainFences);
+		MyFree (MainMenuSwapchainFences);
 	}
 
 	if (MainMenuImageAcquiredSemaphore != VK_NULL_HANDLE)
@@ -1740,7 +1740,7 @@ void DestroyMainMenuGraphics ()
 						vkFreeDescriptorSets (GraphicsDevice, MainMenuDescriptorPool, 1, MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet);
 					}
 
-					free (MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet);
+					MyFree (MainMenuMeshes[m].Primitives[p].VkHandles.DescriptorSet);
 				}
 			}
 		}
@@ -1760,7 +1760,7 @@ void DestroyMainMenuGraphics ()
 	{
 		vkFreeCommandBuffers (GraphicsDevice, MainMenuCommandPool, SwapchainImageCount, MainMenuSwapchainCommandBuffers);
 
-		free (MainMenuSwapchainCommandBuffers);
+		MyFree (MainMenuSwapchainCommandBuffers);
 	}
 
 	if (MainMenuCommandPool != VK_NULL_HANDLE)
@@ -1808,7 +1808,7 @@ void DestroyMainMenuGraphics ()
 			}
 		}
 
-		free (MainMenuSwapchainFramebuffers);
+		MyFree (MainMenuSwapchainFramebuffers);
 	}
 
 	if (MainMenuRenderPass != VK_NULL_HANDLE)
@@ -1867,7 +1867,7 @@ void DestroyMainMenuGraphics ()
 			}
 		}
 
-		free (MainMenuTImages);
+		MyFree (MainMenuTImages);
 	}
 
 	if (MainMenuTImageViews)
@@ -1880,12 +1880,12 @@ void DestroyMainMenuGraphics ()
 			}
 		}
 
-		free (MainMenuTImageViews);
+		MyFree (MainMenuTImageViews);
 	}
 
 	if (MainMenuNodes)
 	{
-		free (MainMenuNodes);
+		MyFree (MainMenuNodes);
 	}
 
 	if (MainMenuMeshes)
@@ -1898,25 +1898,25 @@ void DestroyMainMenuGraphics ()
 				{
 					if (MainMenuMeshes[m].Primitives[p].Positions)
 					{
-						free (MainMenuMeshes[m].Primitives[p].Positions);
+						MyFree (MainMenuMeshes[m].Primitives[p].Positions);
 					}
 
 					if (MainMenuMeshes[m].Primitives[p].UV0s)
 					{
-						free (MainMenuMeshes[m].Primitives[p].UV0s);
+						MyFree (MainMenuMeshes[m].Primitives[p].UV0s);
 					}
 
 					if (MainMenuMeshes[m].Primitives[p].Indices)
 					{
-						free (MainMenuMeshes[m].Primitives[p].Indices);
+						MyFree (MainMenuMeshes[m].Primitives[p].Indices);
 					}
 				}
 
-				free (MainMenuMeshes[m].Primitives);
+				MyFree (MainMenuMeshes[m].Primitives);
 			}
 		}
 
-		free (MainMenuMeshes);
+		MyFree (MainMenuMeshes);
 	}
 
 	if (MainMenuImages)
@@ -1929,17 +1929,17 @@ void DestroyMainMenuGraphics ()
 			}
 		}
 
-		free (MainMenuImages);
+		MyFree (MainMenuImages);
 	}
 
 	if (MainMenuTextures)
 	{
-		free (MainMenuTextures);
+		MyFree (MainMenuTextures);
 	}
 
 	if (MainMenuMaterials)
 	{
-		free (MainMenuMaterials);
+		MyFree (MainMenuMaterials);
 	}
 
 	OutputDebugString (L"Finished DestroyMainMenu\n");
