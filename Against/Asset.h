@@ -47,7 +47,7 @@ typedef struct
 typedef struct
 {
 	//TODO: Pointers or values;
-	VkBuffer VBIB;
+	VkDeviceSize Offset;
 	VkImage* Image;
 	VkImageView* ImageView;
 	VkSampler Sampler;

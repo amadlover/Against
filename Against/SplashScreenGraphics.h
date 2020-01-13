@@ -6,7 +6,12 @@
 
 typedef struct
 {
-	int DUMMY;
+	VkCommandPool CommandPool;
+
+	VkBuffer GraphicsVBIBBuffer;
+	VkDeviceMemory GraphicsVBIBMemory;
+
+	VkDeviceMemory GraphicsImageMemory;
 }_SplashScreenGraphics;
 
 int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount);

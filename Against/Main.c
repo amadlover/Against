@@ -26,6 +26,11 @@ LRESULT CALLBACK WindowProc (HWND WindowHandle, UINT Msg, WPARAM wParam, LPARAM 
 		}
 		break;
 
+	case WM_QUIT:
+		OutputDebugString (L"WM_QUIT\n");
+
+		break;
+
 	case WM_DESTROY:
 		PostQuitMessage (0);
 
@@ -136,6 +141,8 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 	}
 
 	GameShutdown ();
+
+	DestroyWindow (WindowHandle);
 
 	return 0;
 }

@@ -40,6 +40,8 @@ VkImageView SplashScreenTextureImageView;
 
 Mesh SplashScreenMesh;
 
+_SplashScreenGraphics* SplashScreenGraphics;
+
 //TODO: Use DEVICE_LOCAL memory where possible
 
 int CreateSplashScreenMesh ()
@@ -82,10 +84,82 @@ int CreateSplashScreenMesh ()
 }
 
 
-int CreateGraphicsHandlesForAssets (Asset* Assets, uint32_t AssetCount)
+int CreateSplashScreenCommandPool ()
 {
-	OutputDebugString (L"CreateGraphicsHandlesForAssets\n");
+	OutputDebugString (L"CreateSplashScreenCommandPool\n");
 
+	VkCommandPoolCreateInfo CommandPoolCreateInfo = { 0 };
+
+	CommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	CommandPoolCreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+	CommandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+	if (vkCreateCommandPool (GraphicsDevice, &CommandPoolCreateInfo, NULL, &SplashScreenGraphics->CommandPool) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
+	}
+
+	return 0;
+}
+
+int CreateGraphicsHandlesFromAssets (Asset* Assets, uint32_t AssetCount)
+{
+	OutputDebugString (L"CreateGraphicsHandlesFromAssets\n");
+
+	VkDeviceSize TotalSize = 0;
+
+	for (uint32_t a = 0; a < AssetCount; a++)
+	{
+		Asset* CurrentAsset = Assets + a;
+
+		for (uint32_t gp = 0; gp < CurrentAsset->GraphicsPrimitiveCount; gp++)
+		{
+			GraphicsPrimitive* CurrentGP = CurrentAsset->GraphicsPrimitives + gp;
+
+			TotalSize += (VkDeviceSize)CurrentGP->IndexSize + (VkDeviceSize)CurrentGP->PositionSize + (VkDeviceSize)CurrentGP->UV0Size + (VkDeviceSize)CurrentGP->NormalSize;
+		}
+	}
+
+	VkBuffer StagingBuffer;
+	VkDeviceMemory StagingBufferMemory;
+
+	CreateBufferAndBufferMemory (GraphicsDevice, TotalSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, GraphicsQueueFamilyIndex, PhysicalDeviceMemoryProperties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &StagingBuffer, &StagingBufferMemory);
+
+	VkDeviceSize Offset = 0;
+
+	for (uint32_t a = 0; a < AssetCount; a++)
+	{
+		Asset* CurrentAsset = Assets + a;
+
+		for (uint32_t gp = 0; gp < CurrentAsset->GraphicsPrimitiveCount; gp++)
+		{
+			GraphicsPrimitive* CurrentGP = CurrentAsset->GraphicsPrimitives + gp;
+
+			if (CurrentGP->PositionSize > 0)
+			{
+				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->PositionSize, CurrentGP->Positions);
+				Offset += CurrentGP->PositionSize;
+			}
+
+			if (CurrentGP->UV0Size > 0)
+			{
+				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->UV0Size, CurrentGP->UV0s);
+				Offset += CurrentGP->UV0Size;
+			}
+
+			if (CurrentGP->IndexSize > 0)
+			{
+				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->IndexSize, CurrentGP->Indices);
+				Offset += CurrentGP->IndexSize;
+			}
+		}
+	}
+
+	CreateBufferAndBufferMemory (GraphicsDevice, TotalSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, GraphicsQueueFamilyIndex, PhysicalDeviceMemoryProperties, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &SplashScreenGraphics->GraphicsVBIBBuffer, &SplashScreenGraphics->GraphicsVBIBMemory);
+	CopyBufferToBuffer (GraphicsDevice, SplashScreenGraphics->CommandPool, GraphicsQueue, StagingBuffer, SplashScreenGraphics->GraphicsVBIBBuffer, TotalSize);
+
+	DestroyBufferAndBufferMemory (GraphicsDevice, StagingBuffer, StagingBufferMemory);
+	
 	return 0;
 }
 
@@ -273,13 +347,13 @@ int CreateSplashScreenShaders ()
 	char VertPartialFile[] = "\\Shaders\\SplashScreen\\vert.spv";
 	char VertFilename[MAX_PATH];
 	GetFullFilePath (VertFilename, VertPartialFile);
-	CreateShader (VertFilename, VK_SHADER_STAGE_VERTEX_BIT, &SplashScreenVertexShaderModule, &SplashScreenPipelineShaderStages[0]);
+	CreateShader (VertFilename, GraphicsDevice, VK_SHADER_STAGE_VERTEX_BIT, &SplashScreenVertexShaderModule, &SplashScreenPipelineShaderStages[0]);
 
 	char FragPartialFilePath[] = "\\Shaders\\SplashScreen\\frag.spv";
 	char FragFilename[MAX_PATH];
 
 	GetFullFilePath (FragFilename, FragPartialFilePath);
-	CreateShader (FragFilename, VK_SHADER_STAGE_FRAGMENT_BIT, &SplashScreenFragmentShaderModule, &SplashScreenPipelineShaderStages[1]);
+	CreateShader (FragFilename, GraphicsDevice, VK_SHADER_STAGE_FRAGMENT_BIT, &SplashScreenFragmentShaderModule, &SplashScreenPipelineShaderStages[1]);
 
 	return 0;
 }
@@ -314,9 +388,9 @@ int CreateSplashScreenFBs ()
 	return 0;
 }
 
-int CreateSplashScreenCommandPool ()
+int CreateSplashScreenCommandPool_Orig ()
 {
-	OutputDebugString (L"CreateSplashScreenCommandPool\n");
+	OutputDebugString (L"CreateSplashScreenCommandPool_Orig\n");
 
 	VkCommandPoolCreateInfo CreateInfo = { 0 };
 
@@ -1074,6 +1148,8 @@ int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount)
 {
 	OutputDebugString (L"SetupSplashScreen\n");
 
+	SplashScreenGraphics = (_SplashScreenGraphics*)MyCalloc (1, sizeof (_SplashScreenGraphics));
+
 	int Result = CreateSplashScreenMesh ();
 
 	if (Result != 0)
@@ -1081,12 +1157,20 @@ int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount)
 		return Result;
 	}
 
-	Result = CreateGraphicsHandlesForAssets (Assets, AssetCount);
+	Result = CreateSplashScreenCommandPool ();
 
 	if (Result != 0)
 	{
 		return Result;
 	}
+
+	Result = CreateGraphicsHandlesFromAssets (Assets, AssetCount);
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
 
 	Result = CreateSplashScreenUniformBuffer ();
 
@@ -1123,7 +1207,7 @@ int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount)
 		return Result;
 	}
 
-	Result = CreateSplashScreenCommandPool ();
+	Result = CreateSplashScreenCommandPool_Orig ();
 
 	if (Result != 0)
 	{
@@ -1335,6 +1419,31 @@ void DestroySplashScreenGraphics ()
 		}
 
 		MyFree (SplashScreenMesh.Primitives);
+	}
+
+	if (SplashScreenGraphics)
+	{
+		if (SplashScreenGraphics->CommandPool != VK_NULL_HANDLE)
+		{
+			vkDestroyCommandPool (GraphicsDevice, SplashScreenGraphics->CommandPool, NULL);
+		}
+
+		if (SplashScreenGraphics->GraphicsVBIBBuffer != VK_NULL_HANDLE)
+		{
+			vkDestroyBuffer (GraphicsDevice, SplashScreenGraphics->GraphicsVBIBBuffer, NULL);
+		}
+
+		if (SplashScreenGraphics->GraphicsVBIBMemory != VK_NULL_HANDLE)
+		{
+			vkFreeMemory (GraphicsDevice, SplashScreenGraphics->GraphicsVBIBMemory, NULL);
+		}
+
+		if (SplashScreenGraphics->GraphicsImageMemory != VK_NULL_HANDLE)
+		{
+			vkFreeMemory (GraphicsDevice, SplashScreenGraphics->GraphicsImageMemory, NULL);
+		}
+
+		MyFree (SplashScreenGraphics);
 	}
 
 	OutputDebugString (L"Finished DestroySplashScreen\n");
