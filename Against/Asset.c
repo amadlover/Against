@@ -77,9 +77,26 @@ void ImportAttribute (PrimitivePtr* PrimPtr, const cgltf_attribute* Attribute, E
 			}
 		}
 	}
-	else if (Attribute->type == cgltf_attribute_type_normal)
-	{
+}
 
+void ImportMaterials (const char* FilePath, PrimitivePtr* PrimPtr, const cgltf_material* Material)
+{
+	strcpy (PrimPtr->GraphicsPrimPtr->Material.Name, Material->name);
+
+	if (Material->has_pbr_metallic_roughness)
+	{
+		if (Material->pbr_metallic_roughness.base_color_texture.texture->name != NULL)
+		{
+			strcpy (PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Name, Material->pbr_metallic_roughness.base_color_texture.texture->name);
+		}
+
+		strcpy (PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image.Name, Material->pbr_metallic_roughness.base_color_texture.texture->image->name);
+
+		char FullPath[256];
+		GetFullTexturePath (FilePath, Material->pbr_metallic_roughness.base_color_texture.texture->image->uri, FullPath);
+
+		PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image.Pixels = stbi_load (FullPath, (int*)&PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image.Width, (int*)&PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image.Height, (int*)&PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image.BPP, 4);
+		PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image.Size = PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image.Width * PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image.Height * PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image.BPP;
 	}
 }
 
@@ -160,7 +177,7 @@ void ImportIndices (PrimitivePtr* PrimPtr, const cgltf_primitive* Primitive, EPr
 	}
 }
 
-void ImportGraphicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Data)
+void ImportGraphicsPrimitives (const char* FilePath, Asset* Assets, cgltf_data* Data)
 {
 	uint32_t CurrentMeshAssetCount = 0;
 
@@ -192,6 +209,7 @@ void ImportGraphicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* D
 					ImportAttribute (&PrimPtr, Attribute, GraphicsPrimitiveType);
 				}
 
+				ImportMaterials (FilePath, &PrimPtr, Primitive->material);
 				ImportIndices (&PrimPtr, Primitive, GraphicsPrimitiveType);
 			}
 
@@ -293,12 +311,14 @@ int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount)
 
 					if (Node->mesh == NULL) continue;
 
+					if (strstr (Node->name, "CS_") != NULL) continue;
+
 					++(*AssetCount);
 				}
 
 				*Assets = (Asset*)MyCalloc ((size_t)(*AssetCount), sizeof (Asset));
 				
-				ImportGraphicsPrimitives (*Assets, *AssetCount, Data);
+				ImportGraphicsPrimitives (FilePath, *Assets, Data);
 				ImportPhysicsPrimitives (*Assets, *AssetCount, Data);
 			}
 		}

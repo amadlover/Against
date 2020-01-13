@@ -51,7 +51,7 @@ void LogError (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW:
-		OutputDebugString (L"Graphics Error: Create Image View\n");
+		OutputDebugString (L"Graphics Error: Create Image_Orig View\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_BUFFER:
@@ -67,15 +67,15 @@ void LogError (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_IMAGE:
-		OutputDebugString (L"Graphics Error: Create Image\n");
+		OutputDebugString (L"Graphics Error: Create Image_Orig\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY:
-		OutputDebugString (L"Graphics Error: Bind Image Memory\n");
+		OutputDebugString (L"Graphics Error: Bind Image_Orig Memory\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_MAP_MEMORY:
-		OutputDebugString (L"Graphics Error: Map Image Memory\n");
+		OutputDebugString (L"Graphics Error: Map Image_Orig Memory\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT:
@@ -131,7 +131,7 @@ void LogError (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE:
-		OutputDebugString (L"Graphics Error: Acquire Next Image\n");
+		OutputDebugString (L"Graphics Error: Acquire Next Image_Orig\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES:
@@ -159,7 +159,7 @@ void LogError (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_SAMPLER:
-		OutputDebugString (L"Graphics Error: Create Texture SplashScreenSampler\n");
+		OutputDebugString (L"Graphics Error: Create Texture_Orig SplashScreenSampler\n");
 		break;
 
 	default:

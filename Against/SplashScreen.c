@@ -70,44 +70,55 @@ void DestroySplashScreen ()
 		{
 			for (uint32_t a = 0; a < SplashScreenObj->AssetCount; a++)
 			{
-				if ((SplashScreenObj->Assets + a)->GraphicsPrimitives)
+				Asset* CurrentAsset = SplashScreenObj->Assets + a;
+
+				if (CurrentAsset->GraphicsPrimitives)
 				{
-					for (uint32_t i = 0; i < (SplashScreenObj->Assets + a)->GraphicsPrimitiveCount; i++)
+					for (uint32_t i = 0; i < CurrentAsset->GraphicsPrimitiveCount; i++)
 					{
-						if (((SplashScreenObj->Assets + a)->GraphicsPrimitives + i)->Indices)
+						GraphicsPrimitive* CurrentGP = CurrentAsset->GraphicsPrimitives + i;
+
+						if (CurrentGP->Indices)
 						{
-							MyFree ((SplashScreenObj->Assets->GraphicsPrimitives + i)->Indices);
+							MyFree (CurrentGP->Indices);
 						}
 
-						if (((SplashScreenObj->Assets + a)->GraphicsPrimitives + i)->Positions)
+						if (CurrentGP->Positions)
 						{
-							MyFree ((SplashScreenObj->Assets->GraphicsPrimitives + i)->Positions);
+							MyFree (CurrentGP->Positions);
 						}
 
-						if (((SplashScreenObj->Assets + a)->GraphicsPrimitives + i)->UV0s)
+						if (CurrentGP->UV0s)
 						{
-							MyFree ((SplashScreenObj->Assets->GraphicsPrimitives + i)->UV0s);
+							MyFree (CurrentGP->UV0s);
 						}
 
-						MyFree ((SplashScreenObj->Assets + a)->GraphicsPrimitives + i);
+						if (CurrentGP->Material.BaseColorTexture.Image.Pixels)
+						{
+							stbi_image_free (CurrentGP->Material.BaseColorTexture.Image.Pixels);
+						}
+
+						MyFree (CurrentGP);
 					}
 				}
 
 				if ((SplashScreenObj->Assets + a)->PhysicsPrimitives)
 				{
-					for (uint32_t i = 0; i < (SplashScreenObj->Assets + a)->PhysicsPrimitiveCount; i++)
+					for (uint32_t i = 0; i < CurrentAsset->PhysicsPrimitiveCount; i++)
 					{
-						if (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Indices)
+						PhysicsPrimitive* CurrentPP = CurrentAsset->PhysicsPrimitives + i;
+
+						if (CurrentPP->Indices)
 						{
-							MyFree (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Indices);
+							MyFree ((CurrentAsset->PhysicsPrimitives + i)->Indices);
 						}
 
-						if (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Positions)
+						if (CurrentPP->Positions)
 						{
-							MyFree (((SplashScreenObj->Assets + a)->PhysicsPrimitives + i)->Positions);
+							MyFree (CurrentPP->Positions);
 						}
 
-						MyFree ((SplashScreenObj->Assets + a)->PhysicsPrimitives + i);
+						MyFree (CurrentPP);
 					}
 				}
 			}

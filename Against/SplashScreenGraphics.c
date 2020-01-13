@@ -138,18 +138,21 @@ int CreateGraphicsHandlesFromAssets (Asset* Assets, uint32_t AssetCount)
 			if (CurrentGP->PositionSize > 0)
 			{
 				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->PositionSize, CurrentGP->Positions);
+				CurrentGP->PositionsOffset = Offset;
 				Offset += CurrentGP->PositionSize;
 			}
 
 			if (CurrentGP->UV0Size > 0)
 			{
 				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->UV0Size, CurrentGP->UV0s);
+				CurrentGP->UV0sOffset = Offset;
 				Offset += CurrentGP->UV0Size;
 			}
 
 			if (CurrentGP->IndexSize > 0)
 			{
 				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->IndexSize, CurrentGP->Indices);
+				CurrentGP->IndicesOffset = Offset;
 				Offset += CurrentGP->IndexSize;
 			}
 		}

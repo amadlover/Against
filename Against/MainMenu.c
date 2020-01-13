@@ -21,13 +21,13 @@ uint32_t MainMenuNodeCount;
 Mesh* MainMenuMeshes;
 uint32_t MainMenuMeshCount;
 
-Material* MainMenuMaterials;
+Material_Orig* MainMenuMaterials;
 uint32_t MainMenuMaterialCount;
 
-Texture* MainMenuTextures;
+Texture_Orig* MainMenuTextures;
 uint32_t MainMenuTextureCount;
 
-Image* MainMenuImages;
+Image_Orig* MainMenuImages;
 uint32_t MainMenuImageCount;
 
 Sampler* MainMenuSamplers;

@@ -21,7 +21,7 @@ typedef struct
 	uint32_t Size;
 
 	VkImageHandles VkHandles;
-} Image;
+} Image_Orig;
 
 typedef struct
 {
@@ -34,15 +34,15 @@ typedef struct
 typedef struct _Texture
 {
 	char Name[256];
-	Image* Image;
+	Image_Orig* Image;
 	Sampler* Sampler;
-} Texture;
+} Texture_Orig;
 
 typedef struct
 {
 	char Name[256];
-	Texture* BaseColorTexture;
-} Material;
+	Texture_Orig* BaseColorTexture;
+} Material_Orig;
 
 typedef struct
 {
@@ -69,7 +69,7 @@ typedef struct
 	uint32_t IndexCount;
 	uint32_t* Indices;
 
-	Material* Material;
+	Material_Orig* Material;
 
 	VkPrimitiveHandles VkHandles;
 } Primitive_Orig;
@@ -98,33 +98,62 @@ typedef struct _Node
 
 typedef struct
 {
+	char Name[256];
+
+	VkDeviceSize Width;
+	VkDeviceSize Height;
+	VkDeviceSize BPP;
+
+	uint8_t* Pixels;
+
+	VkDeviceSize Size;
+} Image;
+
+typedef struct
+{
+	char Name[256];
+
+	Image Image;
+} Texture;
+
+typedef struct
+{
+	char Name[256];
+
+	Texture BaseColorTexture;
+} Material;
+
+typedef struct
+{
 	float* Positions;
 	float* UV0s;
 	float* Normals;
 
-	uint32_t PositionSize;
-	uint32_t UV0Size;
-	uint32_t NormalSize;
-	uint32_t IndexSize;
+	VkDeviceSize PositionSize;
+	VkDeviceSize UV0Size;
+	VkDeviceSize NormalSize;
+	VkDeviceSize IndexSize;
 
 	uint32_t IndexCount;
 	uint32_t* Indices;
 
-	Material Material;
+	VkDeviceSize PositionsOffset;
+	VkDeviceSize UV0sOffset;
+	VkDeviceSize NormalsOffset;
+	VkDeviceSize IndicesOffset;
 
-	VkPrimitiveHandles VkHandles;
+	Material Material;
 } GraphicsPrimitive;
 
 typedef struct
 {
 	float* Positions;
 
-	uint32_t PositionSize;
-	uint32_t IndexSize;
+	VkDeviceSize PositionSize;
+	VkDeviceSize IndexSize;
 
 	uint32_t IndexCount;
 	uint32_t* Indices;
-
 } PhysicsPrimitive;
 
 typedef struct

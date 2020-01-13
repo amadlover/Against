@@ -12,7 +12,7 @@
 #define STB_IMPLEMENTATION
 #include <stb_image.h>
 
-int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material** Materials, uint32_t* MaterialCount, Texture** Textures, uint32_t* TextureCount, Image** Images, uint32_t* ImageCount, Sampler** Samplers, uint32_t* SamplerCount)
+int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material_Orig** Materials, uint32_t* MaterialCount, Texture_Orig** Textures, uint32_t* TextureCount, Image_Orig** Images, uint32_t* ImageCount, Sampler** Samplers, uint32_t* SamplerCount)
 {
 	cgltf_options Options = { 0 };
 	cgltf_data* Data = NULL;
@@ -43,7 +43,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 				}
 
 				*ImageCount = Data->images_count;
-				*Images = (Image*)MyMalloc (Data->images_count * sizeof (Image));
+				*Images = (Image_Orig*)MyMalloc (Data->images_count * sizeof (Image_Orig));
 
 				for (uint32_t i = 0; i < Data->images_count; i++)
 				{
@@ -74,7 +74,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 				}
 
 				*TextureCount = Data->textures_count;
-				*Textures = (Texture*)MyMalloc (Data->textures_count * sizeof (Texture));
+				*Textures = (Texture_Orig*)MyMalloc (Data->textures_count * sizeof (Texture_Orig));
 
 				for (uint32_t t = 0; t < Data->textures_count; t++)
 				{
@@ -103,7 +103,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 				}
 
 				*MaterialCount = Data->materials_count;
-				*Materials = (Material*)MyMalloc (Data->materials_count * sizeof (Material));
+				*Materials = (Material_Orig*)MyMalloc (Data->materials_count * sizeof (Material_Orig));
 
 				for (uint32_t m = 0; m < Data->materials_count; m++)
 				{
