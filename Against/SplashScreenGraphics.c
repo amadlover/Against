@@ -1,6 +1,7 @@
 #include "SplashScreenGraphics.h"
 #include "Asset.h"
 #include "Actor.h"
+#include "Image.h"
 #include "Error.h"
 #include "GraphicsUtilities.h"
 #include "Utility.h"
@@ -38,7 +39,7 @@ VkDeviceMemory SplashScreenTextureImageMemory;
 
 VkImageView SplashScreenTextureImageView;
 
-Mesh SplashScreenMesh;
+Mesh_Orig SplashScreenMesh;
 
 _SplashScreenGraphics* SplashScreenGraphics;
 
@@ -48,25 +49,25 @@ int CreateSplashScreenMesh ()
 {
 	OutputDebugString (L"CreateSplashScreenMesh\n");
 
-	memset (&SplashScreenMesh, 0, sizeof (Mesh));
+	memset (&SplashScreenMesh, 0, sizeof (Mesh_Orig));
 
 	SplashScreenMesh.ID = 0;
 	strcpy (SplashScreenMesh.Name, "SplashScreenMesh");
 	SplashScreenMesh.PrimitiveCount = 1;
 	SplashScreenMesh.Primitives = (Primitive_Orig*)MyMalloc (sizeof (Primitive_Orig));
 
-	SplashScreenMesh.Primitives[0].PositionSize = 4 * sizeof (float) * 3;
+	SplashScreenMesh.Primitives[0].PositionsSize = 4 * sizeof (float) * 3;
 
 	SplashScreenMesh.Primitives[0].UV0Size = 4 * sizeof (float) * 2;
 
 	SplashScreenMesh.Primitives[0].IndexCount = 6;
-	SplashScreenMesh.Primitives[0].IndexSize = 6 * sizeof (uint32_t);
+	SplashScreenMesh.Primitives[0].IndicesSize = 6 * sizeof (uint32_t);
 
-	SplashScreenMesh.Primitives[0].Indices = (uint32_t*)MyMalloc (SplashScreenMesh.Primitives[0].IndexSize);
+	SplashScreenMesh.Primitives[0].Indices = (uint32_t*)MyMalloc (SplashScreenMesh.Primitives[0].IndicesSize);
 	SplashScreenMesh.Primitives[0].Indices[0] = 0; SplashScreenMesh.Primitives[0].Indices[1] = 1; SplashScreenMesh.Primitives[0].Indices[2] = 2;
 	SplashScreenMesh.Primitives[0].Indices[3] = 0; SplashScreenMesh.Primitives[0].Indices[4] = 2; SplashScreenMesh.Primitives[0].Indices[5] = 3;
 
-	SplashScreenMesh.Primitives[0].Positions = (float*)MyMalloc (SplashScreenMesh.Primitives[0].PositionSize);
+	SplashScreenMesh.Primitives[0].Positions = (float*)MyMalloc (SplashScreenMesh.Primitives[0].PositionsSize);
 
 	SplashScreenMesh.Primitives[0].Positions[0] = 1; SplashScreenMesh.Primitives[0].Positions[1] = 1; SplashScreenMesh.Primitives[0].Positions[2] = 1;
 	SplashScreenMesh.Primitives[0].Positions[3] = -1; SplashScreenMesh.Primitives[0].Positions[4] = 1; SplashScreenMesh.Primitives[0].Positions[5] = 1;
@@ -102,9 +103,9 @@ int CreateSplashScreenCommandPool ()
 	return 0;
 }
 
-int CreateGraphicsHandlesFromAssets (Asset* Assets, uint32_t AssetCount)
+int CreateVulkanHandlesForMeshes (Asset* Assets, uint32_t AssetCount)
 {
-	OutputDebugString (L"CreateGraphicsHandlesFromAssets\n");
+	OutputDebugString (L"CreateVulkanHandlesForMeshes\n");
 
 	VkDeviceSize TotalSize = 0;
 
@@ -115,8 +116,7 @@ int CreateGraphicsHandlesFromAssets (Asset* Assets, uint32_t AssetCount)
 		for (uint32_t gp = 0; gp < CurrentAsset->GraphicsPrimitiveCount; gp++)
 		{
 			GraphicsPrimitive* CurrentGP = CurrentAsset->GraphicsPrimitives + gp;
-
-			TotalSize += (VkDeviceSize)CurrentGP->IndexSize + (VkDeviceSize)CurrentGP->PositionSize + (VkDeviceSize)CurrentGP->UV0Size + (VkDeviceSize)CurrentGP->NormalSize;
+			TotalSize += CurrentGP->IndicesSize + CurrentGP->PositionsSize + CurrentGP->UV0sSize + CurrentGP->NormalsSize;
 		}
 	}
 
@@ -135,25 +135,32 @@ int CreateGraphicsHandlesFromAssets (Asset* Assets, uint32_t AssetCount)
 		{
 			GraphicsPrimitive* CurrentGP = CurrentAsset->GraphicsPrimitives + gp;
 
-			if (CurrentGP->PositionSize > 0)
+			if (CurrentGP->PositionsSize > 0)
 			{
-				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->PositionSize, CurrentGP->Positions);
+				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->PositionsSize, CurrentGP->Positions);
 				CurrentGP->PositionsOffset = Offset;
-				Offset += CurrentGP->PositionSize;
+				Offset += CurrentGP->PositionsSize;
 			}
 
-			if (CurrentGP->UV0Size > 0)
+			if (CurrentGP->UV0sSize > 0)
 			{
-				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->UV0Size, CurrentGP->UV0s);
+				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->UV0sSize, CurrentGP->UV0s);
 				CurrentGP->UV0sOffset = Offset;
-				Offset += CurrentGP->UV0Size;
+				Offset += CurrentGP->UV0sSize;
 			}
 
-			if (CurrentGP->IndexSize > 0)
+			if (CurrentGP->IndicesSize > 0)
 			{
-				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->IndexSize, CurrentGP->Indices);
+				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->IndicesSize, CurrentGP->Indices);
 				CurrentGP->IndicesOffset = Offset;
-				Offset += CurrentGP->IndexSize;
+				Offset += CurrentGP->IndicesSize;
+			}
+
+			if (CurrentGP->NormalsSize > 0)
+			{
+				CopyDataToBuffer (GraphicsDevice, StagingBufferMemory, Offset, CurrentGP->NormalsSize, CurrentGP->Normals);
+				CurrentGP->NormalsOffset = Offset;
+				Offset += CurrentGP->NormalsSize;
 			}
 		}
 	}
@@ -162,6 +169,28 @@ int CreateGraphicsHandlesFromAssets (Asset* Assets, uint32_t AssetCount)
 	CopyBufferToBuffer (GraphicsDevice, SplashScreenGraphics->CommandPool, GraphicsQueue, StagingBuffer, SplashScreenGraphics->GraphicsVBIBBuffer, TotalSize);
 
 	DestroyBufferAndBufferMemory (GraphicsDevice, StagingBuffer, StagingBufferMemory);
+
+	return 0;
+}
+
+int CreateVulkanHandlesForImages (Image* Images, uint32_t ImageCount)
+{
+	OutputDebugString (L"CreateVulkanHandlesForImages\n");
+
+	for (uint32_t i = 0; i < ImageCount; i++)
+	{
+		Image* CurrentImage = Images + i;
+	}
+
+	return 0;
+}
+
+int CreateVulkanHandles (Asset* Assets, uint32_t AssetCount, Image* Images, uint32_t ImageCount)
+{
+	OutputDebugString (L"CreateVulkanHandles\n");
+
+	CreateVulkanHandlesForMeshes (Assets, AssetCount);
+	CreateVulkanHandlesForImages (Images, ImageCount);
 	
 	return 0;
 }
@@ -614,7 +643,7 @@ int CreateSplashScreenCommandBuffer ()
 		vkCmdBindDescriptorSets (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipelineLayout, 0, 1, &SplashScreenDescriptorSet, 0, NULL);
 		vkCmdBindPipeline (SwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, SplashScreenGraphicsPipeline);
 
-		VkDeviceSize Offsets[3] = { 0, SplashScreenMesh.Primitives[0].PositionSize,  SplashScreenMesh.Primitives[0].PositionSize + SplashScreenMesh.Primitives[0].UV0Size };
+		VkDeviceSize Offsets[3] = { 0, SplashScreenMesh.Primitives[0].PositionsSize,  SplashScreenMesh.Primitives[0].PositionsSize + SplashScreenMesh.Primitives[0].UV0Size };
 
 		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 0, 1, &SplashScreenHostVBIB, &Offsets[0]);
 		vkCmdBindVertexBuffers (SwapchainCommandBuffers[i], 1, 1, &SplashScreenHostVBIB, &Offsets[1]);
@@ -679,7 +708,7 @@ int CreateSplashScreenHostVBIB ()
 	VBCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	VBCreateInfo.queueFamilyIndexCount = 1;
 	VBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
-	VBCreateInfo.size = SplashScreenMesh.Primitives[0].PositionSize + SplashScreenMesh.Primitives[0].UV0Size + SplashScreenMesh.Primitives[0].IndexSize;
+	VBCreateInfo.size = SplashScreenMesh.Primitives[0].PositionsSize + SplashScreenMesh.Primitives[0].UV0Size + SplashScreenMesh.Primitives[0].IndicesSize;
 
 	if (vkCreateBuffer (GraphicsDevice, &VBCreateInfo, NULL, &SplashScreenHostVBIB) != VK_SUCCESS)
 	{
@@ -717,15 +746,15 @@ int CreateSplashScreenHostVBIB ()
 
 	void* Data;
 
-	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, 0, SplashScreenMesh.Primitives[0].PositionSize, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, 0, SplashScreenMesh.Primitives[0].PositionsSize, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
 
-	memcpy (Data, SplashScreenMesh.Primitives[0].Positions, SplashScreenMesh.Primitives[0].PositionSize);
+	memcpy (Data, SplashScreenMesh.Primitives[0].Positions, SplashScreenMesh.Primitives[0].PositionsSize);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
-	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.Primitives[0].PositionSize, SplashScreenMesh.Primitives[0].UV0Size, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.Primitives[0].PositionsSize, SplashScreenMesh.Primitives[0].UV0Size, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
@@ -733,12 +762,12 @@ int CreateSplashScreenHostVBIB ()
 	memcpy (Data, SplashScreenMesh.Primitives[0].UV0s, SplashScreenMesh.Primitives[0].UV0Size);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
-	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.Primitives[0].PositionSize + SplashScreenMesh.Primitives[0].UV0Size, SplashScreenMesh.Primitives[0].IndexSize, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (GraphicsDevice, SplasScreenHostVBIBMemory, SplashScreenMesh.Primitives[0].PositionsSize + SplashScreenMesh.Primitives[0].UV0Size, SplashScreenMesh.Primitives[0].IndicesSize, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
 
-	memcpy (Data, SplashScreenMesh.Primitives[0].Indices, SplashScreenMesh.Primitives[0].IndexSize);
+	memcpy (Data, SplashScreenMesh.Primitives[0].Indices, SplashScreenMesh.Primitives[0].IndicesSize);
 	vkUnmapMemory (GraphicsDevice, SplasScreenHostVBIBMemory);
 
 	return 0;
@@ -1147,7 +1176,7 @@ int DrawSplashScreenGraphics ()
 
 }
 
-int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount)
+int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount, Image* Images, uint32_t ImageCount)
 {
 	OutputDebugString (L"SetupSplashScreen\n");
 
@@ -1167,7 +1196,7 @@ int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount)
 		return Result;
 	}
 
-	Result = CreateGraphicsHandlesFromAssets (Assets, AssetCount);
+	Result = CreateVulkanHandles (Assets, AssetCount, Images, ImageCount);
 
 	if (Result != 0)
 	{
@@ -1444,6 +1473,16 @@ void DestroySplashScreenGraphics ()
 		if (SplashScreenGraphics->GraphicsImageMemory != VK_NULL_HANDLE)
 		{
 			vkFreeMemory (GraphicsDevice, SplashScreenGraphics->GraphicsImageMemory, NULL);
+		}
+
+		for (uint32_t i = 0; i < SplashScreenGraphics->ImageCount; i++)
+		{
+			vkDestroyImage (GraphicsDevice, SplashScreenGraphics->Images[i], NULL);
+		}
+
+		for (uint32_t i = 0; i < SplashScreenGraphics->ImageViewCount; i++)
+		{
+			vkDestroyImage (GraphicsDevice, SplashScreenGraphics->ImageViews[i], NULL);
 		}
 
 		MyFree (SplashScreenGraphics);

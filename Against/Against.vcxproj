@@ -26,6 +26,7 @@
     <ClCompile Include="Graphics.c" />
     <ClCompile Include="GraphicsUtilities.c" />
     <ClCompile Include="GUI.c" />
+    <ClCompile Include="Image.c" />
     <ClCompile Include="ImportAssets.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="MainGame.c" />
@@ -57,6 +58,7 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="GraphicsUtilities.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="ImportAssets.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MainMenu.h" />

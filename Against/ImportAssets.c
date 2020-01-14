@@ -12,7 +12,7 @@
 #define STB_IMPLEMENTATION
 #include <stb_image.h>
 
-int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** Meshes, uint32_t* MeshCount, Material_Orig** Materials, uint32_t* MaterialCount, Texture_Orig** Textures, uint32_t* TextureCount, Image_Orig** Images, uint32_t* ImageCount, Sampler** Samplers, uint32_t* SamplerCount)
+int ImportGLTF (const char* FilePath, Node_Orig** Nodes, uint32_t* NodeCount, Mesh_Orig** Meshes, uint32_t* MeshCount, Material_Orig** Materials, uint32_t* MaterialCount, Texture_Orig** Textures, uint32_t* TextureCount, Image_Orig** Images, uint32_t* ImageCount, Sampler_Orig** Samplers, uint32_t* SamplerCount)
 {
 	cgltf_options Options = { 0 };
 	cgltf_data* Data = NULL;
@@ -30,16 +30,16 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 			if (Result == cgltf_result_success)
 			{
 				*SamplerCount = Data->samplers_count;
-				*Samplers = (Sampler*)MyMalloc (Data->samplers_count * sizeof (Sampler));
+				*Samplers = (Sampler_Orig*)MyMalloc (Data->samplers_count * sizeof (Sampler_Orig));
 
 				for (uint32_t s = 0; s < Data->samplers_count; s++)
 				{
-					cgltf_sampler* Sampler = Data->samplers + s;
+					cgltf_sampler* Sampler_Orig = Data->samplers + s;
 
-					(*Samplers + s)->MagFilter = Sampler->mag_filter;
-					(*Samplers + s)->MinFilter = Sampler->min_filter;
-					(*Samplers + s)->Wrap_S = Sampler->wrap_s;
-					(*Samplers + s)->Wrap_T = Sampler->wrap_t;
+					(*Samplers + s)->MagFilter = Sampler_Orig->mag_filter;
+					(*Samplers + s)->MinFilter = Sampler_Orig->min_filter;
+					(*Samplers + s)->Wrap_S = Sampler_Orig->wrap_s;
+					(*Samplers + s)->Wrap_T = Sampler_Orig->wrap_t;
 				}
 
 				*ImageCount = Data->images_count;
@@ -92,7 +92,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 					{
 						if ((Data->samplers + s) == (Texture->sampler))
 						{
-							(*Textures + t)->Sampler = (*Samplers + s);
+							(*Textures + t)->Sampler_Orig = (*Samplers + s);
 						}
 					}
 
@@ -124,18 +124,18 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 				}
 
 				*MeshCount = Data->meshes_count;
-				*Meshes = (Mesh*)MyMalloc (Data->meshes_count * sizeof (Mesh));
+				*Meshes = (Mesh_Orig*)MyMalloc (Data->meshes_count * sizeof (Mesh_Orig));
 
 				for (uint32_t m = 0; m < Data->meshes_count; m++)
 				{
-					cgltf_mesh* Mesh = Data->meshes + m;
+					cgltf_mesh* Mesh_Orig = Data->meshes + m;
 
-					(*Meshes + m)->PrimitiveCount = Mesh->primitives_count;
-					(*Meshes + m)->Primitives = (Primitive_Orig*)MyMalloc (Mesh->primitives_count * sizeof (Primitive_Orig));
+					(*Meshes + m)->PrimitiveCount = Mesh_Orig->primitives_count;
+					(*Meshes + m)->Primitives = (Primitive_Orig*)MyMalloc (Mesh_Orig->primitives_count * sizeof (Primitive_Orig));
 
-					for (uint32_t p = 0; p < Mesh->primitives_count; p++)
+					for (uint32_t p = 0; p < Mesh_Orig->primitives_count; p++)
 					{
-						cgltf_primitive* Primitive = Mesh->primitives + p;
+						cgltf_primitive* Primitive = Mesh_Orig->primitives + p;
 
 						for (uint32_t a = 0; a < Primitive->attributes_count; a++)
 						{
@@ -148,7 +148,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 								char* DataStart = (char*)BufferView->buffer->data;
 								float* Positions = (float*)(DataStart + Accessor->offset + BufferView->offset);
 
-								(*Meshes + m)->Primitives[p].PositionSize = BufferView->size;
+								(*Meshes + m)->Primitives[p].PositionsSize = BufferView->size;
 								(*Meshes + m)->Primitives[p].Positions = (float*)MyMalloc (BufferView->size);
 
 								memcpy ((*Meshes + m)->Primitives[p].Positions, Positions, BufferView->size);
@@ -182,7 +182,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 						switch (Accessor->component_type)
 						{
 						case cgltf_component_type_r_16u:
-							(*Meshes + m)->Primitives[p].IndexSize = BufferView->size * 2;
+							(*Meshes + m)->Primitives[p].IndicesSize = BufferView->size * 2;
 							(*Meshes + m)->Primitives[p].Indices = (uint32_t*)MyMalloc (BufferView->size * 2);
 
 							uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
@@ -195,7 +195,7 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 							break;
 
 						case cgltf_component_type_r_32u:
-							(*Meshes + m)->Primitives[p].IndexSize = BufferView->size;
+							(*Meshes + m)->Primitives[p].IndicesSize = BufferView->size;
 							(*Meshes + m)->Primitives[p].Indices = (uint32_t*)MyMalloc (BufferView->size);
 
 							uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
@@ -216,59 +216,59 @@ int ImportGLTF (const char* FilePath, Node** Nodes, uint32_t* NodeCount, Mesh** 
 						}
 					}
 
-					if (Mesh->name)
+					if (Mesh_Orig->name)
 					{
-						strcpy ((*Meshes + m)->Name, Mesh->name);
+						strcpy ((*Meshes + m)->Name, Mesh_Orig->name);
 					}
 				}
 
 				*NodeCount = Data->nodes_count;
-				*Nodes = (Node*)MyMalloc (Data->nodes_count * sizeof (Node));
+				*Nodes = (Node_Orig*)MyMalloc (Data->nodes_count * sizeof (Node_Orig));
 				
 				for (uint32_t n = 0; n < Data->nodes_count; n++)
 				{
-					cgltf_node* Node = Data->nodes + n;
+					cgltf_node* Node_Orig = Data->nodes + n;
 
-					if (Node->has_matrix)
+					if (Node_Orig->has_matrix)
 					{
-						memcpy ((*Nodes + n)->TransformationMatrix, Node->matrix, sizeof (float) * 16);
+						memcpy ((*Nodes + n)->TransformationMatrix, Node_Orig->matrix, sizeof (float) * 16);
 					}
 
-					if (Node->has_translation)
+					if (Node_Orig->has_translation)
 					{
-						memcpy ((*Nodes + n)->Translation, Node->translation, sizeof (float) * 3);
+						memcpy ((*Nodes + n)->Translation, Node_Orig->translation, sizeof (float) * 3);
 					}
 
-					if (Node->has_rotation)
+					if (Node_Orig->has_rotation)
 					{
-						memcpy ((*Nodes + n)->Rotation, Node->rotation, sizeof (float) * 4);
+						memcpy ((*Nodes + n)->Rotation, Node_Orig->rotation, sizeof (float) * 4);
 					}
 
-					if (Node->has_scale)
+					if (Node_Orig->has_scale)
 					{
-						memcpy ((*Nodes + n)->Scale, Node->scale, sizeof (float) * 3);
+						memcpy ((*Nodes + n)->Scale, Node_Orig->scale, sizeof (float) * 3);
 					}
 					else
 					{
 						(*Nodes + n)->Scale[0] = 1; (*Nodes + n)->Scale[1] = 1; (*Nodes + n)->Scale[2] = 1;
 					}
 
-					if (Node->mesh)
+					if (Node_Orig->mesh)
 					{
-						cgltf_mesh* Mesh = Node->mesh;
+						cgltf_mesh* Mesh_Orig = Node_Orig->mesh;
 
 						for (uint32_t m = 0; m < Data->meshes_count; m++)
 						{
-							if (Mesh == (Data->meshes + m))
+							if (Mesh_Orig == (Data->meshes + m))
 							{
-								(*Nodes + n)->Mesh = (*Meshes + m);
+								(*Nodes + n)->Mesh_Orig = (*Meshes + m);
 							}
 						}
 					}
 
-					if (Node->name)
+					if (Node_Orig->name)
 					{
-						strcpy ((*Nodes + n)->Name, Node->name);
+						strcpy ((*Nodes + n)->Name, Node_Orig->name);
 					}
 				}
 

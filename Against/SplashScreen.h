@@ -5,6 +5,7 @@
 #include "SplashScreenGraphics.h"
 #include "Asset.h"
 #include "Actor.h"
+#include "Image.h"
 
 typedef struct
 {
@@ -15,6 +16,9 @@ typedef struct
 
 	Actor* Actors;
 	uint32_t ActorCount;
+
+	Image* Images;
+	uint32_t ImageCount;
 } SplashScreen;
 
 int InitSplashScreen ();

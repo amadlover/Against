@@ -15,10 +15,10 @@
 #include <vulkan/vulkan.h>
 #include <stb_image.h>
 
-Node* MainMenuNodes;
+Node_Orig* MainMenuNodes;
 uint32_t MainMenuNodeCount;
 
-Mesh* MainMenuMeshes;
+Mesh_Orig* MainMenuMeshes;
 uint32_t MainMenuMeshCount;
 
 Material_Orig* MainMenuMaterials;
@@ -30,7 +30,7 @@ uint32_t MainMenuTextureCount;
 Image_Orig* MainMenuImages;
 uint32_t MainMenuImageCount;
 
-Sampler* MainMenuSamplers;
+Sampler_Orig* MainMenuSamplers;
 uint32_t MainMenuSamplerCount;
 
 VkBuffer MainMenuHostVBIB;
@@ -188,7 +188,7 @@ int CreateMainMenuHostVBIBs ()
 	{
 		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 		{
-			VBIBCreateInfo.size = MainMenuMeshes[m].Primitives[p].PositionSize + MainMenuMeshes[m].Primitives[p].UV0Size + MainMenuMeshes[m].Primitives[p].IndexSize;
+			VBIBCreateInfo.size = MainMenuMeshes[m].Primitives[p].PositionsSize + MainMenuMeshes[m].Primitives[p].UV0Size + MainMenuMeshes[m].Primitives[p].IndicesSize;
 
 			if (vkCreateBuffer (GraphicsDevice, &VBIBCreateInfo, NULL, &MainMenuHostVBIBs[CurrentBufferCount]) != VK_SUCCESS)
 			{
@@ -259,15 +259,15 @@ int CreateMainMenuHostVBIBs ()
 
 			void* Data = NULL;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, BindMemoryOffset + MapMemoryOffset, MainMenuMeshes[m].Primitives[p].PositionSize, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, BindMemoryOffset + MapMemoryOffset, MainMenuMeshes[m].Primitives[p].PositionsSize, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 			}
 
-			memcpy (Data, MainMenuMeshes[m].Primitives[p].Positions, MainMenuMeshes[m].Primitives[p].PositionSize);
+			memcpy (Data, MainMenuMeshes[m].Primitives[p].Positions, MainMenuMeshes[m].Primitives[p].PositionsSize);
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 
-			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].PositionSize;
+			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].PositionsSize;
 
 			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, BindMemoryOffset + MapMemoryOffset, MainMenuMeshes[m].Primitives[p].UV0Size, 0, &Data) != VK_SUCCESS)
 			{
@@ -279,15 +279,15 @@ int CreateMainMenuHostVBIBs ()
 
 			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].UV0Size;
 
-			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, BindMemoryOffset + MapMemoryOffset, MainMenuMeshes[m].Primitives[p].IndexSize, 0, &Data) != VK_SUCCESS)
+			if (vkMapMemory (GraphicsDevice, MainMenuHostVBIBMemory, BindMemoryOffset + MapMemoryOffset, MainMenuMeshes[m].Primitives[p].IndicesSize, 0, &Data) != VK_SUCCESS)
 			{
 				return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 			}
 
-			memcpy (Data, MainMenuMeshes[m].Primitives[p].Indices, MainMenuMeshes[m].Primitives[p].IndexSize);
+			memcpy (Data, MainMenuMeshes[m].Primitives[p].Indices, MainMenuMeshes[m].Primitives[p].IndicesSize);
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 
-			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].IndexSize;
+			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].IndicesSize;
 			
 			BindMemoryOffset += MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.size;
 
@@ -719,7 +719,7 @@ int CreateMainMenuTextureImages ()
 				if (MainMenuMeshes[m].Primitives[p].Material->BaseColorTexture->Image == MainMenuImages + i)
 				{
 					MainMenuMeshes[m].Primitives[p].VkHandles.Image = MainMenuTImages + i;
-					MainMenuMeshes[m].Primitives[p].VkHandles.ImageView = MainMenuTImageViews + i;
+					MainMenuMeshes[m].Primitives[p].VkHandles.ImageViews = MainMenuTImageViews + i;
 				}
 			}
 		}
@@ -1108,7 +1108,7 @@ int CreateMainMenuDescriptorSet ()
 			VkDescriptorImageInfo ImageInfo = { 0 };
 			ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			ImageInfo.sampler = MainMenuFallbackSampler;
-			ImageInfo.imageView = *MainMenuMeshes[m].Primitives[p].VkHandles.ImageView;
+			ImageInfo.imageView = *MainMenuMeshes[m].Primitives[p].VkHandles.ImageViews;
 
 			VkWriteDescriptorSet DescriptorWrite = { 0 };
 
@@ -1366,7 +1366,7 @@ int CreateMainMenuCommandBuffers ()
 
 		for (uint32_t n = 0; n < MainMenuNodeCount; n++)
 		{
-			if (MainMenuNodes[n].Mesh)
+			if (MainMenuNodes[n].Mesh_Orig)
 			{
 				float ModelMatrix[16];
 				CreateTransformationMatrixGLM (MainMenuNodes[n].Translation, MainMenuNodes[n].Rotation, MainMenuNodes[n].Scale, ModelMatrix);
@@ -1388,16 +1388,16 @@ int CreateMainMenuCommandBuffers ()
 					vkCmdPushConstants (MainMenuSwapchainCommandBuffers[i], MainMenuGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof (float) * 16 + sizeof (float), sizeof (int), &BackgroundPlane);
 				}
 
-				for (uint32_t p = 0; p < MainMenuNodes[n].Mesh->PrimitiveCount; p++)
+				for (uint32_t p = 0; p < MainMenuNodes[n].Mesh_Orig->PrimitiveCount; p++)
 				{
-					vkCmdBindDescriptorSets (MainMenuSwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, MainMenuGraphicsPipelineLayout, 1, 1, MainMenuNodes[n].Mesh->Primitives[p].VkHandles.DescriptorSet, 0, NULL);
+					vkCmdBindDescriptorSets (MainMenuSwapchainCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, MainMenuGraphicsPipelineLayout, 1, 1, MainMenuNodes[n].Mesh_Orig->Primitives[p].VkHandles.DescriptorSet, 0, NULL);
 
-					VkDeviceSize Offsets[3] = { 0, MainMenuNodes[n].Mesh->Primitives[p].PositionSize, MainMenuNodes[n].Mesh->Primitives[p].PositionSize + MainMenuNodes[n].Mesh->Primitives[p].UV0Size };
+					VkDeviceSize Offsets[3] = { 0, MainMenuNodes[n].Mesh_Orig->Primitives[p].PositionsSize, MainMenuNodes[n].Mesh_Orig->Primitives[p].PositionsSize + MainMenuNodes[n].Mesh_Orig->Primitives[p].UV0Size };
 					vkCmdBindVertexBuffers (MainMenuSwapchainCommandBuffers[i], 0, 1, MainMenuHostVBIBs + MeshCounter, Offsets);
 					vkCmdBindVertexBuffers (MainMenuSwapchainCommandBuffers[i], 1, 1, MainMenuHostVBIBs + MeshCounter, Offsets + 1);
 					vkCmdBindIndexBuffer (MainMenuSwapchainCommandBuffers[i], MainMenuHostVBIBs[MeshCounter], Offsets[2], VK_INDEX_TYPE_UINT32);
 
-					vkCmdDrawIndexed (MainMenuSwapchainCommandBuffers[i], MainMenuNodes[n].Mesh->Primitives[p].IndexCount, 1, 0, 0, 0);
+					vkCmdDrawIndexed (MainMenuSwapchainCommandBuffers[i], MainMenuNodes[n].Mesh_Orig->Primitives[p].IndexCount, 1, 0, 0, 0);
 
 					++MeshCounter;
 				}

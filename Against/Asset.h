@@ -1,4 +1,6 @@
 #pragma once
+#include "Image.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -29,13 +31,13 @@ typedef struct
 	int MagFilter;
 	int Wrap_S;
 	int Wrap_T;
-} Sampler;
+} Sampler_Orig;
 
 typedef struct _Texture
 {
 	char Name[256];
 	Image_Orig* Image;
-	Sampler* Sampler;
+	Sampler_Orig* Sampler_Orig;
 } Texture_Orig;
 
 typedef struct
@@ -49,8 +51,8 @@ typedef struct
 	//TODO: Pointers or values;
 	VkDeviceSize Offset;
 	VkImage* Image;
-	VkImageView* ImageView;
-	VkSampler Sampler;
+	VkImageView* ImageViews;
+	VkSampler Sampler_Orig;
 	VkDescriptorSet* DescriptorSet;
 	VkMemoryRequirements MemoryRequirements;
 } VkPrimitiveHandles;
@@ -61,10 +63,10 @@ typedef struct
 	float* UV0s;
 	float* Normals;
 
-	uint32_t PositionSize;
+	uint32_t PositionsSize;
 	uint32_t UV0Size;
-	uint32_t NormalSize;
-	uint32_t IndexSize;
+	uint32_t NormalsSize;
+	uint32_t IndicesSize;
 
 	uint32_t IndexCount;
 	uint32_t* Indices;
@@ -81,7 +83,7 @@ typedef struct
 
 	Primitive_Orig* Primitives;
 	uint32_t PrimitiveCount;
-} Mesh;
+} Mesh_Orig;
 
 typedef struct _Node
 {
@@ -93,27 +95,14 @@ typedef struct _Node
 
 	char Name[256];
 
-	Mesh* Mesh;
-} Node;
+	Mesh_Orig* Mesh_Orig;
+} Node_Orig;
 
 typedef struct
 {
 	char Name[256];
 
-	VkDeviceSize Width;
-	VkDeviceSize Height;
-	VkDeviceSize BPP;
-
-	uint8_t* Pixels;
-
-	VkDeviceSize Size;
-} Image;
-
-typedef struct
-{
-	char Name[256];
-
-	Image Image;
+	Image* Image;
 } Texture;
 
 typedef struct
@@ -129,10 +118,10 @@ typedef struct
 	float* UV0s;
 	float* Normals;
 
-	VkDeviceSize PositionSize;
-	VkDeviceSize UV0Size;
-	VkDeviceSize NormalSize;
-	VkDeviceSize IndexSize;
+	VkDeviceSize PositionsSize;
+	VkDeviceSize UV0sSize;
+	VkDeviceSize NormalsSize;
+	VkDeviceSize IndicesSize;
 
 	uint32_t IndexCount;
 	uint32_t* Indices;
@@ -149,8 +138,8 @@ typedef struct
 {
 	float* Positions;
 
-	VkDeviceSize PositionSize;
-	VkDeviceSize IndexSize;
+	VkDeviceSize PositionsSize;
+	VkDeviceSize IndicesSize;
 
 	uint32_t IndexCount;
 	uint32_t* Indices;
@@ -174,4 +163,4 @@ typedef struct
 	uint32_t GraphicsPrimitiveCount;
 } Asset;
 
-int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount);
+int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, Image* Images);

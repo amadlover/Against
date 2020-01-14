@@ -78,7 +78,7 @@ errno_t ReadShaderFile (char* FullFilePath, char** FileContents)
 	return 0;
 }
 
-int CreateImageAndImageMemory ()
+int CreateImageAndImageMemory (VkDevice GraphicsDevice, VkExtent3D Extent, uint32_t ArrayLayers)
 {
 	return 0;
 }

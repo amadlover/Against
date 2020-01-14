@@ -12,8 +12,14 @@ typedef struct
 	VkDeviceMemory GraphicsVBIBMemory;
 
 	VkDeviceMemory GraphicsImageMemory;
-}_SplashScreenGraphics;
+	VkImage* Images;
+	uint32_t ImageCount;
 
-int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount);
+	VkImageView* ImageViews;
+	uint32_t ImageViewCount;
+
+} _SplashScreenGraphics;
+
+int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount, Image* Images, uint32_t ImageCount);
 int DrawSplashScreenGraphics ();
 void DestroySplashScreenGraphics ();

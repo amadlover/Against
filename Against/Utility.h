@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <stdbool.h>
 
+void GetFullTexturePathFromURI (const char* FilePath, const char* URI, char* OutFullTexturePath);
 void GetFullFilePath (char* OutFilePath, char* PartialFilePath);
 
 void* MyMalloc (size_t Size);

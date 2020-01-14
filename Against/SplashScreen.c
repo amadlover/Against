@@ -33,14 +33,26 @@ int InitSplashScreen ()
 	char FilePath[MAX_PATH];
 	GetFullFilePath (FilePath, "\\UIElements\\SplashScreen\\SplashScreen.gltf");
 
-	int Result = ImportAssets (FilePath, &SplashScreenObj->Assets, &SplashScreenObj->AssetCount);
+	int Result = ImportImages (FilePath, &SplashScreenObj->Images, &SplashScreenObj->ImageCount);
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	InitSplashScreenGraphics (SplashScreenObj->Assets, SplashScreenObj->AssetCount);
+	Result = ImportAssets (FilePath, &SplashScreenObj->Assets, &SplashScreenObj->AssetCount, SplashScreenObj->Images);
+
+	if (Result != 0)
+	{
+		return Result;
+	}
+
+	Result = InitSplashScreenGraphics (SplashScreenObj->Assets, SplashScreenObj->AssetCount, SplashScreenObj->Images, SplashScreenObj->ImageCount);
+
+	if (Result != 0)
+	{
+		return Result;
+	}
 
 	return 0;
 }
@@ -57,9 +69,11 @@ int DrawSplashScreen (uint64_t ElapsedTime)
 	return 0;
 }
 
-void DestroySplashScreen ()
+void DestroySplashScreenAssets ()
 {
-	if (SplashScreenObj )
+	OutputDebugString (L"DestroySplashScreenAssets\n");
+
+	if (SplashScreenObj)
 	{
 		if (SplashScreenObj->Actors)
 		{
@@ -93,11 +107,6 @@ void DestroySplashScreen ()
 							MyFree (CurrentGP->UV0s);
 						}
 
-						if (CurrentGP->Material.BaseColorTexture.Image.Pixels)
-						{
-							stbi_image_free (CurrentGP->Material.BaseColorTexture.Image.Pixels);
-						}
-
 						MyFree (CurrentGP);
 					}
 				}
@@ -110,7 +119,7 @@ void DestroySplashScreen ()
 
 						if (CurrentPP->Indices)
 						{
-							MyFree ((CurrentAsset->PhysicsPrimitives + i)->Indices);
+							MyFree (CurrentPP->Indices);
 						}
 
 						if (CurrentPP->Positions)
@@ -126,8 +135,20 @@ void DestroySplashScreen ()
 			MyFree (SplashScreenObj->Assets);
 		}
 
+		if (SplashScreenObj->Images)
+		{
+			for (uint32_t i = 0; i < SplashScreenObj->ImageCount; i++)
+			{
+				MyFree (SplashScreenObj->Images + i);
+			}
+		}
+
 		MyFree (SplashScreenObj);
 	}
+}
 
+void DestroySplashScreen ()
+{
 	DestroySplashScreenGraphics ();
+	DestroySplashScreenAssets ();
 }
