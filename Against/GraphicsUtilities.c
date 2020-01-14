@@ -5,7 +5,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int CreateBufferAndBufferMemory (VkDevice GraphicsDevice, VkDeviceSize Size, VkBufferUsageFlags Usage, VkSharingMode SharingMode, uint32_t GraphicsQueueFamilyIndex, VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, VkMemoryPropertyFlags RequiredTypes, VkBuffer* OutBuffer, VkDeviceMemory* OutBufferMemory)
+int CreateBufferAndBufferMemory (VkDevice GraphicsDevice, 
+								VkDeviceSize Size, 
+								VkBufferUsageFlags Usage, 
+								VkSharingMode SharingMode, 
+								uint32_t GraphicsQueueFamilyIndex, 
+								VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, 
+								VkMemoryPropertyFlags RequiredTypes, 
+								VkBuffer* OutBuffer, 
+								VkDeviceMemory* OutBufferMemory)
 {
 	VkBufferCreateInfo BufferCreateInfo = { 0 };
 
@@ -42,7 +50,11 @@ int CreateBufferAndBufferMemory (VkDevice GraphicsDevice, VkDeviceSize Size, VkB
 	return 0;
 }
 
-int CopyDataToBuffer (VkDevice GraphicsDevice, VkDeviceMemory Memory, VkDeviceSize Offset, VkDeviceSize Size, void* DataSource)
+int CopyDataToBuffer (VkDevice GraphicsDevice, 
+						VkDeviceMemory Memory, 
+						VkDeviceSize Offset, 
+						VkDeviceSize Size, 
+						void* DataSource)
 {
 	void* Data;
 	if (vkMapMemory (GraphicsDevice, Memory, Offset, Size, 0, &Data) != VK_SUCCESS)
@@ -88,7 +100,12 @@ int ChangeImageLayout ()
 	return 0;
 }
 
-int CopyBufferToBuffer (VkDevice GraphicsDevice, VkCommandPool CommandPool, VkQueue GraphicsQueue, VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size)
+int CopyBufferToBuffer (VkDevice GraphicsDevice, 
+						VkCommandPool CommandPool, 
+						VkQueue GraphicsQueue, 
+						VkBuffer SrcBuffer, 
+						VkBuffer DstBuffer,		
+						VkDeviceSize Size)
 {
 	VkCommandBufferAllocateInfo CommandBufferAllocateInfo = { 0 };
 
@@ -132,7 +149,11 @@ int CopyBufferToImage ()
 	return 0;
 }
 
-int CreateShader (char* FullFilePath, VkDevice GraphicsDevice, VkShaderStageFlagBits ShaderStage, VkShaderModule* ShaderModule, VkPipelineShaderStageCreateInfo* ShaderStageCreateInfos)
+int CreateShader (char* FullFilePath, 
+					VkDevice GraphicsDevice, 
+					VkShaderStageFlagBits ShaderStage, 
+					VkShaderModule* ShaderModule, 
+					VkPipelineShaderStageCreateInfo* ShaderStageCreateInfos)
 {
 	char* FileContents = NULL;
 	
@@ -188,7 +209,10 @@ int CreateShader (char* FullFilePath, VkDevice GraphicsDevice, VkShaderStageFlag
 	return 0;
 }
 
-int GetMemoryTypeIndex (VkMemoryRequirements MemoryRequirements, VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, VkMemoryPropertyFlags RequiredMemoryTypes, uint32_t* MemoryTypeIndex)
+int GetMemoryTypeIndex (VkMemoryRequirements MemoryRequirements, 
+						VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, 
+						VkMemoryPropertyFlags RequiredMemoryTypes, 
+						uint32_t* MemoryTypeIndex)
 {
 	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
 	{

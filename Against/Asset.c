@@ -234,7 +234,7 @@ void ImportPhysicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Da
 
 					if (CurrentAsset->PhysicsPrimitiveCount == 0)
 					{
-						PhysicsPrimitive* Tmp = (PhysicsPrimitive*)realloc (CurrentAsset->PhysicsPrimitives, (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount) * sizeof (PhysicsPrimitive));
+						PhysicsPrimitive* Tmp = (PhysicsPrimitive*)MyRealloc (CurrentAsset->PhysicsPrimitives, (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount) * sizeof (PhysicsPrimitive));
 
 						if (Tmp != NULL)
 						{

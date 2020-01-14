@@ -42,6 +42,11 @@ void* MyCalloc (size_t Count, size_t Size)
 	return calloc (Count, Size);
 }
 
+void* MyRealloc (void* Ptr, size_t Size)
+{
+	return realloc (Ptr, Size);
+}
+
 void MyFree (void* Ptr)
 {
 	free (Ptr);

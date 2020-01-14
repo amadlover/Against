@@ -6,7 +6,10 @@
 #include "Error.h"
 #include "Utility.h"
 
-LRESULT CALLBACK WindowProc (HWND WindowHandle, UINT Msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WindowProc (HWND WindowHandle, 
+								UINT Msg, 
+								WPARAM wParam, 
+								LPARAM lParam)
 {
 	switch (Msg)
 	{
@@ -73,7 +76,10 @@ LRESULT CALLBACK WindowProc (HWND WindowHandle, UINT Msg, WPARAM wParam, LPARAM 
 	return DefWindowProc (WindowHandle, Msg, wParam, lParam);
 }
 
-int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInstance, _In_ PWSTR CmdLine, _In_ int CmdShow)
+int WINAPI wWinMain (_In_ HINSTANCE HInstance, 
+						_In_opt_ HINSTANCE PreviousHInstance, 
+						_In_ PWSTR CmdLine, 
+						_In_ int CmdShow)
 {
 	WNDCLASS WC = { 0 };
 
@@ -88,7 +94,17 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance, _In_opt_ HINSTANCE PreviousHInsta
 		return 0;
 	}
 
-	HWND WindowHandle = CreateWindow (L"Against", L"Against", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, NULL, NULL, HInstance, NULL);
+	HWND WindowHandle = CreateWindow (L"Against", 
+										L"Against", 
+										WS_OVERLAPPEDWINDOW, 
+										CW_USEDEFAULT, 
+										CW_USEDEFAULT, 
+										1280, 
+										720, 
+										NULL, 
+										NULL, 
+										HInstance, 
+										NULL);
 
 	if (!WindowHandle)
 	{

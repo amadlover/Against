@@ -162,6 +162,18 @@ void LogError (AGAINSTRESULT Result)
 		OutputDebugString (L"Graphics Error: Create Texture_Orig SplashScreenSampler\n");
 		break;
 
+	case AGAINST_ERROR_GLTF_IMPORT:
+		OutputDebugString (L"GLTF Error: Import GLTF File\n");
+		break;
+
+	case AGAINST_ERROR_SYSTEM_ALLOCATE_MEMORY:
+		OutputDebugString (L"System Error: Allocate Memory\n");
+		break;
+
+	case AGAINST_ERROR_SYSTEM_MORE_THAN_64_IMAGES_TO_PROCESS:
+		OutputDebugString (L"System Error: More than 64 Images to Process\n");
+		break;
+
 	default:
 		break;
 	}

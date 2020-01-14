@@ -12,7 +12,13 @@
 #define STB_IMPLEMENTATION
 #include <stb_image.h>
 
-int ImportGLTF (const char* FilePath, Node_Orig** Nodes, uint32_t* NodeCount, Mesh_Orig** Meshes, uint32_t* MeshCount, Material_Orig** Materials, uint32_t* MaterialCount, Texture_Orig** Textures, uint32_t* TextureCount, Image_Orig** Images, uint32_t* ImageCount, Sampler_Orig** Samplers, uint32_t* SamplerCount)
+int ImportGLTF (const char* FilePath, 
+				Node_Orig** Nodes, uint32_t* NodeCount, 
+				Mesh_Orig** Meshes, uint32_t* MeshCount, 
+				Material_Orig** Materials, uint32_t* MaterialCount, 
+				Texture_Orig** Textures, uint32_t* TextureCount, 
+				Image_Orig** Images, uint32_t* ImageCount, 
+				Sampler_Orig** Samplers, uint32_t* SamplerCount)
 {
 	cgltf_options Options = { 0 };
 	cgltf_data* Data = NULL;
@@ -276,17 +282,17 @@ int ImportGLTF (const char* FilePath, Node_Orig** Nodes, uint32_t* NodeCount, Me
 			}
 			else
 			{
-				return AGAINST_ERROR_GLTF_COULD_NOT_IMPORT;
+				return AGAINST_ERROR_GLTF_IMPORT;
 			}
 		}
 		else
 		{
-			return AGAINST_ERROR_GLTF_COULD_NOT_IMPORT;
+			return AGAINST_ERROR_GLTF_IMPORT;
 		}
 	}
 	else
 	{
-		return AGAINST_ERROR_GLTF_COULD_NOT_IMPORT;
+		return AGAINST_ERROR_GLTF_IMPORT;
 	}
 
 	return 0;

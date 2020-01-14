@@ -123,7 +123,14 @@ int CreateVulkanHandlesForMeshes (Asset* Assets, uint32_t AssetCount)
 	VkBuffer StagingBuffer;
 	VkDeviceMemory StagingBufferMemory;
 
-	CreateBufferAndBufferMemory (GraphicsDevice, TotalSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, GraphicsQueueFamilyIndex, PhysicalDeviceMemoryProperties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &StagingBuffer, &StagingBufferMemory);
+	CreateBufferAndBufferMemory (GraphicsDevice, 
+								TotalSize, 
+								VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+								VK_SHARING_MODE_EXCLUSIVE, 
+								GraphicsQueueFamilyIndex, 
+								PhysicalDeviceMemoryProperties, 
+								VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 
+								&StagingBuffer, &StagingBufferMemory);
 
 	VkDeviceSize Offset = 0;
 
@@ -165,7 +172,16 @@ int CreateVulkanHandlesForMeshes (Asset* Assets, uint32_t AssetCount)
 		}
 	}
 
-	CreateBufferAndBufferMemory (GraphicsDevice, TotalSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, GraphicsQueueFamilyIndex, PhysicalDeviceMemoryProperties, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &SplashScreenGraphics->GraphicsVBIBBuffer, &SplashScreenGraphics->GraphicsVBIBMemory);
+	CreateBufferAndBufferMemory (GraphicsDevice,
+								TotalSize, 
+								VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
+								VK_SHARING_MODE_EXCLUSIVE, 
+								GraphicsQueueFamilyIndex, 
+								PhysicalDeviceMemoryProperties, 
+								VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+								&SplashScreenGraphics->GraphicsVBIBBuffer, 
+								&SplashScreenGraphics->GraphicsVBIBMemory);
+
 	CopyBufferToBuffer (GraphicsDevice, SplashScreenGraphics->CommandPool, GraphicsQueue, StagingBuffer, SplashScreenGraphics->GraphicsVBIBBuffer, TotalSize);
 
 	DestroyBufferAndBufferMemory (GraphicsDevice, StagingBuffer, StagingBufferMemory);
@@ -177,10 +193,59 @@ int CreateVulkanHandlesForImages (Image* Images, uint32_t ImageCount)
 {
 	OutputDebugString (L"CreateVulkanHandlesForImages\n");
 
+	if (ImageCount > 64)
+	{
+		return AGAINST_ERROR_SYSTEM_MORE_THAN_64_IMAGES_TO_PROCESS;
+	}
+
+	VkDeviceSize TotalSize = 0;
+
+	for (uint32_t i = 0; i < ImageCount; i++)
+	{
+		TotalSize += (Images + i)->Size;
+	}
+
+	VkBuffer StagingBuffer;
+	VkDeviceMemory StagingBufferMemory;
+
+	CreateBufferAndBufferMemory (GraphicsDevice,
+		TotalSize,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_SHARING_MODE_EXCLUSIVE,
+		GraphicsQueueFamilyIndex,
+		PhysicalDeviceMemoryProperties,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+		&StagingBuffer, &StagingBufferMemory);
+
 	for (uint32_t i = 0; i < ImageCount; i++)
 	{
 		Image* CurrentImage = Images + i;
+
+		uint32_t* SimilarImageIndices = (uint32_t*)MyMalloc (sizeof (uint32_t));
+		*SimilarImageIndices = i;
+		uint32_t SimilarIndexCount = 1;
+
+		for (uint32_t j = i + 1; j < ImageCount; j++)
+		{
+			Image* ImageToBeCompared = Images + j;
+
+			if (CurrentImage->Width == ImageToBeCompared->Width && CurrentImage->Height == ImageToBeCompared->Height)
+			{
+				++SimilarIndexCount;
+				uint32_t* Tmp = (uint32_t*)MyRealloc (SimilarImageIndices, SimilarIndexCount);
+
+				if (Tmp != NULL)
+				{
+					SimilarImageIndices = Tmp;
+					*(SimilarImageIndices + SimilarIndexCount) = j;
+				}
+			}
+		}
+
+		MyFree (SimilarImageIndices);
 	}
+
+	DestroyBufferAndBufferMemory (GraphicsDevice, StagingBuffer, StagingBufferMemory);
 
 	return 0;
 }

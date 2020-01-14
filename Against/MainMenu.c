@@ -93,7 +93,13 @@ int ImportMainMenuAssets ()
 	char FullFilePath[MAX_PATH];
 	GetFullFilePath (FullFilePath, PartialFilePath);
 
-	int Result = ImportGLTF (FullFilePath, &MainMenuNodes, &MainMenuNodeCount, &MainMenuMeshes, &MainMenuMeshCount, &MainMenuMaterials, &MainMenuMaterialCount, &MainMenuTextures, &MainMenuTextureCount, &MainMenuImages, &MainMenuImageCount, &MainMenuSamplers, &MainMenuSamplerCount);
+	int Result = ImportGLTF (FullFilePath, 
+							&MainMenuNodes, &MainMenuNodeCount, 
+							&MainMenuMeshes, &MainMenuMeshCount, 
+							&MainMenuMaterials, &MainMenuMaterialCount, 
+							&MainMenuTextures, &MainMenuTextureCount, 
+							&MainMenuImages, &MainMenuImageCount, 
+							&MainMenuSamplers, &MainMenuSamplerCount);
 
 	if (Result != 0)
 	{
