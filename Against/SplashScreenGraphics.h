@@ -9,7 +9,7 @@ typedef struct
 	VkCommandPool CommandPool;
 
 	VkBuffer GraphicsVBIBBuffer;
-	VkDeviceMemory GraphicsVBIBMemory;
+	VkDeviceMemory GraphicsVBIBBufferMemory;
 
 	VkDeviceMemory GraphicsImageMemory;
 	VkImage* Images;

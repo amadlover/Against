@@ -113,6 +113,11 @@ void DestroySplashScreenAssets ()
 							MyFree (CurrentGP->UV0s);
 						}
 
+						if (CurrentGP->Normals)
+						{
+							MyFree (CurrentGP->Normals);
+						}
+
 						MyFree (CurrentGP);
 					}
 				}
@@ -143,10 +148,7 @@ void DestroySplashScreenAssets ()
 
 		if (SplashScreenObj->Images)
 		{
-			for (uint32_t i = 0; i < SplashScreenObj->ImageCount; i++)
-			{
-				MyFree (SplashScreenObj->Images + i);
-			}
+			MyFree (SplashScreenObj->Images);
 		}
 
 		MyFree (SplashScreenObj);
