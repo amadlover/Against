@@ -311,3 +311,66 @@ int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, Im
 
 	return 0;
 }
+
+void DestroyAssets (Asset* Assets, uint32_t AssetCount)
+{
+	for (uint32_t a = 0; a < AssetCount; a++)
+	{
+		for (uint32_t a = 0; a < AssetCount; a++)
+		{
+			Asset* CurrentAsset = Assets + a;
+
+			if (CurrentAsset->GraphicsPrimitives)
+			{
+				for (uint32_t i = 0; i < CurrentAsset->GraphicsPrimitiveCount; i++)
+				{
+					GraphicsPrimitive* CurrentGP = CurrentAsset->GraphicsPrimitives + i;
+
+					if (CurrentGP->Indices)
+					{
+						MyFree (CurrentGP->Indices);
+					}
+
+					if (CurrentGP->Positions)
+					{
+						MyFree (CurrentGP->Positions);
+					}
+
+					if (CurrentGP->UV0s)
+					{
+						MyFree (CurrentGP->UV0s);
+					}
+
+					if (CurrentGP->Normals)
+					{
+						MyFree (CurrentGP->Normals);
+					}
+
+					MyFree (CurrentGP);
+				}
+			}
+
+			if (CurrentAsset->PhysicsPrimitives)
+			{
+				for (uint32_t i = 0; i < CurrentAsset->PhysicsPrimitiveCount; i++)
+				{
+					PhysicsPrimitive* CurrentPP = CurrentAsset->PhysicsPrimitives + i;
+
+					if (CurrentPP->Indices)
+					{
+						MyFree (CurrentPP->Indices);
+					}
+
+					if (CurrentPP->Positions)
+					{
+						MyFree (CurrentPP->Positions);
+					}
+
+					MyFree (CurrentPP);
+				}
+			}
+		}
+	}
+
+	MyFree (Assets);
+}

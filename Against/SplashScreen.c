@@ -33,27 +33,35 @@ int InitSplashScreen ()
 	char FilePath[MAX_PATH];
 	GetFullFilePath (FilePath, "\\UIElements\\SplashScreen\\SplashScreen.gltf");
 
-	int Result = ImportImages (FilePath, &SplashScreenObj->Images, &SplashScreenObj->ImageCount);
+	int Result = ImportImages (
+		FilePath, 
+		&SplashScreenObj->Images, 
+		&SplashScreenObj->ImageCount
+	);
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = ImportAssets (FilePath, 
-							&SplashScreenObj->Assets, 
-							&SplashScreenObj->AssetCount, 
-							SplashScreenObj->Images);
+	Result = ImportAssets (
+		FilePath, 
+		&SplashScreenObj->Assets, 
+		&SplashScreenObj->AssetCount, 
+		SplashScreenObj->Images
+	);
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = InitSplashScreenGraphics (SplashScreenObj->Assets, 
-										SplashScreenObj->AssetCount, 
-										SplashScreenObj->Images, 
-										SplashScreenObj->ImageCount);
+	Result = InitSplashScreenGraphics (
+		SplashScreenObj->Assets, 
+		SplashScreenObj->AssetCount, 
+		SplashScreenObj->Images, 
+		SplashScreenObj->ImageCount
+	);
 
 	if (Result != 0)
 	{

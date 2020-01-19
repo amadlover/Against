@@ -164,3 +164,4 @@ typedef struct
 } Asset;
 
 int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, Image* Images);
+void DestroyAssets (Asset* Assets, uint32_t AssetCount);

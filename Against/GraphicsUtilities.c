@@ -32,7 +32,8 @@ int AllocateBindBufferMemory (VkDevice GraphicsDevice,
 							VkBuffer* Buffers, 
 							uint32_t BufferCount,
 							VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, 
-							VkMemoryPropertyFlags RequiredTypes, VkDeviceMemory* OutBufferMemory)
+							VkMemoryPropertyFlags RequiredTypes, 
+							VkDeviceMemory* OutBufferMemory)
 {
 	VkMemoryAllocateInfo MemoryAllocateInfo = { 0 };
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -86,7 +87,16 @@ int MapDataToBuffer (VkDevice GraphicsDevice,
 	return 0;
 }
 
-int CreateImage (VkDevice GraphicsDevice, uint32_t GraphicsQueueFamilyIndex, VkExtent3D Extent, uint32_t ArrayLayers, VkFormat Format, VkImageLayout InitialLayout, VkSharingMode SharingMode, VkImage* OutImage)
+int CreateImage (
+	VkDevice GraphicsDevice, 
+	uint32_t GraphicsQueueFamilyIndex, 
+	VkExtent3D Extent, 
+	uint32_t ArrayLayers, 
+	VkFormat Format, 
+	VkImageLayout InitialLayout, 
+	VkSharingMode SharingMode, 
+	VkImage* OutImage
+)
 {
 	VkImageCreateInfo ImageCreateInfo = { 0 };
 
