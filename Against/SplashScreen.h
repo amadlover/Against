@@ -14,7 +14,7 @@ typedef struct
 	Asset* Assets;
 	uint32_t AssetCount;
 
-	Actor* Actors;
+	actor* Actors;
 	uint32_t ActorCount;
 
 	Image* Images;

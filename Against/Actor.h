@@ -3,4 +3,4 @@
 typedef struct
 {
 	int x;
-} Actor;
+} actor;

@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 void GetFullTexturePathFromURI (const char* FilePath, const char* URI, char* OutFullTexturePath);
 void GetFullFilePath (char* OutFilePath, char* PartialFilePath);

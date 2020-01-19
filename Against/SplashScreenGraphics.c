@@ -224,7 +224,7 @@ int CreateVulkanHandlesForImages (Image* Images, uint32_t ImageCount)
 	{
 		Image* CurrentImage = Images + i;
 		uint32_t CheckStartIndex = i + 1;
-		uint32_t* SimilarImageIndices = (uint32_t)MyMalloc (ImageCount * sizeof (uint32_t));
+		uint32_t* SimilarImageIndices = (uint32_t*)MyMalloc (ImageCount * sizeof (uint32_t));
 		SimilarImageIndices[0] = i;
 
 		CheckForSimilarImages (CurrentImage, Images,  ImageCount, CheckStartIndex, SimilarImageIndices);
