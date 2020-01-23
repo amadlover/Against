@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "Actor.h"
+
 void GetFullTexturePathFromURI (const char* FilePath, const char* URI, char* OutFullTexturePath);
 void GetFullFilePath (char* OutFilePath, char* PartialFilePath);
 

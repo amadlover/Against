@@ -28,6 +28,7 @@
     <ClCompile Include="GUI.c" />
     <ClCompile Include="Image.c" />
     <ClCompile Include="ImportAssets.c" />
+    <ClCompile Include="list.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="MainGame.c" />
     <ClCompile Include="MainMenu.c" />
@@ -46,6 +47,7 @@
     <ClCompile Include="Physics.c" />
     <ClCompile Include="SplashScreen.c" />
     <ClCompile Include="SplashScreenGraphics.c" />
+    <ClCompile Include="test.c" />
     <ClCompile Include="Utility.c" />
   </ItemGroup>
   <ItemGroup>
@@ -60,12 +62,14 @@
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="ImportAssets.h" />
+    <ClInclude Include="list.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Maths.hpp" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="SplashScreen.h" />
     <ClInclude Include="SplashScreenGraphics.h" />
+    <ClInclude Include="test.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>
   <ItemGroup>
