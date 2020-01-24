@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 int CreateBuffer (VkDevice graphics_device,
-	VkDeviceSize Size,
+	VkDeviceSize size,
 	VkBufferUsageFlags Usage,
 	VkSharingMode SharingMode,
 	uint32_t graphics_queue_family_index,
@@ -15,7 +15,7 @@ int CreateBuffer (VkDevice graphics_device,
 	VkBufferCreateInfo BufferCreateInfo = { 0 };
 
 	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	BufferCreateInfo.size = Size;
+	BufferCreateInfo.size = size;
 	BufferCreateInfo.queueFamilyIndexCount = 1;
 	BufferCreateInfo.pQueueFamilyIndices = &graphics_queue_family_index;
 	BufferCreateInfo.usage = Usage;
@@ -71,17 +71,17 @@ int AllocateBindBufferMemory (VkDevice graphics_device,
 
 int MapDataToBuffer (VkDevice graphics_device,
 	VkDeviceMemory Memory,
-	VkDeviceSize Offset,
-	VkDeviceSize Size,
+	VkDeviceSize offset,
+	VkDeviceSize size,
 	void* DataSource)
 {
 	void* Data;
-	if (vkMapMemory (graphics_device, Memory, Offset, Size, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (graphics_device, Memory, offset, size, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
 
-	memcpy (Data, DataSource, (size_t)Size);
+	memcpy (Data, DataSource, (size_t)size);
 	vkUnmapMemory (graphics_device, Memory);
 
 	return 0;
@@ -187,7 +187,7 @@ int CopyBufferToBuffer (VkDevice graphics_device,
 	VkQueue graphics_queue,
 	VkBuffer SrcBuffer,
 	VkBuffer DstBuffer,
-	VkDeviceSize Size)
+	VkDeviceSize size)
 {
 	VkCommandBufferAllocateInfo CommandBufferAllocateInfo = { 0 };
 
@@ -213,7 +213,7 @@ int CopyBufferToBuffer (VkDevice graphics_device,
 	}
 
 	VkBufferCopy BufferCopy = { 0 };
-	BufferCopy.size = Size;
+	BufferCopy.size = size;
 
 	vkCmdCopyBuffer (CommandBuffer, SrcBuffer, DstBuffer, 1, &BufferCopy);
 

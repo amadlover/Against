@@ -16,246 +16,189 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-typedef enum
+void import_graphics_primitive_attributes (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_attribute* attribute)
 {
-	GraphicsPrimitiveType,
-	PhysicsPrimitiveType
-} EPrimitiveType;
+	cgltf_accessor* accessor = attribute->data;
+	cgltf_buffer_view* buffer_view = accessor->buffer_view;
 
-void ImportAttribute (PrimitivePtr* PrimPtr, const cgltf_attribute* Attribute, EPrimitiveType PrimType)
-{
-	cgltf_accessor* Accessor = Attribute->data;
-	cgltf_buffer_view* BufferView = Accessor->buffer_view;
-
-	if (Attribute->type == cgltf_attribute_type_position)
+	if (attribute->type == cgltf_attribute_type_position)
 	{
-		char* DataStart = (char*)BufferView->buffer->data;
-		float* Positions = (float*)(DataStart + Accessor->offset + BufferView->offset);
+		uint8_t* positions = (uint8_t*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
 
-		if (PrimType == GraphicsPrimitiveType)
-		{
-			PrimPtr->GraphicsPrimPtr->PositionsSize = BufferView->size;
-			PrimPtr->GraphicsPrimPtr->Positions = (float*)my_malloc (BufferView->size);
-			memcpy (PrimPtr->GraphicsPrimPtr->Positions, Positions, BufferView->size);
-		}
-		else if (PrimType == PhysicsPrimitiveType)
-		{
-			PrimPtr->PhysicsPrimPtr->PositionsSize = BufferView->size;
-			PrimPtr->PhysicsPrimPtr->Positions = (float*)my_malloc (BufferView->size);
-			memcpy (PrimPtr->PhysicsPrimPtr->Positions, Positions, BufferView->size);
-		}
-
+		graphics_primitive->positions_size = buffer_view->size;
+		graphics_primitive->positions = (uint8_t*)my_malloc (buffer_view->size);
+		memcpy (graphics_primitive->positions, positions, buffer_view->size);
 	}
-	else if (Attribute->type == cgltf_attribute_type_texcoord)
+	else if (attribute->type == cgltf_attribute_type_texcoord)
 	{
-		if (strcmp (Attribute->name, "TEXCOORD_0") == 0)
+		if (strcmp (attribute->name, "TEXCOORD_0") == 0)
 		{
-			char* DataStart = (char*)BufferView->buffer->data;
-			float* UVs = (float*)(DataStart + Accessor->offset + BufferView->offset);
+			uint8_t* uv0s = (uint8_t*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
 
-			if (PrimType == GraphicsPrimitiveType)
-			{
-				PrimPtr->GraphicsPrimPtr->UV0sSize = BufferView->size;
-				PrimPtr->GraphicsPrimPtr->UV0s = (float*)my_malloc (BufferView->size);
-				memcpy (PrimPtr->GraphicsPrimPtr->UV0s, UVs, BufferView->size);
-			}
+			graphics_primitive->uv0s_size = buffer_view->size;
+			graphics_primitive->uv0s = (uint8_t*)my_malloc (buffer_view->size);
+			memcpy (graphics_primitive->uv0s, uv0s, buffer_view->size);
 		}
+		else if (strcmp (attribute->name, "TEXCOORD_1") == 0)
+		{
+			uint8_t* uv1s = (uint8_t*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+
+			graphics_primitive->uv1s_size = buffer_view->size;
+			graphics_primitive->uv1s = (uint8_t*)my_malloc (buffer_view->size);
+			memcpy (graphics_primitive->uv1s, uv1s, buffer_view->size);
+		}
+	}
+	else if (attribute->type == cgltf_attribute_type_normal)
+	{
+		uint8_t* normals = (uint8_t*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+
+		graphics_primitive->normals_size = buffer_view->size;
+		graphics_primitive->normals = (uint8_t*)my_malloc (buffer_view->size);
+		memcpy (graphics_primitive->normals, normals, buffer_view->size);
 	}
 }
 
-void ImportMaterials (const char* FilePath, PrimitivePtr* PrimPtr, const cgltf_material* Material, cgltf_data* Data, image* Images)
+void import_graphics_primitive_materials (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_material* material, cgltf_data* Data, image* Images)
 {
-	strcpy (PrimPtr->GraphicsPrimPtr->Material.Name, Material->name);
+	strcpy (graphics_primitive->material.name, material->name);
 
-	if (Material->has_pbr_metallic_roughness)
+	if (material->has_pbr_metallic_roughness)
 	{
-		if (Material->pbr_metallic_roughness.base_color_texture.texture->name != NULL)
+		if (material->pbr_metallic_roughness.base_color_texture.texture->name != NULL)
 		{
-			strcpy (PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Name, Material->pbr_metallic_roughness.base_color_texture.texture->name);
+			strcpy (graphics_primitive->material.base_color_texture.name, material->pbr_metallic_roughness.base_color_texture.texture->name);
 		}
 
 		for (uint32_t i = 0; i < Data->images_count; i++)
 		{
 			cgltf_image* I = Data->images + i;
 
-			if (Material->pbr_metallic_roughness.base_color_texture.texture->image == I)
+			if (material->pbr_metallic_roughness.base_color_texture.texture->image == I)
 			{
-				PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.image = Images + i;
+				graphics_primitive->material.base_color_texture.image = Images + i;
 			}
 		}
 	}
 }
 
-void ImportIndices (PrimitivePtr* PrimPtr, const cgltf_primitive* Primitive, EPrimitiveType PrimType)
+void import_graphics_primitive_indices (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_primitive* primitive)
 {
-	cgltf_accessor* Accessor = Primitive->indices;
+	cgltf_accessor* accessor = primitive->indices;
 
-	if (PrimType == GraphicsPrimitiveType)
-	{
-		PrimPtr->GraphicsPrimPtr->IndexCount = Accessor->count;
-	}
-	else if (PrimType == PhysicsPrimitiveType)
-	{
-		PrimPtr->PhysicsPrimPtr->IndexCount = Accessor->count;
-	}
 
-	cgltf_buffer_view* BufferView = Accessor->buffer_view;
+	cgltf_buffer_view* buffer_view = accessor->buffer_view;
 
-	char* DataStart = (char*)BufferView->buffer->data;
-
-	switch (Accessor->component_type)
+	char* indices = (char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+	graphics_primitive->index_count = (uint32_t)accessor->count;
+	graphics_primitive->indices_size = (VkDeviceSize)buffer_view->size;
+	graphics_primitive->indices = (uint8_t*)my_malloc (buffer_view->size);
+	memcpy (graphics_primitive->indices, indices, buffer_view->size);
+	
+	switch (accessor->component_type)
 	{
 	case cgltf_component_type_r_16u:
-		if (PrimType == GraphicsPrimitiveType)
-		{
-			PrimPtr->GraphicsPrimPtr->IndicesSize = (VkDeviceSize)BufferView->size * 2;
-			PrimPtr->GraphicsPrimPtr->Indices = (uint32_t*)my_malloc (2 * BufferView->size);
-		}
-		else if (PrimType == PhysicsPrimitiveType)
-		{
-			PrimPtr->PhysicsPrimPtr->IndicesSize = (VkDeviceSize)BufferView->size * 2;
-			PrimPtr->PhysicsPrimPtr->Indices = (uint32_t*)my_malloc (2 * BufferView->size);
-		}
-
-		uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
-
-		for (uint32_t i = 0; i < Accessor->count; i++)
-		{
-			if (PrimType == GraphicsPrimitiveType)
-			{
-				PrimPtr->GraphicsPrimPtr->Indices[i] = I16[i];
-			}
-			else if (PrimType == PhysicsPrimitiveType)
-			{
-				PrimPtr->PhysicsPrimPtr->Indices[i] = I16[i];
-			}
-		}
-
+		graphics_primitive->index_type = VK_INDEX_TYPE_UINT16;
 		break;
 
 	case cgltf_component_type_r_32u:
-		if (PrimType == GraphicsPrimitiveType)
-		{
-			PrimPtr->GraphicsPrimPtr->IndicesSize = BufferView->size;
-			PrimPtr->GraphicsPrimPtr->Indices = (uint32_t*)my_malloc (BufferView->size);
-		}
-		else if (PrimType == PhysicsPrimitiveType)
-		{
-			PrimPtr->PhysicsPrimPtr->IndicesSize = BufferView->size;
-			PrimPtr->PhysicsPrimPtr->Indices = (uint32_t*)my_malloc (BufferView->size);
-		}
-
-		uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
-
-		if (PrimType == GraphicsPrimitiveType)
-		{
-			memcpy (PrimPtr->GraphicsPrimPtr->Indices, I32, BufferView->size);
-		}
-		else if (PrimType == PhysicsPrimitiveType)
-		{
-			memcpy (PrimPtr->PhysicsPrimPtr->Indices, I32, BufferView->size);
-		}
-
+		graphics_primitive->index_type = VK_INDEX_TYPE_UINT32;
 		break;
 
 	default:
 		break;
 	}
 }
-
-void ImportGraphicsPrimitives (const char* FilePath, Asset* Assets, cgltf_data* Data, image* Images)
+/*
+void ImportGraphicsPrimitives (const char* file_path, asset_mesh* meshes, cgltf_data* data, image* images)
 {
 	uint32_t CurrentMeshAssetCount = 0;
 
-	for (uint32_t n = 0; n < Data->nodes_count; n++)
+	for (uint32_t n = 0; n < data->nodes_count; n++)
 	{
-		cgltf_node* Node_Orig = Data->nodes + n;
+		cgltf_node* node = data->nodes + n;
 
-		if (Node_Orig->mesh == NULL) continue;
+		if (node->mesh == NULL) continue;
 
-		if (strstr (Node_Orig->name, "CS_") == NULL)
+		if (strstr (node->name, "CS_") == NULL)
 		{
-			Asset TmpAsset = { 0 };
-			strcpy (TmpAsset.Name, Node_Orig->name);
+			asset_mesh TmpAsset = { 0 };
+			strcpy (TmpAsset.name, node->name);
 
-			TmpAsset.GraphicsPrimitiveCount = Node_Orig->mesh->primitives_count;
-			TmpAsset.GraphicsPrimitives = (GraphicsPrimitive*)my_calloc (Node_Orig->mesh->primitives_count, sizeof (GraphicsPrimitive));
+			TmpAsset.graphics_primitive_count = node->mesh->primitives_count;
+			TmpAsset.asset_mesh_graphics_primitive = (asset_mesh_graphics_primitive*)my_calloc (node->mesh->primitives_count, sizeof (asset_mesh_graphics_primitive));
 
-			for (uint32_t p = 0; p < Node_Orig->mesh->primitives_count; p++)
+			for (uint32_t p = 0; p < node->mesh->primitives_count; p++)
 			{
-				cgltf_primitive* Primitive = Node_Orig->mesh->primitives + p;
-				GraphicsPrimitive* CurrentGraphicsPrimitive = TmpAsset.GraphicsPrimitives + p;
-
-				PrimitivePtr PrimPtr = { 0 };
-				PrimPtr.GraphicsPrimPtr = CurrentGraphicsPrimitive;
+				cgltf_primitive* Primitive = node->mesh->primitives + p;
+				asset_mesh_graphics_primitive* CurrentGraphicsPrimitive = TmpAsset.asset_mesh_graphics_primitive + p;
 
 				for (uint32_t a = 0; a < Primitive->attributes_count; a++)
 				{
 					cgltf_attribute* Attribute = Primitive->attributes + a;
-					ImportAttribute (&PrimPtr, Attribute, GraphicsPrimitiveType);
+					ImportAttribute (&PrimPtr, Attribute);
 				}
 
-				ImportMaterials (FilePath, &PrimPtr, Primitive->material, Data, Images);
-				ImportIndices (&PrimPtr, Primitive, GraphicsPrimitiveType);
+				ImportMaterials (file_path, &PrimPtr, Primitive->material, data, images);
+				import_graphics_primitive_indices (&PrimPtr, Primitive);
 			}
 
-			memcpy ((Assets + CurrentMeshAssetCount), &TmpAsset, sizeof (Asset));
+			memcpy ((meshes + CurrentMeshAssetCount), &TmpAsset, sizeof (asset_mesh));
 
 			++CurrentMeshAssetCount;
 		}
 	}
 }
 
-void ImportPhysicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Data)
+void ImportPhysicsPrimitives (asset_mesh* meshes, uint32_t mesh_count, cgltf_data* data)
 {
 	uint32_t CurrentMeshAssetCount = 0;
 
-	for (uint32_t n = 0; n < Data->nodes_count; n++)
+	for (uint32_t n = 0; n < data->nodes_count; n++)
 	{
-		cgltf_node* Node_Orig = Data->nodes + n;
+		cgltf_node* node = data->nodes + n;
 
-		if (Node_Orig->mesh == NULL) continue;
+		if (node->mesh == NULL) continue;
 
-		if (strstr (Node_Orig->name, "CS_") != NULL)
+		if (strstr (node->name, "CS_") != NULL)
 		{
-			char* Name = Node_Orig->name;
+			char* name = node->name;
 
-			char* First = strtok (Name, "_");
+			char* First = strtok (name, "_");
 			char* Second = strtok (NULL, "_");
 			char* Third = strtok (NULL, "_");
 
-			for (uint32_t a = 0; a < AssetCount; a++)
+			for (uint32_t a = 0; a < mesh_count; a++)
 			{
-				Asset* CurrentAsset = Assets + a;
+				asset_mesh* CurrentAsset = meshes + a;
 
-				if (strcmp (CurrentAsset->Name, Second) == 0)
+				if (strcmp (CurrentAsset->name, Second) == 0)
 				{
-					uint32_t CurrentAssetPhysicsPrimitiveCount = CurrentAsset->PhysicsPrimitiveCount;
-					cgltf_mesh* Mesh_Orig = Node_Orig->mesh;
+					uint32_t CurrentAssetPhysicsPrimitiveCount = CurrentAsset->physics_primitive_count;
+					cgltf_mesh* mesh = node->mesh;
 
-					uint32_t AdditionalPrimitiveCount = Mesh_Orig->primitives_count;
+					uint32_t AdditionalPrimitiveCount = mesh->primitives_count;
 
-					if (CurrentAsset->PhysicsPrimitiveCount == 0)
+					if (CurrentAsset->physics_primitive_count == 0)
 					{
-						PhysicsPrimitive* Tmp = (PhysicsPrimitive*)my_realloc (CurrentAsset->PhysicsPrimitives, (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount) * sizeof (PhysicsPrimitive));
+						asset_mesh_physics_primitive* Tmp = (asset_mesh_physics_primitive*)my_realloc (CurrentAsset->asset_mesh_physics_primitive, (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount) * sizeof (asset_mesh_physics_primitive));
 
 						if (Tmp != NULL)
 						{
-							CurrentAsset->PhysicsPrimitives = Tmp;
+							CurrentAsset->asset_mesh_physics_primitive = Tmp;
 						}
 					}
 					else
 					{
-						CurrentAsset->PhysicsPrimitives = (PhysicsPrimitive*)my_calloc (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount, sizeof (PhysicsPrimitive));
+						CurrentAsset->asset_mesh_physics_primitive = (asset_mesh_physics_primitive*)my_calloc (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount, sizeof (asset_mesh_physics_primitive));
 					}
 
-					CurrentAsset->PhysicsPrimitiveCount = CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount;
+					CurrentAsset->physics_primitive_count = CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount;
 
-					for (uint32_t p = 0; p < Mesh_Orig->primitives_count; p++)
+					for (uint32_t p = 0; p < mesh->primitives_count; p++)
 					{
-						PhysicsPrimitive* CurrentPhysicsPrimitive = (CurrentAsset->PhysicsPrimitives + (CurrentAssetPhysicsPrimitiveCount + p));
+						asset_mesh_physics_primitive* CurrentPhysicsPrimitive = (CurrentAsset->asset_mesh_physics_primitive + (CurrentAssetPhysicsPrimitiveCount + p));
 
-						cgltf_primitive* Primitive = Mesh_Orig->primitives + p;
+						cgltf_primitive* Primitive = mesh->primitives + p;
 
 						PrimitivePtr PrimPtr = { 0 };
 						PrimPtr.PhysicsPrimPtr = CurrentPhysicsPrimitive;
@@ -266,128 +209,140 @@ void ImportPhysicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Da
 							ImportAttribute (&PrimPtr, Attribute, PhysicsPrimitiveType);
 						}
 
-						ImportIndices (&PrimPtr, Primitive, PhysicsPrimitiveType);
+						import_graphics_primitive_indices (&PrimPtr, Primitive, PhysicsPrimitiveType);
 					}
 				}
 			}
 		}
 	}
 }
+*/
 
-int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, image* Images)
+int import_mesh_graphics_primitives (asset_mesh* meshes, uint32_t mesh_count, cgltf_data* data)
 {
-	cgltf_options Options = { 0 };
-	cgltf_data* Data = NULL;
 
-	cgltf_result Result = cgltf_parse_file (&Options, FilePath, &Data);
+	return 0;
+}
+
+int import_mesh_physics_primitives (asset_mesh* meshes, uint32_t mesh_count, cgltf_data* data)
+{
+	return 0;
+}
+
+int import_asset_meshes (const char* file_path, asset_mesh** meshes, uint32_t* mesh_count, image* images)
+{
+	cgltf_options options = { 0 };
+	cgltf_data* data = NULL;
+
+	cgltf_result Result = cgltf_parse_file (&options, file_path, &data);
 
 	if (Result == cgltf_result_success)
 	{
-		Result = cgltf_load_buffers (&Options, Data, FilePath);
+		Result = cgltf_load_buffers (&options, data, file_path);
 
 		if (Result == cgltf_result_success)
 		{
-			Result = cgltf_validate (Data);
+			Result = cgltf_validate (data);
 
 			if (Result == cgltf_result_success)
 			{
-				for (uint32_t n = 0; n < Data->nodes_count; n++)
+				for (uint32_t n = 0; n < data->nodes_count; n++)
 				{
-					cgltf_node* Node_Orig = Data->nodes + n;
+					cgltf_node* Node_Orig = data->nodes + n;
 
 					if (Node_Orig->mesh == NULL) continue;
 
 					if (strstr (Node_Orig->name, "CS_") != NULL) continue;
 
-					++(*AssetCount);
+					++(*mesh_count);
 				}
 
-				*Assets = (Asset*)my_calloc ((size_t)(*AssetCount), sizeof (Asset));
+				*meshes = (asset_mesh*)my_calloc ((size_t)(*mesh_count), sizeof (asset_mesh));
 
-				ImportGraphicsPrimitives (FilePath, *Assets, Data, Images);
-				ImportPhysicsPrimitives (*Assets, *AssetCount, Data);
+				import_mesh_graphics_primitives (*meshes, *mesh_count, data);
+				import_mesh_physics_primitives (*meshes, *mesh_count, data);
 			}
 		}
 	}
 
-	cgltf_free (Data);
+	cgltf_free (data);
 
 	return 0;
 }
 
-void DestroyAssets (Asset* Assets, uint32_t AssetCount)
+void destroy_asset_meshes (asset_mesh* assets, uint32_t asset_count)
 {
-	for (uint32_t a = 0; a < AssetCount; a++)
+	for (uint32_t a = 0; a < asset_count; a++)
 	{
-		for (uint32_t a = 0; a < AssetCount; a++)
+		for (uint32_t a = 0; a < asset_count; a++)
 		{
-			Asset* CurrentAsset = Assets + a;
+			asset_mesh* current_asset = assets + a;
 
-			if (CurrentAsset->GraphicsPrimitives)
+			if (current_asset->asset_mesh_graphics_primitive)
 			{
-				for (uint32_t i = 0; i < CurrentAsset->GraphicsPrimitiveCount; i++)
+				for (uint32_t i = 0; i < current_asset->graphics_primitive_count; i++)
 				{
-					GraphicsPrimitive* CurrentGP = CurrentAsset->GraphicsPrimitives + i;
+					asset_mesh_graphics_primitive* current_gp = current_asset->asset_mesh_graphics_primitive + i;
 
-					if (CurrentGP->Indices)
+					if (current_gp->indices)
 					{
-						my_free (CurrentGP->Indices);
+						my_free (current_gp->indices);
 					}
 
-					if (CurrentGP->Positions)
+					if (current_gp->positions)
 					{
-						my_free (CurrentGP->Positions);
+						my_free (current_gp->positions);
 					}
 
-					if (CurrentGP->UV0s)
+					if (current_gp->uv0s)
 					{
-						my_free (CurrentGP->UV0s);
+						my_free (current_gp->uv0s);
 					}
 
-					if (CurrentGP->Normals)
+					if (current_gp->normals)
 					{
-						my_free (CurrentGP->Normals);
+						my_free (current_gp->normals);
 					}
 
-					my_free (CurrentGP);
+					my_free (current_gp);
 				}
 			}
 
-			if (CurrentAsset->PhysicsPrimitives)
+			if (current_asset->asset_mesh_physics_primitive)
 			{
-				for (uint32_t i = 0; i < CurrentAsset->PhysicsPrimitiveCount; i++)
+				for (uint32_t i = 0; i < current_asset->physics_primitive_count; i++)
 				{
-					PhysicsPrimitive* CurrentPP = CurrentAsset->PhysicsPrimitives + i;
+					asset_mesh_physics_primitive* current_pp = current_asset->asset_mesh_physics_primitive + i;
 
-					if (CurrentPP->Indices)
+					if (current_pp->indices)
 					{
-						my_free (CurrentPP->Indices);
+						my_free (current_pp->indices);
 					}
 
-					if (CurrentPP->Positions)
+					if (current_pp->positions)
 					{
-						my_free (CurrentPP->Positions);
+						my_free (current_pp->positions);
 					}
 
-					my_free (CurrentPP);
+					my_free (current_pp);
 				}
 			}
 		}
 	}
 
-	my_free (Assets);
+	my_free (assets);
 }
 
 int import_images (const char* file_path, image** images, uint32_t* image_count)
 {
-	cgltf_options pptions = { 0 };
+	cgltf_options options = { 0 };
 	cgltf_data* data = NULL;
 
-	cgltf_result result = cgltf_parse_file (&pptions, file_path, &data);
+	cgltf_result result = cgltf_parse_file (&options, file_path, &data);
 
 	if (result == cgltf_result_success)
 	{
-		result = cgltf_load_buffers (&pptions, data, file_path);
+		result = cgltf_load_buffers (&options, data, file_path);
 
 		if (result == cgltf_result_success)
 		{
@@ -395,7 +350,7 @@ int import_images (const char* file_path, image** images, uint32_t* image_count)
 
 			if (result == cgltf_result_success)
 			{
-				*image_count = data->images_count;
+				*image_count = (uint32_t)data->images_count;
 				*images = (image*)my_calloc (data->images_count, sizeof (image));
 
 				for (uint32_t i = 0; i < data->images_count; i++)
@@ -403,13 +358,13 @@ int import_images (const char* file_path, image** images, uint32_t* image_count)
 					cgltf_image* I = data->images + i;
 					image* current_image = (*images) + i;
 
-					strcpy (current_image->Name, I->name);
+					strcpy (current_image->name, I->name);
 
 					char full_texture_path[256];
 
 					get_full_texture_path_from_uri (file_path, I->uri, full_texture_path);
-					current_image->Pixels = stbi_load (full_texture_path, (int*)&current_image->Width, (int*)&current_image->Height, (int*)&current_image->BPP, 4);
-					current_image->Size = current_image->Width * current_image->Height * current_image->BPP;
+					current_image->pixels = stbi_load (full_texture_path, (int*)&current_image->width, (int*)&current_image->height, (int*)&current_image->bpp, 4);
+					current_image->size = current_image->width * current_image->height * current_image->bpp;
 				}
 			}
 		}

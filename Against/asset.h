@@ -7,88 +7,85 @@
 
 typedef struct
 {
-	char Name[256];
+	char name[256];
 
-	VkDeviceSize Width;
-	VkDeviceSize Height;
-	VkDeviceSize BPP;
+	VkDeviceSize width;
+	VkDeviceSize height;
+	VkDeviceSize bpp;
 
-	uint8_t* Pixels;
+	uint8_t* pixels;
 
-	VkDeviceSize Size;
-	VkDeviceSize Offset;
+	VkDeviceSize size;
+	VkDeviceSize offset;
 
 	VkImage* image;
-	uint32_t LayerIndex;
-	VkImageView* ImageView;
+	uint32_t layer_index;
+	VkImageView* image_view;
 } image;
 
 typedef struct
 {
-	char Name[256];
-
+	char name[256];
 	image* image;
-} Texture;
+} asset_mesh_texture;
 
 typedef struct
 {
-	char Name[256];
-
-	Texture BaseColorTexture;
-} Material;
-
-typedef struct
-{
-	float* Positions;
-	float* UV0s;
-	float* Normals;
-
-	VkDeviceSize PositionsSize;
-	VkDeviceSize UV0sSize;
-	VkDeviceSize NormalsSize;
-	VkDeviceSize IndicesSize;
-
-	uint32_t IndexCount;
-	uint32_t* Indices;
-
-	VkDeviceSize PositionsOffset;
-	VkDeviceSize UV0sOffset;
-	VkDeviceSize NormalsOffset;
-	VkDeviceSize IndicesOffset;
-
-	Material Material;
-} GraphicsPrimitive;
+	char name[256];
+	asset_mesh_texture base_color_texture;
+} asset_mesh_material;
 
 typedef struct
 {
-	float* Positions;
+	uint8_t* positions;
+	uint8_t* uv0s;
+	uint8_t* uv1s;
+	uint8_t* normals;
+	uint8_t* indices;
 
-	VkDeviceSize PositionsSize;
-	VkDeviceSize IndicesSize;
+	VkDeviceSize positions_size;
+	VkDeviceSize uv0s_size;
+	VkDeviceSize uv1s_size;
+	VkDeviceSize normals_size;
+	VkDeviceSize indices_size;
 
-	uint32_t IndexCount;
-	uint32_t* Indices;
-} PhysicsPrimitive;
+	uint32_t index_count;
+	VkIndexType index_type;
+
+	VkDeviceSize positions_offset;
+	VkDeviceSize uv0s_offset;
+	VkDeviceSize uv1s_offset;
+	VkDeviceSize normals_offset;
+	VkDeviceSize indices_offset;
+
+	asset_mesh_material material;
+} asset_mesh_graphics_primitive;
 
 typedef struct
 {
-	GraphicsPrimitive* GraphicsPrimPtr;
-	PhysicsPrimitive* PhysicsPrimPtr;
-} PrimitivePtr;
+	uint8_t* positions;
+	uint8_t* indices;
+
+	uint32_t index_count;
+	VkIndexType index_type;
+
+	VkDeviceSize positions_size;
+	VkDeviceSize indices_size;
+} asset_mesh_physics_primitive;
 
 typedef struct
 {
-	char Name[256];
+	char name[256];
 	uint32_t ID;
 
-	PhysicsPrimitive* PhysicsPrimitives;
-	GraphicsPrimitive* GraphicsPrimitives;
+	asset_mesh_physics_primitive* asset_mesh_physics_primitive;
+	asset_mesh_graphics_primitive* asset_mesh_graphics_primitive;
 
-	uint32_t PhysicsPrimitiveCount;
-	uint32_t GraphicsPrimitiveCount;
-} Asset;
+	uint32_t physics_primitive_count;
+	uint32_t graphics_primitive_count;
+} asset_mesh;
 
-int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, image* Images);
-void DestroyAssets (Asset* Assets, uint32_t AssetCount);
+int import_asset_meshes (const char* file_path, asset_mesh** assets, uint32_t* asset_count, image* images);
+void destroy_asset_meshes (asset_mesh* meshes, uint32_t mesh_count);
 
-int import_images (const char* FilePath, image** Images, uint32_t* ImageCount);
+int import_images (const char* file_path, image** images, uint32_t* image_count);
