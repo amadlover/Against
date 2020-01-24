@@ -7,7 +7,7 @@ int AllocateBindBufferMemory (VkDevice GraphicsDevice, VkBuffer* Buffers, uint32
 int MapDataToBuffer (VkDevice GraphicsDevice, VkDeviceMemory Memory, VkDeviceSize Offset, VkDeviceSize Size, void* DataSource);
 
 int CreateImage (VkDevice GraphicsDevice, uint32_t GraphicsQueueFamilyIndex, VkExtent3D Extent, uint32_t ArrayLayers, VkFormat Format, VkImageLayout InitialLayout, VkSharingMode SharingMode, VkImage* OutImage);
-int AllocateBindImageMemory (VkDevice GraphicsDevice, VkImage* Images, uint32_t ImageCount, VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, VkMemoryPropertyFlags RequiredTypes, VkDeviceMemory *OutMemory);
+int AllocateBindImageMemory (VkDevice GraphicsDevice, VkImage* Images, uint32_t ImageCount, VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, VkMemoryPropertyFlags RequiredTypes, VkDeviceMemory* OutMemory);
 
 int ChangeImageLayout ();
 

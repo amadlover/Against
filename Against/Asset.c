@@ -177,12 +177,12 @@ void ImportGraphicsPrimitives (const char* FilePath, Asset* Assets, cgltf_data* 
 
 			TmpAsset.GraphicsPrimitiveCount = Node_Orig->mesh->primitives_count;
 			TmpAsset.GraphicsPrimitives = (GraphicsPrimitive*)MyCalloc (Node_Orig->mesh->primitives_count, sizeof (GraphicsPrimitive));
-			
+
 			for (uint32_t p = 0; p < Node_Orig->mesh->primitives_count; p++)
 			{
 				cgltf_primitive* Primitive = Node_Orig->mesh->primitives + p;
 				GraphicsPrimitive* CurrentGraphicsPrimitive = TmpAsset.GraphicsPrimitives + p;
-				
+
 				PrimitivePtr PrimPtr = { 0 };
 				PrimPtr.GraphicsPrimPtr = CurrentGraphicsPrimitive;
 
@@ -300,7 +300,7 @@ int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, Im
 				}
 
 				*Assets = (Asset*)MyCalloc ((size_t)(*AssetCount), sizeof (Asset));
-				
+
 				ImportGraphicsPrimitives (FilePath, *Assets, Data, Images);
 				ImportPhysicsPrimitives (*Assets, *AssetCount, Data);
 			}

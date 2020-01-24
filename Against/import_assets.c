@@ -12,13 +12,13 @@
 #define STB_IMPLEMENTATION
 #include <stb_image.h>
 
-int ImportGLTF (const char* FilePath, 
-				Node_Orig** Nodes, uint32_t* NodeCount, 
-				Mesh_Orig** Meshes, uint32_t* MeshCount, 
-				Material_Orig** Materials, uint32_t* MaterialCount, 
-				Texture_Orig** Textures, uint32_t* TextureCount, 
-				Image_Orig** Images, uint32_t* ImageCount, 
-				Sampler_Orig** Samplers, uint32_t* SamplerCount)
+int ImportGLTF (const char* FilePath,
+	Node_Orig** Nodes, uint32_t* NodeCount,
+	Mesh_Orig** Meshes, uint32_t* MeshCount,
+	Material_Orig** Materials, uint32_t* MaterialCount,
+	Texture_Orig** Textures, uint32_t* TextureCount,
+	Image_Orig** Images, uint32_t* ImageCount,
+	Sampler_Orig** Samplers, uint32_t* SamplerCount)
 {
 	cgltf_options Options = { 0 };
 	cgltf_data* Data = NULL;
@@ -230,7 +230,7 @@ int ImportGLTF (const char* FilePath,
 
 				*NodeCount = Data->nodes_count;
 				*Nodes = (Node_Orig*)MyMalloc (Data->nodes_count * sizeof (Node_Orig));
-				
+
 				for (uint32_t n = 0; n < Data->nodes_count; n++)
 				{
 					cgltf_node* Node_Orig = Data->nodes + n;

@@ -45,27 +45,27 @@ LRESULT CALLBACK WindowProc (HWND WindowHandle,
 		break;
 
 	case WM_KEYDOWN:
-		ProcessKeyboardInput (wParam, lParam);
+		process_keyboard_input (wParam, lParam);
 
 		break;
 
 	case WM_LBUTTONDOWN:
-		ProcessMouseLeftClick ();
+		process_left_mouse_click ();
 
 		break;
 
 	case WM_MBUTTONDOWN:
-		ProcessMouseMiddleClick ();
+		process_middle_mouse_click ();
 
 		break;
 
 	case WM_RBUTTONDOWN:
-		ProcessMouseRightClick ();
+		process_right_mouse_click ();
 
 		break;
 
 	case WM_MOUSEMOVE:
-		ProcessMouseMovement (wParam, lParam);
+		process_mouse_movement (wParam, lParam);
 
 		break;
 

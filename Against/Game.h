@@ -2,12 +2,12 @@
 
 #include <Windows.h>
 
-int ProcessMouseLeftClick ();
-int ProcessMouseMiddleClick ();
-int ProcessMouseRightClick ();
+int process_left_mouse_click ();
+int process_middle_mouse_click ();
+int process_right_mouse_click ();
 
-int ProcessMouseMovement (WPARAM wParam, LPARAM lParam);
-int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam);
+int process_mouse_movement (WPARAM wParam, LPARAM lParam);
+int process_keyboard_input (WPARAM wParam, LPARAM lParam);
 
 int GameInit (HINSTANCE HInstance, HWND HWnd);
 int GameMainLoop ();

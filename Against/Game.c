@@ -6,138 +6,42 @@
 #include "main_menu.h"
 #include "main_game.h"
 #include "event.h"
+#include "enums.h"
 
 #include <stdio.h>
 #include <stdbool.h>
 
 #include <Windowsx.h>
 
-enum _CurrentScene
-{
-	SplashScreenScene,
-	MainMenuScene,
-	MainGameScene,
-};
+e_scene_type current_scene = e_scene_type_splash_screen;;
 
-enum _CurrentScene CurrentScene = SplashScreenScene;
-
-enum _OverlayMenuState
-{
-	NoMenu,
-	QuitMenu,
-	PauseMenu,
-};
-
-enum _OverlayMenuState OverlayMenuState = NoMenu;
-
-enum _SceneState
-{
-	Exited,
-	Inited
-};
-
-enum _SceneState SplashScreenSceneState = Exited;
-enum _SceneState MainMenuSceneState = Exited;
-enum _SceneState MainGameSceneState = Exited;
-
-uint64_t StartupTickCount;
-uint64_t CurrentTickCount;
-uint64_t ElapsedTime;
-uint64_t SplashScreenThresholdTimeMS = 3000;
-
-uint32_t LastMouseX;
-uint32_t LastMouseY;
+e_scene_state splash_screen_state = e_scene_state_exited;
+e_scene_state main_menu_state = e_scene_state_exited;
 
 int (*current_scene_process_keyboard_input)(WPARAM, LPARAM);
 int (*current_scene_draw)();
 
-int ProcessMouseLeftClick ()
+int process_left_mouse_click ()
 {
-	switch (CurrentScene)
-	{
-	case SplashScreenScene:
-		break;
-
-	case MainMenuScene:
-		break;
-
-	case MainGameScene:
-		break;
-
-	default:
-		break;
-	}
-
 	return 0;
 }
 
-int ProcessMouseMiddleClick ()
+int process_middle_mouse_click ()
 {
-	switch (CurrentScene)
-	{
-	case SplashScreenScene:
-		break;
-
-	case MainMenuScene:
-		break;
-
-	case MainGameScene:
-		break;
-
-	default:
-		break;
-	}
-
 	return 0;
 }
 
-int ProcessMouseRightClick ()
+int process_right_mouse_click ()
 {
-	switch (CurrentScene)
-	{
-	case SplashScreenScene:
-		break;
-
-	case MainMenuScene:
-		break;
-
-	case MainGameScene:
-		break;
-
-	default:
-		break;
-	}
-
 	return 0;
 }
 
-int ProcessMouseMovement (WPARAM wParam, LPARAM lParam)
+int process_mouse_movement (WPARAM wParam, LPARAM lParam)
 {
-	uint32_t CurrentX = GET_X_LPARAM (lParam);
-	uint32_t CurrentY = GET_Y_LPARAM (lParam);
-
-	switch (CurrentScene)
-	{
-	case SplashScreenScene:
-		break;
-
-	case MainMenuScene:
-		break;
-
-	case MainGameScene:
-		break;
-
-	default:
-		break;
-	}
-
-	LastMouseX = CurrentX;
-	LastMouseY = CurrentY;
-
 	return 0;
 }
 
-int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
+int process_keyboard_input (WPARAM wParam, LPARAM lParam)
 {
 	current_scene_process_keyboard_input (wParam, lParam);
 	return 0;
@@ -149,26 +53,26 @@ void go_to_scene (e_scene_type scene_type)
 	{
 	case e_scene_type_splash_screen:
 		DestroyMainMenuGraphics ();
-		MainMenuSceneState = Exited;
-		CurrentScene = SplashScreenScene;
-		
+		main_menu_state = e_scene_state_exited;
+
+		current_scene = e_scene_type_splash_screen;
 		current_scene_process_keyboard_input = splash_screen_process_keyboard_input;
 		current_scene_draw = splash_screen_draw;
 
 		splash_screen_init ();
-		SplashScreenSceneState = Inited;
+		splash_screen_state = e_scene_state_inited;
 		break;
 
 	case e_scene_type_main_menu:
 		DestroySplashScreen ();
-		SplashScreenSceneState = Exited;
-		
-		CurrentScene = MainMenuScene;
+		splash_screen_state = e_scene_state_exited;
+
+		current_scene = e_scene_type_main_menu;
 		current_scene_process_keyboard_input = main_menu_process_keyboard_input;
 		current_scene_draw = main_menu_draw;
 
 		InitMainMenuGraphics ();
-		MainMenuSceneState = Inited;
+		main_menu_state = e_scene_state_inited;
 		break;
 
 	default:
@@ -194,8 +98,6 @@ int GameInit (HINSTANCE HInstance, HWND HWnd)
 		return Result;
 	}
 
-	StartupTickCount = GetTickCount64 ();
-
 	current_scene_process_keyboard_input = splash_screen_process_keyboard_input;
 	current_scene_draw = splash_screen_draw;
 	go_to_scene_fp = go_to_scene;
@@ -207,18 +109,15 @@ int GameInit (HINSTANCE HInstance, HWND HWnd)
 
 int GameMainLoop ()
 {
-	CurrentTickCount = GetTickCount64 ();
-	ElapsedTime = CurrentTickCount - StartupTickCount;
-
 	int Result = 0;
 
-	Result = current_scene_draw (ElapsedTime);
+	Result = current_scene_draw (0);
 
 	if (Result != 0)
 	{
 		return Result;
 	}
-	
+
 	return 0;
 }
 
@@ -226,22 +125,16 @@ void GameShutdown ()
 {
 	OutputDebugString (L"GameShutdown\n");
 
-	if (SplashScreenSceneState == Inited)
+	if (splash_screen_state == e_scene_state_inited)
 	{
 		DestroySplashScreen ();
-		SplashScreenSceneState = Exited;
+		splash_screen_state = e_scene_state_exited;
 	}
 
-	if (MainMenuSceneState == Inited)
+	if (main_menu_state == e_scene_state_inited)
 	{
 		DestroyMainMenuGraphics ();
-		MainMenuSceneState = Exited;
-	}
-
-	if (MainGameSceneState == Inited)
-	{
-		DestroyMainGameGraphics ();
-		MainGameSceneState = Exited;
+		main_menu_state = e_scene_state_exited;
 	}
 
 	GraphicsShutdown ();

@@ -10,7 +10,7 @@
 void CreateOrthographicMatrixGLM (float Near, float Far, float Left, float Right, float Bottom, float Top, float* Result)
 {
 	glm::mat4 Projection = glm::ortho (Left, Right, Bottom, Top, Near, Far);
-	
+
 	memcpy (Result, glm::value_ptr (Projection), sizeof (float) * 16);
 }
 
@@ -40,10 +40,10 @@ void CreateModelViewProjectinMatrix (float* Projection, float* View, float* Mode
 void CreateTransformationMatrixGLM (float* Position, float* Rotation, float* Scale, float* Result)
 {
 	glm::mat4 TranslationMat = glm::translate (glm::mat4 (1.0), glm::make_vec3 (Position));
-	
+
 	glm::quat Quat = glm::make_quat (Rotation);
 	glm::mat4 RotationMat = Quat.operator glm::mat<4, 4, float, glm::packed_highp> ();
-	
+
 	glm::mat4 ScaleMat = glm::scale (glm::mat4 (1.0), glm::make_vec3 (Scale));
 
 	memcpy (Result, glm::value_ptr (TranslationMat * RotationMat * ScaleMat), sizeof (float) * 16);
@@ -62,7 +62,7 @@ void MultiplyMatricesGLM (float* Mat1, float* Mat2, float* Result)
 	memset (Result, 0, sizeof (float) * 16);
 
 	Result[0] = 2.f / (Right - Left);
-	
+
 	Result[5] = 2.f / (Bottom - Top);
 
 	Result[10] = 1.f / (Near - Far);

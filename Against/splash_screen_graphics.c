@@ -227,7 +227,7 @@ int CreateVulkanHandlesForImages (Image* Images, uint32_t ImageCount)
 		uint32_t* SimilarImageIndices = (uint32_t*)MyMalloc (ImageCount * sizeof (uint32_t));
 		SimilarImageIndices[0] = i;
 
-		CheckForSimilarImages (CurrentImage, Images,  ImageCount, CheckStartIndex, SimilarImageIndices);
+		CheckForSimilarImages (CurrentImage, Images, ImageCount, CheckStartIndex, SimilarImageIndices);
 
 		MyFree (SimilarImageIndices);
 	}
@@ -241,7 +241,7 @@ int CreateVulkanHandles (Asset* Assets, uint32_t AssetCount, Image* Images, uint
 
 	CreateVulkanHandlesForMeshes (Assets, AssetCount);
 	CreateVulkanHandlesForImages (Images, ImageCount);
-	
+
 	return 0;
 }
 

@@ -95,13 +95,13 @@ int ImportMainMenuAssets ()
 	char FullFilePath[MAX_PATH];
 	GetFullFilePath (FullFilePath, PartialFilePath);
 
-	int Result = ImportGLTF (FullFilePath, 
-							&MainMenuNodes, &MainMenuNodeCount, 
-							&MainMenuMeshes, &MainMenuMeshCount, 
-							&MainMenuMaterials, &MainMenuMaterialCount, 
-							&MainMenuTextures, &MainMenuTextureCount, 
-							&MainMenuImages, &MainMenuImageCount, 
-							&MainMenuSamplers, &MainMenuSamplerCount);
+	int Result = ImportGLTF (FullFilePath,
+		&MainMenuNodes, &MainMenuNodeCount,
+		&MainMenuMeshes, &MainMenuMeshCount,
+		&MainMenuMaterials, &MainMenuMaterialCount,
+		&MainMenuTextures, &MainMenuTextureCount,
+		&MainMenuImages, &MainMenuImageCount,
+		&MainMenuSamplers, &MainMenuSamplerCount);
 
 	if (Result != 0)
 	{
@@ -127,7 +127,7 @@ int CreateMainMenuUniformBuffer ()
 	OutputDebugString (L"CreateMainScreenUniformBuffer\n");
 
 	VkBufferCreateInfo CreateInfo = { 0 };
-	
+
 	CreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	CreateInfo.size = sizeof (float) * 16 + sizeof (float) + sizeof (int);
 	CreateInfo.queueFamilyIndexCount = 1;
@@ -183,7 +183,7 @@ int CreateMainMenuHostVBIBs ()
 	VBIBCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	VBIBCreateInfo.queueFamilyIndexCount = 1;
 	VBIBCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
-	
+
 	MainMenuHostVBIBs = (VkBuffer*)MyMalloc (sizeof (VkBuffer) * MainMenuBufferCount);
 
 	VkMemoryAllocateInfo VBIBMemoryAllocateInfo = { 0 };
@@ -202,14 +202,14 @@ int CreateMainMenuHostVBIBs ()
 			{
 				return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
 			}
-	
+
 			vkGetBufferMemoryRequirements (GraphicsDevice, MainMenuHostVBIBs[CurrentBufferCount], &MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements);
 
 			VBIBMemoryAllocateInfo.allocationSize += MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.size;
 			++CurrentBufferCount;
 		}
 	}
-	
+
 	uint32_t RequiredMemoryTypes = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
 	uint32_t MemoryTypeIndex = 0;
@@ -259,7 +259,7 @@ int CreateMainMenuHostVBIBs ()
 	VkDeviceSize MapMemoryOffset = 0;
 	BindMemoryOffset = 0;
 
-	for (uint32_t m = 0; m < MainMenuMeshCount; m++) 
+	for (uint32_t m = 0; m < MainMenuMeshCount; m++)
 	{
 		for (uint32_t p = 0; p < MainMenuMeshes[m].PrimitiveCount; p++)
 		{
@@ -296,7 +296,7 @@ int CreateMainMenuHostVBIBs ()
 			vkUnmapMemory (GraphicsDevice, MainMenuHostVBIBMemory);
 
 			MapMemoryOffset += MainMenuMeshes[m].Primitives[p].IndicesSize;
-			
+
 			BindMemoryOffset += MainMenuMeshes[m].Primitives[p].VkHandles.MemoryRequirements.size;
 
 			++CurrentBufferCount;
@@ -526,7 +526,7 @@ int CreateMainMenuTextureImages ()
 	}
 
 	VkSubmitInfo SubmitInfo = { 0 };
-	
+
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	SubmitInfo.commandBufferCount = 1;
 	SubmitInfo.pCommandBuffers = &LayoutChangeCommandBuffer;
@@ -535,7 +535,7 @@ int CreateMainMenuTextureImages ()
 	VkFenceCreateInfo FenceCreateInfo = { 0 };
 
 	FenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	
+
 	if (vkCreateFence (GraphicsDevice, &FenceCreateInfo, NULL, &Fence) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_FENCE;
@@ -623,7 +623,7 @@ int CreateMainMenuTextureImages ()
 		return AGAINST_ERROR_GRAPHICS_RESET_COMMAND_BUFFER;
 	}
 
-	if (vkBeginCommandBuffer (LayoutChangeCommandBuffer, &LayoutChangeCmdBufferBeginInfo) != VK_SUCCESS) 
+	if (vkBeginCommandBuffer (LayoutChangeCommandBuffer, &LayoutChangeCmdBufferBeginInfo) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
 	}
@@ -664,7 +664,7 @@ int CreateMainMenuTextureImages ()
 	vkDestroyCommandPool (GraphicsDevice, MainMenuImageOpsCommandPool, NULL);
 
 	vkFreeMemory (GraphicsDevice, StagingBufferMemory, NULL);
-	
+
 	for (uint32_t i = 0; i < MainMenuImageCount; i++)
 	{
 		vkDestroyBuffer (GraphicsDevice, StagingBuffers[i], NULL);
@@ -771,7 +771,7 @@ int CreateMainMenuDepthImage ()
 
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	MemoryAllocateInfo.allocationSize = MemoryRequirements.size;
-	
+
 	uint32_t RequiredTypes = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
@@ -1021,7 +1021,7 @@ int CreateMainMenuDescriptorPool ()
 	DescriptorPoolCreateInfo.poolSizeCount = 2;
 	DescriptorPoolCreateInfo.pPoolSizes = PoolSizes;
 	DescriptorPoolCreateInfo.maxSets = 1 + MainMenuMeshCount;
-	
+
 	if (vkCreateDescriptorPool (GraphicsDevice, &DescriptorPoolCreateInfo, NULL, &MainMenuDescriptorPool) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_POOL;
@@ -1053,7 +1053,7 @@ int CreateMainMenuDescriptorSetLayout ()
 	}
 
 	LayoutBinding.binding = 0;
-	LayoutBinding.descriptorCount = 1; 
+	LayoutBinding.descriptorCount = 1;
 	LayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	LayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
@@ -1477,7 +1477,7 @@ int InitMainMenuGraphics ()
 	OutputDebugString (L"SetupMainMenu\n");
 
 	int Result = ImportMainMenuAssets ();
-	
+
 	if (Result != 0)
 	{
 		return Result;

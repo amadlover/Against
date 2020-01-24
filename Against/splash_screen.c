@@ -31,13 +31,13 @@ int splash_screen_init ()
 	{
 		return AGAINST_ERROR_SYSTEM_ALLOCATE_MEMORY;
 	}
-	
+
 	char FilePath[MAX_PATH];
 	GetFullFilePath (FilePath, "\\UIElements\\SplashScreen\\SplashScreen.gltf");
 
 	int Result = ImportImages (
-		FilePath, 
-		&SplashScreenObj->Images, 
+		FilePath,
+		&SplashScreenObj->Images,
 		&SplashScreenObj->ImageCount
 	);
 
@@ -47,9 +47,9 @@ int splash_screen_init ()
 	}
 
 	Result = ImportAssets (
-		FilePath, 
-		&SplashScreenObj->Assets, 
-		&SplashScreenObj->AssetCount, 
+		FilePath,
+		&SplashScreenObj->Assets,
+		&SplashScreenObj->AssetCount,
 		SplashScreenObj->Images
 	);
 
@@ -59,9 +59,9 @@ int splash_screen_init ()
 	}
 
 	Result = InitSplashScreenGraphics (
-		SplashScreenObj->Assets, 
-		SplashScreenObj->AssetCount, 
-		SplashScreenObj->Images, 
+		SplashScreenObj->Assets,
+		SplashScreenObj->AssetCount,
+		SplashScreenObj->Images,
 		SplashScreenObj->ImageCount
 	);
 
@@ -91,7 +91,7 @@ int splash_screen_process_keyboard_input (WPARAM wParam, LPARAM lParam)
 int splash_screen_draw (uint64_t ElapsedTime)
 {
 	int Result = DrawSplashScreenGraphics ();
-	
+
 	if (Result != 0)
 	{
 		return Result;

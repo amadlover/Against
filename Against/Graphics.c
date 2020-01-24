@@ -25,10 +25,10 @@ VkPhysicalDevice PhysicalDevice;
 VkSurfaceKHR Surface;
 VkPresentModeKHR ChosenPresentMode;
 
-VkResult CreateDebugUtilsMessenger (VkInstance Instance, 
-									const VkDebugUtilsMessengerCreateInfoEXT* DebugUtilsMessengerCreateInfo, 
-									const VkAllocationCallbacks* AllocationCallbacks, 
-									VkDebugUtilsMessengerEXT* DebugUtilsMessenger)
+VkResult CreateDebugUtilsMessenger (VkInstance Instance,
+	const VkDebugUtilsMessengerCreateInfoEXT* DebugUtilsMessengerCreateInfo,
+	const VkAllocationCallbacks* AllocationCallbacks,
+	VkDebugUtilsMessengerEXT* DebugUtilsMessenger)
 {
 	OutputDebugString (L"CreateDebugUtilsMessenger\n");
 
@@ -44,9 +44,9 @@ VkResult CreateDebugUtilsMessenger (VkInstance Instance,
 	}
 }
 
-void DestroyDebugUtilsMessenger (VkInstance Instance, 
-									VkDebugUtilsMessengerEXT DebugUtilsMessenger, 
-									const VkAllocationCallbacks* AllocationCallbacks)
+void DestroyDebugUtilsMessenger (VkInstance Instance,
+	VkDebugUtilsMessengerEXT DebugUtilsMessenger,
+	const VkAllocationCallbacks* AllocationCallbacks)
 {
 	OutputDebugString (L"DestroyDebugUtilsMessenger\n");
 
@@ -63,10 +63,10 @@ void DestroyDebugUtilsMessenger (VkInstance Instance,
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback (
-													VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
-													VkDebugUtilsMessageTypeFlagsEXT messageTypes, 
-													const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
-													void* pUserData)
+	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+	VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	void* pUserData)
 {
 	if (pCallbackData)
 	{
@@ -173,11 +173,11 @@ int SetupDebugUtilsMessenger ()
 	memset (&CreateInfo, 0, sizeof (VkDebugUtilsMessengerCreateInfoEXT));
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	CreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | 
-								VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-	CreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | 
-								VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | 
-								VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	CreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	CreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	CreateInfo.pfnUserCallback = DebugMessengerCallback;
 	CreateInfo.flags = 0;
 
@@ -524,12 +524,12 @@ int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 void GraphicsShutdown ()
 {
 	OutputDebugString (L"GraphicsShutdown\n");
-	
+
 	if (Swapchain != VK_NULL_HANDLE)
 	{
 		vkDestroySwapchainKHR (GraphicsDevice, Swapchain, NULL);
 	}
-	
+
 	if (SwapchainImageViews)
 	{
 		for (uint32_t i = 0; i < SwapchainImageCount; i++)
@@ -552,12 +552,12 @@ void GraphicsShutdown ()
 	{
 		vkDestroyDevice (GraphicsDevice, NULL);
 	}
-	
+
 	if (Surface != VK_NULL_HANDLE)
 	{
 		vkDestroySurfaceKHR (Instance, Surface, NULL);
 	}
-	
+
 	if (IsValidationNeeded)
 	{
 		if (DebugUtilsMessenger != VK_NULL_HANDLE)

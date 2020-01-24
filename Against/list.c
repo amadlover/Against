@@ -38,9 +38,9 @@ void list_insert (list* list_ptr, void* data)
 		{
 			if (last_node->next_node != list_ptr->end_node)
 			{
-				last_node = last_node->next_node; 
+				last_node = last_node->next_node;
 			}
-			else 
+			else
 			{
 				break;
 			}
@@ -91,7 +91,7 @@ void list_print (const list* list_ptr)
 			swprintf (Buff, 32, L"Node has image %d\n", (uint32_t)node->data.i);
 			OutputDebugString (Buff);
 		}
-		
+
 		if (node->next_node != list_ptr->end_node)
 		{
 			node = node->next_node;
@@ -99,7 +99,7 @@ void list_print (const list* list_ptr)
 		else
 		{
 			break;
-		}		
+		}
 	}
 }
 

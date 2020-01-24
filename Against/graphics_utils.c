@@ -5,12 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int CreateBuffer (VkDevice GraphicsDevice, 
-								VkDeviceSize Size, 
-								VkBufferUsageFlags Usage, 
-								VkSharingMode SharingMode, 
-								uint32_t GraphicsQueueFamilyIndex, 
-								VkBuffer* OutBuffer)
+int CreateBuffer (VkDevice GraphicsDevice,
+	VkDeviceSize Size,
+	VkBufferUsageFlags Usage,
+	VkSharingMode SharingMode,
+	uint32_t GraphicsQueueFamilyIndex,
+	VkBuffer* OutBuffer)
 {
 	VkBufferCreateInfo BufferCreateInfo = { 0 };
 
@@ -28,12 +28,12 @@ int CreateBuffer (VkDevice GraphicsDevice,
 	return 0;
 }
 
-int AllocateBindBufferMemory (VkDevice GraphicsDevice, 
-							VkBuffer* Buffers, 
-							uint32_t BufferCount,
-							VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, 
-							VkMemoryPropertyFlags RequiredTypes, 
-							VkDeviceMemory* OutBufferMemory)
+int AllocateBindBufferMemory (VkDevice GraphicsDevice,
+	VkBuffer* Buffers,
+	uint32_t BufferCount,
+	VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties,
+	VkMemoryPropertyFlags RequiredTypes,
+	VkDeviceMemory* OutBufferMemory)
 {
 	VkMemoryAllocateInfo MemoryAllocateInfo = { 0 };
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -43,7 +43,7 @@ int AllocateBindBufferMemory (VkDevice GraphicsDevice,
 	for (uint32_t b = 0; b < BufferCount; b++)
 	{
 		Offsets[b] = MemoryAllocateInfo.allocationSize;
-		
+
 		VkMemoryRequirements MemoryRequirements;
 		vkGetBufferMemoryRequirements (GraphicsDevice, Buffers[b], &MemoryRequirements);
 
@@ -69,11 +69,11 @@ int AllocateBindBufferMemory (VkDevice GraphicsDevice,
 	return 0;
 }
 
-int MapDataToBuffer (VkDevice GraphicsDevice, 
-						VkDeviceMemory Memory, 
-						VkDeviceSize Offset, 
-						VkDeviceSize Size, 
-						void* DataSource)
+int MapDataToBuffer (VkDevice GraphicsDevice,
+	VkDeviceMemory Memory,
+	VkDeviceSize Offset,
+	VkDeviceSize Size,
+	void* DataSource)
 {
 	void* Data;
 	if (vkMapMemory (GraphicsDevice, Memory, Offset, Size, 0, &Data) != VK_SUCCESS)
@@ -88,13 +88,13 @@ int MapDataToBuffer (VkDevice GraphicsDevice,
 }
 
 int CreateImage (
-	VkDevice GraphicsDevice, 
-	uint32_t GraphicsQueueFamilyIndex, 
-	VkExtent3D Extent, 
-	uint32_t ArrayLayers, 
-	VkFormat Format, 
-	VkImageLayout InitialLayout, 
-	VkSharingMode SharingMode, 
+	VkDevice GraphicsDevice,
+	uint32_t GraphicsQueueFamilyIndex,
+	VkExtent3D Extent,
+	uint32_t ArrayLayers,
+	VkFormat Format,
+	VkImageLayout InitialLayout,
+	VkSharingMode SharingMode,
 	VkImage* OutImage
 )
 {
@@ -133,7 +133,7 @@ int AllocateBindImageMemory (VkDevice GraphicsDevice, VkImage* Images, uint32_t 
 		vkGetImageMemoryRequirements (GraphicsDevice, Images[i], &MemoryRequirements);
 
 		MemoryAllocateInfo.allocationSize += MemoryRequirements.size;
-		
+
 		GetMemoryTypeIndex (MemoryRequirements, PhysicalDeviceMemoryProperties, RequiredTypes, &MemoryAllocateInfo.memoryTypeIndex);
 	}
 
@@ -182,12 +182,12 @@ int ChangeImageLayout ()
 	return 0;
 }
 
-int CopyBufferToBuffer (VkDevice GraphicsDevice, 
-						VkCommandPool CommandPool, 
-						VkQueue GraphicsQueue, 
-						VkBuffer SrcBuffer, 
-						VkBuffer DstBuffer,		
-						VkDeviceSize Size)
+int CopyBufferToBuffer (VkDevice GraphicsDevice,
+	VkCommandPool CommandPool,
+	VkQueue GraphicsQueue,
+	VkBuffer SrcBuffer,
+	VkBuffer DstBuffer,
+	VkDeviceSize Size)
 {
 	VkCommandBufferAllocateInfo CommandBufferAllocateInfo = { 0 };
 
@@ -231,14 +231,14 @@ int CopyBufferToImage ()
 	return 0;
 }
 
-int CreateShader (char* FullFilePath, 
-					VkDevice GraphicsDevice, 
-					VkShaderStageFlagBits ShaderStage, 
-					VkShaderModule* ShaderModule, 
-					VkPipelineShaderStageCreateInfo* ShaderStageCreateInfos)
+int CreateShader (char* FullFilePath,
+	VkDevice GraphicsDevice,
+	VkShaderStageFlagBits ShaderStage,
+	VkShaderModule* ShaderModule,
+	VkPipelineShaderStageCreateInfo* ShaderStageCreateInfos)
 {
 	char* FileContents = NULL;
-	
+
 	FILE* VertFile = NULL;
 	errno_t Err = fopen_s (&VertFile, FullFilePath, "rb");
 
@@ -291,10 +291,10 @@ int CreateShader (char* FullFilePath,
 	return 0;
 }
 
-int GetMemoryTypeIndex (VkMemoryRequirements MemoryRequirements, 
-						VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, 
-						VkMemoryPropertyFlags RequiredMemoryTypes, 
-						uint32_t* MemoryTypeIndex)
+int GetMemoryTypeIndex (VkMemoryRequirements MemoryRequirements,
+	VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties,
+	VkMemoryPropertyFlags RequiredMemoryTypes,
+	uint32_t* MemoryTypeIndex)
 {
 	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
 	{
@@ -326,9 +326,9 @@ int SubmitOneTimeCmd (VkQueue GraphicsQueue, VkCommandBuffer CommandBuffer)
 	return 0;
 }
 
-void DestroyBufferAndBufferMemory (VkDevice GraphicsDevice, 
-									VkBuffer Buffer, 
-									VkDeviceMemory BufferMemory)
+void DestroyBufferAndBufferMemory (VkDevice GraphicsDevice,
+	VkBuffer Buffer,
+	VkDeviceMemory BufferMemory)
 {
 	if (Buffer != VK_NULL_HANDLE)
 	{
