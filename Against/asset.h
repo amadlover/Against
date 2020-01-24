@@ -78,8 +78,8 @@ typedef struct
 	char name[256];
 	uint32_t ID;
 
-	asset_mesh_physics_primitive* asset_mesh_physics_primitive;
-	asset_mesh_graphics_primitive* asset_mesh_graphics_primitive;
+	asset_mesh_physics_primitive* physics_primitives;
+	asset_mesh_graphics_primitive* graphics_primitives;
 
 	uint32_t physics_primitive_count;
 	uint32_t graphics_primitive_count;

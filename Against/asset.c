@@ -16,7 +16,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-void import_graphics_primitive_attributes (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_attribute* attribute)
+void import_graphics_primitive_attribute (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_attribute* attribute)
 {
 	cgltf_accessor* accessor = attribute->data;
 	cgltf_buffer_view* buffer_view = accessor->buffer_view;
@@ -58,7 +58,7 @@ void import_graphics_primitive_attributes (asset_mesh_graphics_primitive* graphi
 	}
 }
 
-void import_graphics_primitive_materials (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_material* material, cgltf_data* Data, image* Images)
+void import_graphics_primitive_material (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_material* material, const cgltf_data* Data, image* Images)
 {
 	strcpy (graphics_primitive->material.name, material->name);
 
@@ -84,8 +84,6 @@ void import_graphics_primitive_materials (asset_mesh_graphics_primitive* graphic
 void import_graphics_primitive_indices (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_primitive* primitive)
 {
 	cgltf_accessor* accessor = primitive->indices;
-
-
 	cgltf_buffer_view* buffer_view = accessor->buffer_view;
 
 	char* indices = (char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
@@ -218,13 +216,44 @@ void ImportPhysicsPrimitives (asset_mesh* meshes, uint32_t mesh_count, cgltf_dat
 }
 */
 
-int import_mesh_graphics_primitives (asset_mesh* meshes, uint32_t mesh_count, cgltf_data* data)
+int import_mesh_graphics_primitives (const char* file_path, asset_mesh* meshes, const cgltf_data* data, image* images)
 {
+	uint32_t graphics_mesh_counter = 0;
+
+	for (uint32_t n = 0; n < data->nodes_count; n++)
+	{
+		cgltf_node* node = data->nodes + n;
+
+		if (node->mesh == NULL) continue;
+		if (strstr (node->name, "CS_") != NULL) continue;
+
+		asset_mesh tmp_mesh = { 0 };
+		strcpy (tmp_mesh.name, node->name);
+
+		tmp_mesh.graphics_primitive_count = (uint32_t)node->mesh->primitives_count;
+		tmp_mesh.graphics_primitives = (asset_mesh_graphics_primitive*)my_calloc (tmp_mesh.graphics_primitive_count, sizeof (asset_mesh_graphics_primitive));
+
+		for (uint32_t p = 0; p < node->mesh->primitives_count; p++)
+		{
+			cgltf_primitive* primitive = node->mesh->primitives + p;
+			asset_mesh_graphics_primitive* current_graphics_primitive = tmp_mesh.graphics_primitives + p;
+
+			for (uint32_t a = 0; a < primitive->attributes_count; a++)
+			{
+				import_graphics_primitive_attribute (current_graphics_primitive, primitive->attributes + a);
+			}
+
+			import_graphics_primitive_material (current_graphics_primitive, primitive->material, data, images);
+			import_graphics_primitive_indices (current_graphics_primitive, primitive);
+		}
+
+		++graphics_mesh_counter;
+	}
 
 	return 0;
 }
 
-int import_mesh_physics_primitives (asset_mesh* meshes, uint32_t mesh_count, cgltf_data* data)
+int import_mesh_physics_primitives (const char* file_path, asset_mesh* meshes, const cgltf_data* data)
 {
 	return 0;
 }
@@ -259,8 +288,8 @@ int import_asset_meshes (const char* file_path, asset_mesh** meshes, uint32_t* m
 
 				*meshes = (asset_mesh*)my_calloc ((size_t)(*mesh_count), sizeof (asset_mesh));
 
-				import_mesh_graphics_primitives (*meshes, *mesh_count, data);
-				import_mesh_physics_primitives (*meshes, *mesh_count, data);
+				import_mesh_graphics_primitives (file_path, *meshes, data, images);
+				import_mesh_physics_primitives (file_path, *meshes, data);
 			}
 		}
 	}
@@ -278,11 +307,11 @@ void destroy_asset_meshes (asset_mesh* assets, uint32_t asset_count)
 		{
 			asset_mesh* current_asset = assets + a;
 
-			if (current_asset->asset_mesh_graphics_primitive)
+			if (current_asset->graphics_primitives)
 			{
 				for (uint32_t i = 0; i < current_asset->graphics_primitive_count; i++)
 				{
-					asset_mesh_graphics_primitive* current_gp = current_asset->asset_mesh_graphics_primitive + i;
+					asset_mesh_graphics_primitive* current_gp = current_asset->graphics_primitives + i;
 
 					if (current_gp->indices)
 					{
@@ -308,11 +337,11 @@ void destroy_asset_meshes (asset_mesh* assets, uint32_t asset_count)
 				}
 			}
 
-			if (current_asset->asset_mesh_physics_primitive)
+			if (current_asset->physics_primitives)
 			{
 				for (uint32_t i = 0; i < current_asset->physics_primitive_count; i++)
 				{
-					asset_mesh_physics_primitive* current_pp = current_asset->asset_mesh_physics_primitive + i;
+					asset_mesh_physics_primitive* current_pp = current_asset->physics_primitives + i;
 
 					if (current_pp->indices)
 					{
