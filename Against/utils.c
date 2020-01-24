@@ -1,4 +1,4 @@
-#include "Utility.h"
+#include "utils.h"
 #include <Shlwapi.h>
 #include <strsafe.h>
 

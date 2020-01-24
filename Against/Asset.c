@@ -1,8 +1,8 @@
 #include "Asset.h"
 #include "Error.h"
 
-#include "GraphicsUtilities.h"
-#include "Utility.h"
+#include "graphics_utils.h"
+#include "utils.h"
 
 #include <Windows.h>
 #include <Shlwapi.h>

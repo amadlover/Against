@@ -1,4 +1,4 @@
-#include "MainGame.h"
+#include "main_game.h"
 
 int CreateMainGameGraphics ()
 {

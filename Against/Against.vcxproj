@@ -19,64 +19,56 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Asset.c" />
-    <ClCompile Include="Compute.c" />
-    <ClCompile Include="Error.c" />
-    <ClCompile Include="Game.c" />
-    <ClCompile Include="Graphics.c" />
-    <ClCompile Include="GraphicsUtilities.c" />
-    <ClCompile Include="GUI.c" />
-    <ClCompile Include="Image.c" />
-    <ClCompile Include="ImportAssets.c" />
-    <ClCompile Include="list.c" />
-    <ClCompile Include="Main.c" />
-    <ClCompile Include="MainGame.c" />
-    <ClCompile Include="MainMenu.c" />
-    <ClCompile Include="Maths.cpp">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Default</CompileAs>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeaderOutputFile>
-    </ClCompile>
-    <ClCompile Include="Physics.c" />
-    <ClCompile Include="SplashScreen.c" />
-    <ClCompile Include="SplashScreenGraphics.c" />
-    <ClCompile Include="test.c" />
-    <ClCompile Include="Utility.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Actor.h" />
-    <ClInclude Include="Asset.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Compute.h" />
-    <ClInclude Include="Error.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="Graphics.h" />
-    <ClInclude Include="GraphicsUtilities.h" />
-    <ClInclude Include="GUI.h" />
-    <ClInclude Include="Image.h" />
-    <ClInclude Include="ImportAssets.h" />
-    <ClInclude Include="list.h" />
-    <ClInclude Include="MainGame.h" />
-    <ClInclude Include="MainMenu.h" />
-    <ClInclude Include="Maths.hpp" />
-    <ClInclude Include="Physics.h" />
-    <ClInclude Include="SplashScreen.h" />
-    <ClInclude Include="SplashScreenGraphics.h" />
-    <ClInclude Include="test.h" />
-    <ClInclude Include="Utility.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Shaders\MainMenu\UI.frag" />
     <None Include="Shaders\MainMenu\UI.vert" />
     <None Include="Shaders\SplashScreen\frag.frag" />
     <None Include="Shaders\SplashScreen\vert.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="asset.c" />
+    <ClCompile Include="compute.c" />
+    <ClCompile Include="error.c" />
+    <ClCompile Include="event.c" />
+    <ClCompile Include="game.c" />
+    <ClCompile Include="graphics.c" />
+    <ClCompile Include="graphics_utils.c" />
+    <ClCompile Include="gui.c" />
+    <ClCompile Include="image.c" />
+    <ClCompile Include="import_assets.c" />
+    <ClCompile Include="list.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="main_game.c" />
+    <ClCompile Include="main_menu.c" />
+    <ClCompile Include="maths.cpp" />
+    <ClCompile Include="physics.c" />
+    <ClCompile Include="splash_screen.c" />
+    <ClCompile Include="splash_screen_graphics.c" />
+    <ClCompile Include="test.c" />
+    <ClCompile Include="utils.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="actor.h" />
+    <ClInclude Include="asset.h" />
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="compute.h" />
+    <ClInclude Include="enums.h" />
+    <ClInclude Include="error.h" />
+    <ClInclude Include="event.h" />
+    <ClInclude Include="game.h" />
+    <ClInclude Include="graphics.h" />
+    <ClInclude Include="graphics_utils.h" />
+    <ClInclude Include="gui.h" />
+    <ClInclude Include="image.h" />
+    <ClInclude Include="import_assets.h" />
+    <ClInclude Include="list.h" />
+    <ClInclude Include="main_game.h" />
+    <ClInclude Include="main_menu.h" />
+    <ClInclude Include="maths.hpp" />
+    <ClInclude Include="physics.h" />
+    <ClInclude Include="splash_screen.h" />
+    <ClInclude Include="splash_screen_graphics.h" />
+    <ClInclude Include="test.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

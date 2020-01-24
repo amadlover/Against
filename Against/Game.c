@@ -1,10 +1,11 @@
-#include "Game.h"
-#include "Physics.h"
-#include "Graphics.h"
-#include "GUI.h"
-#include "SplashScreen.h"
-#include "MainMenu.h"
-#include "MainGame.h"
+#include "game.h"
+#include "physics.h"
+#include "graphics.h"
+#include "gui.h"
+#include "splash_screen.h"
+#include "main_menu.h"
+#include "main_game.h"
+#include "event.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -46,6 +47,9 @@ uint64_t SplashScreenThresholdTimeMS = 3000;
 
 uint32_t LastMouseX;
 uint32_t LastMouseY;
+
+int (*current_scene_process_keyboard_input)(WPARAM, LPARAM);
+int (*current_scene_draw)();
 
 int ProcessMouseLeftClick ()
 {
@@ -135,106 +139,41 @@ int ProcessMouseMovement (WPARAM wParam, LPARAM lParam)
 
 int ProcessKeyboardInput (WPARAM wParam, LPARAM lParam)
 {
-	switch (CurrentScene)
+	current_scene_process_keyboard_input (wParam, lParam);
+	return 0;
+}
+
+void go_to_scene (e_scene_type scene_type)
+{
+	switch (scene_type)
 	{
-	case SplashScreenScene:
-		switch (wParam)
-		{
-		case VK_ESCAPE:
-			DestroySplashScreen ();
+	case e_scene_type_splash_screen:
+		DestroyMainMenuGraphics ();
+		MainMenuSceneState = Exited;
+		CurrentScene = SplashScreenScene;
+		
+		current_scene_process_keyboard_input = splash_screen_process_keyboard_input;
+		current_scene_draw = splash_screen_draw;
 
-			SplashScreenSceneState = Exited;
-			CurrentScene = MainMenuScene;
-
-			break;
-		default:
-			break;
-		}
+		splash_screen_init ();
+		SplashScreenSceneState = Inited;
 		break;
 
-	case MainMenuScene:
-		switch (wParam)
-		{
-		case VK_ESCAPE:
-			DestroyMainMenuGraphics ();
+	case e_scene_type_main_menu:
+		DestroySplashScreen ();
+		SplashScreenSceneState = Exited;
+		
+		CurrentScene = MainMenuScene;
+		current_scene_process_keyboard_input = main_menu_process_keyboard_input;
+		current_scene_draw = main_menu_draw;
 
-			MainMenuSceneState = Exited;
-			CurrentScene = SplashScreenScene;
-			break;
-
-		default:
-			break;
-		}
-		break;
-
-	case MainGameScene:
+		InitMainMenuGraphics ();
+		MainMenuSceneState = Inited;
 		break;
 
 	default:
 		break;
 	}
-
-	/*switch (wParam)
-	{
-	case 0x57:
-		OutputDebugString (L"W\n");
-		break;
-
-	case 0x41:
-		OutputDebugString (L"A\n");
-		break;
-
-	case 0x53:
-		OutputDebugString (L"S\n");
-		break;
-
-	case 0x44:
-		OutputDebugString (L"D\n");
-		break;
-
-	case VK_ESCAPE:
-		OutputDebugString (L"ESC\n");
-
-		switch (SceneState)
-		{
-		case SplashScreenScene:
-			SceneState = MainMenuScene;
-			break;
-
-		case MainMenuScene:
-			OverlayMenuState = QuitMenu;
-			break;
-
-		case MainGameScene:
-			OverlayMenuState = PauseMenu;
-			break;
-
-		default:
-			break;
-		}
-
-		switch (OverlayMenuState)
-		{
-		case NoMenu:
-			break;
-
-		case QuitMenu:
-			OverlayMenuState = NoMenu;
-			break;
-
-		case PauseMenu:
-			OverlayMenuState = NoMenu;
-			break;
-
-		default:
-			break;
-		}
-
-	default:
-		break;
-	}*/
-
-	return 0;
 }
 
 int GameInit (HINSTANCE HInstance, HWND HWnd)
@@ -257,6 +196,12 @@ int GameInit (HINSTANCE HInstance, HWND HWnd)
 
 	StartupTickCount = GetTickCount64 ();
 
+	current_scene_process_keyboard_input = splash_screen_process_keyboard_input;
+	current_scene_draw = splash_screen_draw;
+	go_to_scene_fp = go_to_scene;
+
+	splash_screen_init ();
+
 	return 0;
 }
 
@@ -267,82 +212,13 @@ int GameMainLoop ()
 
 	int Result = 0;
 
-	switch (CurrentScene)
+	Result = current_scene_draw (ElapsedTime);
+
+	if (Result != 0)
 	{
-	case SplashScreenScene:
-		/*if (ElapsedTime > SplashScreenThresholdTimeMS)
-		{
-			OutputDebugString (L"Switching to Main Menu\n");
-			CurrentScene = MainMenuScene;
-
-			DestroySplashScreenGraphics ();
-
-			SplashScreenSceneState = Exited;
-		}
-		else
-		{*/
-			if (SplashScreenSceneState == Exited)
-			{
-				Result = InitSplashScreen ();
-
-				if (Result != 0)
-				{
-					return Result;
-				}
-
-				SplashScreenSceneState = Inited;
-			}
-			else if (SplashScreenSceneState == Inited)
-			{
-				Result = DrawSplashScreen (ElapsedTime);
-
-				if (Result != 0)
-				{
-					return Result;
-				}
-			}
-		//}
-
-		break;
-
-	case MainMenuScene:
-		if (MainMenuSceneState == Exited)
-		{
-			Result = InitMainMenuGraphics ();
-
-			if (Result != 0)
-			{
-				return Result;
-			}
-
-			MainMenuSceneState = Inited;
-		}
-		else if (MainMenuSceneState == Inited)
-		{
-			Result = DrawMainMenu ();
-
-			if (Result != 0)
-			{
-				return Result;
-			}
-		}
-
-		break;
-
-	case MainGameScene:
-		Result = DrawMainGame ();
-
-		if (Result != 0)
-		{
-			return Result;
-		}
-
-		break;
-
-	default:
-		break;
+		return Result;
 	}
-
+	
 	return 0;
 }
 

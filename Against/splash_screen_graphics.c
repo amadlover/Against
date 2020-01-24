@@ -1,10 +1,10 @@
-#include "SplashScreenGraphics.h"
-#include "Asset.h"
-#include "Actor.h"
-#include "Image.h"
-#include "Error.h"
-#include "GraphicsUtilities.h"
-#include "Utility.h"
+#include "splash_screen_graphics.h"
+#include "asset.h"
+#include "actor.h"
+#include "image.h"
+#include "error.h"
+#include "graphics_utils.h"
+#include "utils.h"
 
 #include <stdlib.h>
 

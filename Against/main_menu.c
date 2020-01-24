@@ -1,10 +1,12 @@
-#include "MainMenu.h"
+#include "main_menu.h"
 
-#include "Error.h"
-#include "ImportAssets.h"
-#include "Utility.h"
-#include "Graphics.h"
-#include "Maths.hpp"
+#include "error.h"
+#include "import_assets.h"
+#include "utils.h"
+#include "graphics.h"
+#include "maths.hpp"
+#include "enums.h"
+#include "event.h"
 
 #include <Windows.h>
 #include <strsafe.h>
@@ -1616,7 +1618,20 @@ void MainMenuProcessMouseMovement (uint32_t X, uint32_t Y, uint32_t DeltaX, uint
 	}
 }
 
-int DrawMainMenu ()
+int main_menu_process_keyboard_input (WPARAM wParam, LPARAM lParam)
+{
+	switch (wParam)
+	{
+	case VK_ESCAPE:
+		go_to_scene_fp (e_scene_type_splash_screen);
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+
+int main_menu_draw (uint64_t ElapsedTime)
 {
 	UpdateMainMenuUniformBufferViewProjMatrix ();
 

@@ -1,6 +1,6 @@
-#include "GraphicsUtilities.h"
-#include "Error.h"
-#include "Utility.h"
+#include "graphics_utils.h"
+#include "error.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>

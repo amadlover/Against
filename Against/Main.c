@@ -2,9 +2,9 @@
 
 #include <stdio.h>
 
-#include "Game.h"
-#include "Error.h"
-#include "Utility.h"
+#include "game.h"
+#include "error.h"
+#include "utils.h"
 
 LRESULT CALLBACK WindowProc (HWND WindowHandle, 
 								UINT Msg, 
@@ -83,8 +83,6 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance,
 						_In_ PWSTR CmdLine, 
 						_In_ int CmdShow)
 {
-	list_test ();
-	return 0;
 	WNDCLASS WC = { 0 };
 
 	WC.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;

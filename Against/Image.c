@@ -1,5 +1,5 @@
 #include "Image.h"
-#include "Utility.h"
+#include "utils.h"
 
 #include <stb_image.h>
 #include <cgltf.h>

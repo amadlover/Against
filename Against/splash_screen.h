@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "SplashScreenGraphics.h"
+#include "splash_screen_graphics.h"
 #include "Asset.h"
 #include "Actor.h"
 #include "Image.h"
@@ -21,6 +21,7 @@ typedef struct
 	uint32_t ImageCount;
 } SplashScreen;
 
-int InitSplashScreen ();
-int DrawSplashScreen (uint64_t ElapsedTime);
+int splash_screen_init ();
+int splash_screen_process_keyboard_input (WPARAM wParam, LPARAM lParam);
+int splash_screen_draw (uint64_t ElapsedTime);
 void DestroySplashScreen ();
