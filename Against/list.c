@@ -2,19 +2,23 @@
 #include "Utility.h"
 #include <stdio.h>
 
-void list_insert (list* list_ptr, void* data, e_list_data_type data_type)
+void list_init (list* list_ptr, e_list_data_type data_type)
+{
+	list_ptr->begin_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
+	list_ptr->end_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
+	list_ptr->data_type = data_type;
+}
+
+void list_insert (list* list_ptr, void* data)
 {
 	if (list_ptr->num_nodes == 0)
 	{
-		list_ptr->begin_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
-		list_ptr->end_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
-
 		struct list_node* new_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
-		if (data_type == e_list_uint32_t)
+		if (list_ptr->data_type == e_list_uint32_t)
 		{
 			new_node->data.i = *((uint32_t*)(data));
 		}
-		else if (data_type == e_list_vk_image)
+		else if (list_ptr->data_type == e_list_vk_image)
 		{
 			new_node->data.image = *((VkImage*)(data));
 		}
@@ -45,16 +49,14 @@ void list_insert (list* list_ptr, void* data, e_list_data_type data_type)
 		if (last_node)
 		{
 			struct list_node* new_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
-			if (data_type == e_list_uint32_t)
+			if (list_ptr->data_type == e_list_uint32_t)
 			{
 				new_node->data.i = *((uint32_t*)(data));
 			}
-			else if (data_type == e_list_vk_image)
+			else if (list_ptr->data_type == e_list_vk_image)
 			{
 				new_node->data.image = *((VkImage*)(data));
 			}
-
-			new_node->data_type = data_type;
 
 			new_node->preview_node = last_node;
 			new_node->next_node = list_ptr->end_node;
@@ -77,13 +79,13 @@ void list_print (const list* list_ptr)
 
 	while (node)
 	{
-		if (node->data_type == e_list_uint32_t)
+		if (list_ptr->data_type == e_list_uint32_t)
 		{
 			wchar_t Buff[32];
 			swprintf (Buff, 32, L"Node has uint32_t %d\n", node->data.i);
 			OutputDebugString (Buff);
 		}
-		else if (node->data_type == e_list_vk_image)
+		else if (list_ptr->data_type == e_list_vk_image)
 		{
 			wchar_t Buff[32];
 			swprintf (Buff, 32, L"Node has image %d\n", (uint32_t)node->data.i);
@@ -101,7 +103,7 @@ void list_print (const list* list_ptr)
 	}
 }
 
-void list_delete (list* list_ptr, void* data, e_list_data_type data_type)
+void list_delete (list* list_ptr, void* data)
 {
 	if (list_ptr->num_nodes == 0)
 	{
@@ -112,58 +114,54 @@ void list_delete (list* list_ptr, void* data, e_list_data_type data_type)
 
 	while (node)
 	{
-		if (node->data_type == data_type)
+		if (list_ptr->data_type == e_list_uint32_t)
 		{
-			if (data_type == e_list_uint32_t)
+			if (node->data.i == *(uint32_t*)data)
 			{
-				if (node->data.i == *(uint32_t*)data)
+				struct list_node* next_node = node->next_node;
+				struct list_node* preview_node = node->preview_node;
+
+				MyFree (node);
+				--list_ptr->num_nodes;
+
+				preview_node->next_node = next_node;
+				next_node->preview_node = preview_node;
+
+				if (next_node != list_ptr->end_node)
 				{
-					struct list_node* next_node = node->next_node;
-					struct list_node* preview_node = node->preview_node;
-
-					MyFree (node);
-					--list_ptr->num_nodes;
-					
-					preview_node->next_node = next_node;
-					next_node->preview_node = preview_node;
-
-					if (next_node != list_ptr->end_node)
-					{
-						node = next_node;
-						continue;
-					}
-					else
-					{
-						break;
-					}
+					node = next_node;
+					continue;
 				}
-			}
-			else if (data_type == e_list_vk_image)
-			{
-				if (node->data.image == *(VkImage*)data)
+				else
 				{
-					struct list_node* next_node = node->next_node;
-					struct list_node* preview_node = node->preview_node;
-
-					MyFree (node);
-					--list_ptr->num_nodes;
-
-					preview_node->next_node = next_node;
-					next_node->preview_node = preview_node;
-
-					if (next_node != list_ptr->end_node)
-					{
-						node = next_node;
-						continue;
-					}
-					else
-					{
-						break;
-					}
+					break;
 				}
 			}
 		}
+		else if (list_ptr->data_type == e_list_vk_image)
+		{
+			if (node->data.image == *(VkImage*)data)
+			{
+				struct list_node* next_node = node->next_node;
+				struct list_node* preview_node = node->preview_node;
 
+				MyFree (node);
+				--list_ptr->num_nodes;
+
+				preview_node->next_node = next_node;
+				next_node->preview_node = preview_node;
+
+				if (next_node != list_ptr->end_node)
+				{
+					node = next_node;
+					continue;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
 		if (node->next_node != list_ptr->end_node)
 		{
 			node = node->next_node;

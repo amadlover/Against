@@ -4,6 +4,7 @@
 void list_test ()
 {
 	list list_obj = { 0 };
+	list_init (&list_obj, e_list_uint32_t);
 	uint32_t x = 34; uint32_t y = 994; uint32_t z = 475;
 	VkImage image1 = (VkImage)777; VkImage image2 = (VkImage)666;
 	list_insert (&list_obj, &x, e_list_uint32_t);
