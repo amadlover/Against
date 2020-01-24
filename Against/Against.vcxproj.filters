@@ -38,9 +38,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="compute.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="error.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -53,28 +50,10 @@
     <ClCompile Include="graphics_utils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gui.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="image.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="import_assets.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="list.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="physics.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="splash_screen.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="splash_screen_graphics.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="test.c">
@@ -95,15 +74,12 @@
     <ClCompile Include="main_menu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="splash_screen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asset.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="compute.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="error.h">
@@ -118,28 +94,10 @@
     <ClInclude Include="graphics_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="image.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="import_assets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="list.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="maths.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="physics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="splash_screen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="splash_screen_graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="test.h">
@@ -158,6 +116,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="main_menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="splash_screen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

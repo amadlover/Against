@@ -1,7 +1,5 @@
 #include "game.h"
-#include "physics.h"
 #include "graphics.h"
-#include "gui.h"
 #include "splash_screen.h"
 #include "main_menu.h"
 #include "event.h"
@@ -83,14 +81,7 @@ int game_init (HINSTANCE hInstance, HWND hWnd)
 {
 	OutputDebugString (L"game_init\n");
 
-	int result = physics_init ();
-
-	if (result != 0)
-	{
-		return result;
-	}
-
-	result = graphics_init (hInstance, hWnd);
+	int result = graphics_init (hInstance, hWnd);
 
 	if (result != 0)
 	{
@@ -99,7 +90,7 @@ int game_init (HINSTANCE hInstance, HWND hWnd)
 
 	current_scene_process_keyboard_input = splash_screen_process_keyboard_input;
 	current_scene_main_loop = splash_screen_main_loop;
-	go_to_scene_fp = go_to_scene;
+	event_go_to_scene_fp = go_to_scene;
 
 	splash_screen_init ();
 
@@ -137,6 +128,4 @@ void game_exit ()
 	}
 
 	graphics_exit ();
-
-	physics_exit ();
 }

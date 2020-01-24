@@ -26,45 +26,32 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="asset.c" />
-    <ClCompile Include="compute.c" />
     <ClCompile Include="error.c" />
     <ClCompile Include="event.c" />
     <ClCompile Include="game.c" />
     <ClCompile Include="graphics.c" />
     <ClCompile Include="graphics_utils.c" />
-    <ClCompile Include="gui.c" />
-    <ClCompile Include="image.c" />
-    <ClCompile Include="import_assets.c" />
     <ClCompile Include="list.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="main_menu.c" />
     <ClCompile Include="maths.cpp" />
-    <ClCompile Include="physics.c" />
     <ClCompile Include="splash_screen.c" />
-    <ClCompile Include="splash_screen_graphics.c" />
     <ClCompile Include="test.c" />
     <ClCompile Include="utils.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="actor.h" />
     <ClInclude Include="asset.h" />
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="compute.h" />
     <ClInclude Include="enums.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="graphics_utils.h" />
-    <ClInclude Include="gui.h" />
-    <ClInclude Include="image.h" />
-    <ClInclude Include="import_assets.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="main_menu.h" />
     <ClInclude Include="maths.hpp" />
-    <ClInclude Include="physics.h" />
     <ClInclude Include="splash_screen.h" />
-    <ClInclude Include="splash_screen_graphics.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>

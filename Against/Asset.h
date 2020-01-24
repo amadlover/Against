@@ -1,5 +1,4 @@
 #pragma once
-#include "Image.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -8,95 +7,21 @@
 
 typedef struct
 {
-	VkMemoryRequirements MemoryRequirements;
-} VkImageHandles;
-
-typedef struct
-{
 	char Name[256];
-	unsigned int Width;
-	unsigned int Height;
-	unsigned int BPP;
 
-	unsigned char* Pixels;
+	VkDeviceSize Width;
+	VkDeviceSize Height;
+	VkDeviceSize BPP;
 
-	uint32_t Size;
+	uint8_t* Pixels;
 
-	VkImageHandles VkHandles;
-} Image_Orig;
-
-typedef struct
-{
-	int MinFilter;
-	int MagFilter;
-	int Wrap_S;
-	int Wrap_T;
-} Sampler_Orig;
-
-typedef struct _Texture
-{
-	char Name[256];
-	Image_Orig* image;
-	Sampler_Orig* Sampler_Orig;
-} Texture_Orig;
-
-typedef struct
-{
-	char Name[256];
-	Texture_Orig* BaseColorTexture;
-} Material_Orig;
-
-typedef struct
-{
-	//TODO: Pointers or values;
+	VkDeviceSize Size;
 	VkDeviceSize Offset;
+
 	VkImage* image;
-	VkImageView* ImageViews;
-	VkSampler Sampler_Orig;
-	VkDescriptorSet* DescriptorSet;
-	VkMemoryRequirements MemoryRequirements;
-} VkPrimitiveHandles;
-
-typedef struct
-{
-	float* Positions;
-	float* UV0s;
-	float* Normals;
-
-	uint32_t PositionsSize;
-	uint32_t UV0Size;
-	uint32_t NormalsSize;
-	uint32_t IndicesSize;
-
-	uint32_t IndexCount;
-	uint32_t* Indices;
-
-	Material_Orig* Material;
-
-	VkPrimitiveHandles VkHandles;
-} Primitive_Orig;
-
-typedef struct
-{
-	char Name[256];
-	uint32_t ID;
-
-	Primitive_Orig* Primitives;
-	uint32_t PrimitiveCount;
-} Mesh_Orig;
-
-typedef struct _Node
-{
-	float TransformationMatrix[16];
-
-	float Translation[3];
-	float Rotation[4];
-	float Scale[3];
-
-	char Name[256];
-
-	Mesh_Orig* Mesh_Orig;
-} Node_Orig;
+	uint32_t LayerIndex;
+	VkImageView* ImageView;
+} image;
 
 typedef struct
 {
@@ -165,3 +90,5 @@ typedef struct
 
 int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, image* Images);
 void DestroyAssets (Asset* Assets, uint32_t AssetCount);
+
+int import_images (const char* FilePath, image** Images, uint32_t* ImageCount);

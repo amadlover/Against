@@ -15,7 +15,7 @@ int main_menu_process_keyboard_input (WPARAM wParam, LPARAM lParam)
     switch (wParam)
     {
     case VK_ESCAPE:
-        go_to_scene_fp (e_scene_type_splash_screen);
+        event_go_to_scene_fp (e_scene_type_splash_screen);
         break;
 
     default:
@@ -28,6 +28,7 @@ int main_menu_main_loop ()
 {
     return 0;
 }
+
 int main_menu_exit ()
 {
     OutputDebugString (L"main_menu_exit\n");
