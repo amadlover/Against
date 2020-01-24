@@ -7,11 +7,11 @@ void LogError (AGAINSTRESULT Result)
 	switch (Result)
 	{
 	case AGAINST_ERROR_GRAPHICS_POPULATE_INSTANCE_LAYERS_AND_EXTENSIONS:
-		OutputDebugString (L"Graphics Error: Populating Instance Layers and Extensions\n");
+		OutputDebugString (L"Graphics Error: Populating instance Layers and Extensions\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_INSTANCE:
-		OutputDebugString (L"Graphics Error: Create Instance\n");
+		OutputDebugString (L"Graphics Error: Create instance\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_SETUP_DEBUG_UTILS_MESSENGER:
@@ -27,7 +27,7 @@ void LogError (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_SURFACE:
-		OutputDebugString (L"Graphics Error: Create Surface\n");
+		OutputDebugString (L"Graphics Error: Create surface\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_GET_PHYSICAL_DEVICE:
@@ -43,11 +43,11 @@ void LogError (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_SURFACE_SUPPORT:
-		OutputDebugString (L"Graphics Error: Surface Support\n");
+		OutputDebugString (L"Graphics Error: surface Support\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_SWAPCHAIN:
-		OutputDebugString (L"Graphics Error: Create Swapchain\n");
+		OutputDebugString (L"Graphics Error: Create swapchain\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW:

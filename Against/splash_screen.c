@@ -25,7 +25,7 @@ SplashScreen* SplashScreenObj;
 
 int splash_screen_init ()
 {
-	SplashScreenObj = (SplashScreen*)MyCalloc (1, sizeof (SplashScreen));
+	SplashScreenObj = (SplashScreen*)my_calloc (1, sizeof (SplashScreen));
 
 	if (SplashScreenObj == NULL)
 	{
@@ -33,9 +33,9 @@ int splash_screen_init ()
 	}
 
 	char FilePath[MAX_PATH];
-	GetFullFilePath (FilePath, "\\UIElements\\SplashScreen\\SplashScreen.gltf");
+	get_full_file_path (FilePath, "\\UIElements\\SplashScreen\\SplashScreen.gltf");
 
-	int Result = ImportImages (
+	int Result = import_images (
 		FilePath,
 		&SplashScreenObj->Images,
 		&SplashScreenObj->ImageCount
@@ -88,7 +88,7 @@ int splash_screen_process_keyboard_input (WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int splash_screen_draw (uint64_t ElapsedTime)
+int splash_screen_main_loop (uint64_t ElapsedTime)
 {
 	int Result = DrawSplashScreenGraphics ();
 
@@ -108,7 +108,7 @@ void DestroySplashScreenAssets ()
 	{
 		if (SplashScreenObj->Actors)
 		{
-			MyFree (SplashScreenObj->Actors);
+			my_free (SplashScreenObj->Actors);
 		}
 
 		if (SplashScreenObj->Assets)
@@ -125,25 +125,25 @@ void DestroySplashScreenAssets ()
 
 						if (CurrentGP->Indices)
 						{
-							MyFree (CurrentGP->Indices);
+							my_free (CurrentGP->Indices);
 						}
 
 						if (CurrentGP->Positions)
 						{
-							MyFree (CurrentGP->Positions);
+							my_free (CurrentGP->Positions);
 						}
 
 						if (CurrentGP->UV0s)
 						{
-							MyFree (CurrentGP->UV0s);
+							my_free (CurrentGP->UV0s);
 						}
 
 						if (CurrentGP->Normals)
 						{
-							MyFree (CurrentGP->Normals);
+							my_free (CurrentGP->Normals);
 						}
 
-						MyFree (CurrentGP);
+						my_free (CurrentGP);
 					}
 				}
 
@@ -155,32 +155,32 @@ void DestroySplashScreenAssets ()
 
 						if (CurrentPP->Indices)
 						{
-							MyFree (CurrentPP->Indices);
+							my_free (CurrentPP->Indices);
 						}
 
 						if (CurrentPP->Positions)
 						{
-							MyFree (CurrentPP->Positions);
+							my_free (CurrentPP->Positions);
 						}
 
-						MyFree (CurrentPP);
+						my_free (CurrentPP);
 					}
 				}
 			}
 
-			MyFree (SplashScreenObj->Assets);
+			my_free (SplashScreenObj->Assets);
 		}
 
 		if (SplashScreenObj->Images)
 		{
-			MyFree (SplashScreenObj->Images);
+			my_free (SplashScreenObj->Images);
 		}
 
-		MyFree (SplashScreenObj);
+		my_free (SplashScreenObj);
 	}
 }
 
-void DestroySplashScreen ()
+void splash_screen_exit ()
 {
 	DestroySplashScreenGraphics ();
 	DestroySplashScreenAssets ();

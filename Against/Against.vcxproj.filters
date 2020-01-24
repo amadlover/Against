@@ -68,12 +68,6 @@
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main_game.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main_menu.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="physics.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -96,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="event.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_menu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -133,12 +130,6 @@
     <ClInclude Include="list.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="main_game.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="main_menu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="maths.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -164,6 +155,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="enums.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main_menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

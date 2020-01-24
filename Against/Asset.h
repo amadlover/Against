@@ -36,7 +36,7 @@ typedef struct
 typedef struct _Texture
 {
 	char Name[256];
-	Image_Orig* Image;
+	Image_Orig* image;
 	Sampler_Orig* Sampler_Orig;
 } Texture_Orig;
 
@@ -50,7 +50,7 @@ typedef struct
 {
 	//TODO: Pointers or values;
 	VkDeviceSize Offset;
-	VkImage* Image;
+	VkImage* image;
 	VkImageView* ImageViews;
 	VkSampler Sampler_Orig;
 	VkDescriptorSet* DescriptorSet;
@@ -102,7 +102,7 @@ typedef struct
 {
 	char Name[256];
 
-	Image* Image;
+	image* image;
 } Texture;
 
 typedef struct
@@ -163,5 +163,5 @@ typedef struct
 	uint32_t GraphicsPrimitiveCount;
 } Asset;
 
-int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, Image* Images);
+int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, image* Images);
 void DestroyAssets (Asset* Assets, uint32_t AssetCount);

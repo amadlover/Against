@@ -36,7 +36,7 @@ int ImportGLTF (const char* FilePath,
 			if (Result == cgltf_result_success)
 			{
 				*SamplerCount = Data->samplers_count;
-				*Samplers = (Sampler_Orig*)MyMalloc (Data->samplers_count * sizeof (Sampler_Orig));
+				*Samplers = (Sampler_Orig*)my_malloc (Data->samplers_count * sizeof (Sampler_Orig));
 
 				for (uint32_t s = 0; s < Data->samplers_count; s++)
 				{
@@ -49,18 +49,18 @@ int ImportGLTF (const char* FilePath,
 				}
 
 				*ImageCount = Data->images_count;
-				*Images = (Image_Orig*)MyMalloc (Data->images_count * sizeof (Image_Orig));
+				*Images = (Image_Orig*)my_malloc (Data->images_count * sizeof (Image_Orig));
 
 				for (uint32_t i = 0; i < Data->images_count; i++)
 				{
-					cgltf_image* Image = Data->images + i;
+					cgltf_image* image = Data->images + i;
 
 					TCHAR TextureFile[MAX_PATH];
 					mbstowcs (TextureFile, FilePath, MAX_PATH);
 
 					PathRemoveFileSpec (TextureFile);
 					TCHAR URI[MAX_PATH];
-					mbstowcs (URI, Image->uri, MAX_PATH);
+					mbstowcs (URI, image->uri, MAX_PATH);
 
 					TCHAR URIPath[MAX_PATH];
 					StringCchCopy (URIPath, MAX_PATH, L"\\");
@@ -73,14 +73,14 @@ int ImportGLTF (const char* FilePath,
 					(*Images + i)->Pixels = stbi_load (TextureFilename, &(*Images + i)->Width, &(*Images + i)->Height, &(*Images + i)->BPP, 4);
 					(*Images + i)->Size = (*Images + i)->Width * (*Images + i)->Height * 4;
 
-					if (Image->name)
+					if (image->name)
 					{
-						strcpy ((*Images + i)->Name, Image->name);
+						strcpy ((*Images + i)->Name, image->name);
 					}
 				}
 
 				*TextureCount = Data->textures_count;
-				*Textures = (Texture_Orig*)MyMalloc (Data->textures_count * sizeof (Texture_Orig));
+				*Textures = (Texture_Orig*)my_malloc (Data->textures_count * sizeof (Texture_Orig));
 
 				for (uint32_t t = 0; t < Data->textures_count; t++)
 				{
@@ -90,7 +90,7 @@ int ImportGLTF (const char* FilePath,
 					{
 						if ((Data->images + i) == (Texture->image))
 						{
-							(*Textures + t)->Image = (*Images + i);
+							(*Textures + t)->image = (*Images + i);
 						}
 					}
 
@@ -109,7 +109,7 @@ int ImportGLTF (const char* FilePath,
 				}
 
 				*MaterialCount = Data->materials_count;
-				*Materials = (Material_Orig*)MyMalloc (Data->materials_count * sizeof (Material_Orig));
+				*Materials = (Material_Orig*)my_malloc (Data->materials_count * sizeof (Material_Orig));
 
 				for (uint32_t m = 0; m < Data->materials_count; m++)
 				{
@@ -130,14 +130,14 @@ int ImportGLTF (const char* FilePath,
 				}
 
 				*MeshCount = Data->meshes_count;
-				*Meshes = (Mesh_Orig*)MyMalloc (Data->meshes_count * sizeof (Mesh_Orig));
+				*Meshes = (Mesh_Orig*)my_malloc (Data->meshes_count * sizeof (Mesh_Orig));
 
 				for (uint32_t m = 0; m < Data->meshes_count; m++)
 				{
 					cgltf_mesh* Mesh_Orig = Data->meshes + m;
 
 					(*Meshes + m)->PrimitiveCount = Mesh_Orig->primitives_count;
-					(*Meshes + m)->Primitives = (Primitive_Orig*)MyMalloc (Mesh_Orig->primitives_count * sizeof (Primitive_Orig));
+					(*Meshes + m)->Primitives = (Primitive_Orig*)my_malloc (Mesh_Orig->primitives_count * sizeof (Primitive_Orig));
 
 					for (uint32_t p = 0; p < Mesh_Orig->primitives_count; p++)
 					{
@@ -155,7 +155,7 @@ int ImportGLTF (const char* FilePath,
 								float* Positions = (float*)(DataStart + Accessor->offset + BufferView->offset);
 
 								(*Meshes + m)->Primitives[p].PositionsSize = BufferView->size;
-								(*Meshes + m)->Primitives[p].Positions = (float*)MyMalloc (BufferView->size);
+								(*Meshes + m)->Primitives[p].Positions = (float*)my_malloc (BufferView->size);
 
 								memcpy ((*Meshes + m)->Primitives[p].Positions, Positions, BufferView->size);
 							}
@@ -167,7 +167,7 @@ int ImportGLTF (const char* FilePath,
 									float* UVs = (float*)(DataStart + Accessor->offset + BufferView->offset);
 
 									(*Meshes + m)->Primitives[p].UV0Size = BufferView->size;
-									(*Meshes + m)->Primitives[p].UV0s = (float*)MyMalloc (BufferView->size);
+									(*Meshes + m)->Primitives[p].UV0s = (float*)my_malloc (BufferView->size);
 
 									memcpy ((*Meshes + m)->Primitives[p].UV0s, UVs, BufferView->size);
 								}
@@ -189,7 +189,7 @@ int ImportGLTF (const char* FilePath,
 						{
 						case cgltf_component_type_r_16u:
 							(*Meshes + m)->Primitives[p].IndicesSize = BufferView->size * 2;
-							(*Meshes + m)->Primitives[p].Indices = (uint32_t*)MyMalloc (BufferView->size * 2);
+							(*Meshes + m)->Primitives[p].Indices = (uint32_t*)my_malloc (BufferView->size * 2);
 
 							uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
 
@@ -202,7 +202,7 @@ int ImportGLTF (const char* FilePath,
 
 						case cgltf_component_type_r_32u:
 							(*Meshes + m)->Primitives[p].IndicesSize = BufferView->size;
-							(*Meshes + m)->Primitives[p].Indices = (uint32_t*)MyMalloc (BufferView->size);
+							(*Meshes + m)->Primitives[p].Indices = (uint32_t*)my_malloc (BufferView->size);
 
 							uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
 
@@ -229,7 +229,7 @@ int ImportGLTF (const char* FilePath,
 				}
 
 				*NodeCount = Data->nodes_count;
-				*Nodes = (Node_Orig*)MyMalloc (Data->nodes_count * sizeof (Node_Orig));
+				*Nodes = (Node_Orig*)my_malloc (Data->nodes_count * sizeof (Node_Orig));
 
 				for (uint32_t n = 0; n < Data->nodes_count; n++)
 				{

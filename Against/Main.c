@@ -113,7 +113,7 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance,
 		return -1;
 	}
 
-	int Result = GameInit (HInstance, WindowHandle);
+	int Result = game_init (HInstance, WindowHandle);
 
 	ShowWindow (WindowHandle, CmdShow);
 	UpdateWindow (WindowHandle);
@@ -126,7 +126,7 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance,
 
 		LogError (Result);
 
-		GameShutdown ();
+		game_exit ();
 
 		return Result;
 	}
@@ -142,7 +142,7 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance,
 			DispatchMessage (&Msg);
 		}
 
-		Result = GameMainLoop ();
+		Result = game_main_loop ();
 
 		if (Result != 0)
 		{
@@ -152,13 +152,13 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance,
 
 			LogError (Result);
 
-			GameShutdown ();
+			game_exit ();
 
 			return Result;
 		}
 	}
 
-	GameShutdown ();
+	game_exit ();
 
 	DestroyWindow (WindowHandle);
 

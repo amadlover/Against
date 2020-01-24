@@ -4,8 +4,8 @@
 
 void list_init (list* list_ptr, e_list_data_type data_type)
 {
-	list_ptr->begin_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
-	list_ptr->end_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
+	list_ptr->begin_node = (struct list_node*)my_calloc (1, sizeof (struct list_node));
+	list_ptr->end_node = (struct list_node*)my_calloc (1, sizeof (struct list_node));
 	list_ptr->data_type = data_type;
 }
 
@@ -13,7 +13,7 @@ void list_insert (list* list_ptr, void* data)
 {
 	if (list_ptr->num_nodes == 0)
 	{
-		struct list_node* new_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
+		struct list_node* new_node = (struct list_node*)my_calloc (1, sizeof (struct list_node));
 		if (list_ptr->data_type == e_list_uint32_t)
 		{
 			new_node->data.i = *((uint32_t*)(data));
@@ -48,7 +48,7 @@ void list_insert (list* list_ptr, void* data)
 
 		if (last_node)
 		{
-			struct list_node* new_node = (struct list_node*)MyCalloc (1, sizeof (struct list_node));
+			struct list_node* new_node = (struct list_node*)my_calloc (1, sizeof (struct list_node));
 			if (list_ptr->data_type == e_list_uint32_t)
 			{
 				new_node->data.i = *((uint32_t*)(data));
@@ -121,7 +121,7 @@ void list_delete (list* list_ptr, void* data)
 				struct list_node* next_node = node->next_node;
 				struct list_node* preview_node = node->preview_node;
 
-				MyFree (node);
+				my_free (node);
 				--list_ptr->num_nodes;
 
 				preview_node->next_node = next_node;
@@ -145,7 +145,7 @@ void list_delete (list* list_ptr, void* data)
 				struct list_node* next_node = node->next_node;
 				struct list_node* preview_node = node->preview_node;
 
-				MyFree (node);
+				my_free (node);
 				--list_ptr->num_nodes;
 
 				preview_node->next_node = next_node;
@@ -186,13 +186,13 @@ void list_destroy (list* list_ptr)
 	{
 		struct list_node* next_node = node->next_node;
 
-		MyFree (node);
+		my_free (node);
 		node = next_node;
 
 		--list_ptr->num_nodes;
 	}
 
-	MyFree (list_ptr->begin_node);
-	MyFree (list_ptr->end_node);
+	my_free (list_ptr->begin_node);
+	my_free (list_ptr->end_node);
 }
 

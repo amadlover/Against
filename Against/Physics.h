@@ -1,4 +1,4 @@
 #pragma once
 
-int PhysicsInit ();
-void PhysicsShutdown ();
+int physics_init ();
+void physics_exit ();

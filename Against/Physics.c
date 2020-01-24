@@ -1,11 +1,11 @@
 #include "Physics.h"
 
-int PhysicsInit ()
+int physics_init ()
 {
 	return 0;
 }
 
-void PhysicsShutdown ()
+void physics_exit ()
 {
 
 }

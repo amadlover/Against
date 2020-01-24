@@ -4,7 +4,6 @@
 #include "gui.h"
 #include "splash_screen.h"
 #include "main_menu.h"
-#include "main_game.h"
 #include "event.h"
 #include "enums.h"
 
@@ -19,7 +18,7 @@ e_scene_state splash_screen_state = e_scene_state_exited;
 e_scene_state main_menu_state = e_scene_state_exited;
 
 int (*current_scene_process_keyboard_input)(WPARAM, LPARAM);
-int (*current_scene_draw)();
+int (*current_scene_main_loop)();
 
 int process_left_mouse_click ()
 {
@@ -52,26 +51,26 @@ void go_to_scene (e_scene_type scene_type)
 	switch (scene_type)
 	{
 	case e_scene_type_splash_screen:
-		DestroyMainMenuGraphics ();
+		main_menu_exit ();
 		main_menu_state = e_scene_state_exited;
 
 		current_scene = e_scene_type_splash_screen;
 		current_scene_process_keyboard_input = splash_screen_process_keyboard_input;
-		current_scene_draw = splash_screen_draw;
+		current_scene_main_loop = splash_screen_main_loop;
 
 		splash_screen_init ();
 		splash_screen_state = e_scene_state_inited;
 		break;
 
 	case e_scene_type_main_menu:
-		DestroySplashScreen ();
+		splash_screen_exit ();
 		splash_screen_state = e_scene_state_exited;
 
 		current_scene = e_scene_type_main_menu;
 		current_scene_process_keyboard_input = main_menu_process_keyboard_input;
-		current_scene_draw = main_menu_draw;
+		current_scene_main_loop = main_menu_main_loop;
 
-		InitMainMenuGraphics ();
+		main_menu_init ();
 		main_menu_state = e_scene_state_inited;
 		break;
 
@@ -80,26 +79,26 @@ void go_to_scene (e_scene_type scene_type)
 	}
 }
 
-int GameInit (HINSTANCE HInstance, HWND HWnd)
+int game_init (HINSTANCE hInstance, HWND hWnd)
 {
-	OutputDebugString (L"GameInit\n");
+	OutputDebugString (L"game_init\n");
 
-	int Result = PhysicsInit ();
+	int result = physics_init ();
 
-	if (Result != 0)
+	if (result != 0)
 	{
-		return Result;
+		return result;
 	}
 
-	Result = GraphicsInit (HInstance, HWnd);
+	result = graphics_init (hInstance, hWnd);
 
-	if (Result != 0)
+	if (result != 0)
 	{
-		return Result;
+		return result;
 	}
 
 	current_scene_process_keyboard_input = splash_screen_process_keyboard_input;
-	current_scene_draw = splash_screen_draw;
+	current_scene_main_loop = splash_screen_main_loop;
 	go_to_scene_fp = go_to_scene;
 
 	splash_screen_init ();
@@ -107,37 +106,37 @@ int GameInit (HINSTANCE HInstance, HWND HWnd)
 	return 0;
 }
 
-int GameMainLoop ()
+int game_main_loop ()
 {
-	int Result = 0;
+	int result = 0;
 
-	Result = current_scene_draw (0);
+	result = current_scene_main_loop (0);
 
-	if (Result != 0)
+	if (result != 0)
 	{
-		return Result;
+		return result;
 	}
 
 	return 0;
 }
 
-void GameShutdown ()
+void game_exit ()
 {
-	OutputDebugString (L"GameShutdown\n");
+	OutputDebugString (L"game_exit\n");
 
 	if (splash_screen_state == e_scene_state_inited)
 	{
-		DestroySplashScreen ();
+		splash_screen_exit ();
 		splash_screen_state = e_scene_state_exited;
 	}
 
 	if (main_menu_state == e_scene_state_inited)
 	{
-		DestroyMainMenuGraphics ();
+		main_menu_exit ();
 		main_menu_state = e_scene_state_exited;
 	}
 
-	GraphicsShutdown ();
+	graphics_exit ();
 
-	PhysicsShutdown ();
+	physics_exit ();
 }

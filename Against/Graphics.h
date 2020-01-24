@@ -4,18 +4,18 @@
 
 #include <vulkan/vulkan.h>
 
-uint32_t GraphicsQueueFamilyIndex;
+uint32_t graphics_queue_family_index;
 
-VkDevice GraphicsDevice;
-VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties;
-VkPhysicalDeviceLimits PhysicalDeviceLimits;
-VkSurfaceFormatKHR ChosenSurfaceFormat;
-VkExtent2D SurfaceExtent;
-VkSwapchainKHR Swapchain;
-VkImage* SwapchainImages;
-VkImageView* SwapchainImageViews;
-uint32_t SwapchainImageCount;
-VkQueue GraphicsQueue;
+VkDevice graphics_device;
+VkPhysicalDeviceMemoryProperties physical_device_memory_properties;
+VkPhysicalDeviceLimits physical_device_limits;
+VkSurfaceFormatKHR chosen_surface_format;
+VkExtent2D surface_exten;
+VkSwapchainKHR swapchain;
+VkImage* swapchain_images;
+VkImageView* swapchain_imageviews;
+uint32_t swapchain_image_count;
+VkQueue graphics_queue;
 
-int GraphicsInit (HINSTANCE HInstance, HWND WindowHandle);
-void GraphicsShutdown ();
+int graphics_init (HINSTANCE HInstance, HWND WindowHandle);
+void graphics_exit ();

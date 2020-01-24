@@ -4,44 +4,44 @@
 #include <stb_image.h>
 #include <cgltf.h>
 
-int ImportImages (const char* FilePath, Image** Images, uint32_t* ImageCount)
+int import_images (const char* file_path, image** images, uint32_t* image_count)
 {
-	cgltf_options Options = { 0 };
-	cgltf_data* Data = NULL;
+	cgltf_options pptions = { 0 };
+	cgltf_data* data = NULL;
 
-	cgltf_result Result = cgltf_parse_file (&Options, FilePath, &Data);
+	cgltf_result result = cgltf_parse_file (&pptions, file_path, &data);
 
-	if (Result == cgltf_result_success)
+	if (result == cgltf_result_success)
 	{
-		Result = cgltf_load_buffers (&Options, Data, FilePath);
+		result = cgltf_load_buffers (&pptions, data, file_path);
 
-		if (Result == cgltf_result_success)
+		if (result == cgltf_result_success)
 		{
-			Result = cgltf_validate (Data);
+			result = cgltf_validate (data);
 
-			if (Result == cgltf_result_success)
+			if (result == cgltf_result_success)
 			{
-				*ImageCount = Data->images_count;
-				*Images = (Image*)MyCalloc (Data->images_count, sizeof (Image));
+				*image_count = data->images_count;
+				*images = (image*)my_calloc (data->images_count, sizeof (image));
 
-				for (uint32_t i = 0; i < Data->images_count; i++)
+				for (uint32_t i = 0; i < data->images_count; i++)
 				{
-					cgltf_image* I = Data->images + i;
-					Image* CurrentImage = (*Images) + i;
+					cgltf_image* I = data->images + i;
+					image* current_image = (*images) + i;
 
-					strcpy (CurrentImage->Name, I->name);
+					strcpy (current_image->Name, I->name);
 
-					char FullTexturePath[256];
+					char full_texture_path[256];
 
-					GetFullTexturePathFromURI (FilePath, I->uri, FullTexturePath);
-					CurrentImage->Pixels = stbi_load (FullTexturePath, (int*)&CurrentImage->Width, (int*)&CurrentImage->Height, (int*)&CurrentImage->BPP, 4);
-					CurrentImage->Size = CurrentImage->Width * CurrentImage->Height * CurrentImage->BPP;
+					get_full_texture_path_from_uri (file_path, I->uri, full_texture_path);
+					current_image->Pixels = stbi_load (full_texture_path, (int*)&current_image->Width, (int*)&current_image->Height, (int*)&current_image->BPP, 4);
+					current_image->Size = current_image->Width * current_image->Height * current_image->BPP;
 				}
 			}
 		}
 	}
 
-	cgltf_free (Data);
+	cgltf_free (data);
 
 	return 0;
 }

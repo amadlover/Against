@@ -20,6 +20,6 @@ typedef struct
 
 } _SplashScreenGraphics;
 
-int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount, Image* Images, uint32_t ImageCount);
+int InitSplashScreenGraphics (Asset* Assets, uint32_t AssetCount, image* Images, uint32_t ImageCount);
 int DrawSplashScreenGraphics ();
 void DestroySplashScreenGraphics ();

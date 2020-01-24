@@ -15,9 +15,9 @@ typedef struct
 	VkDeviceSize Size;
 	VkDeviceSize Offset;
 
-	VkImage* Image;
+	VkImage* image;
 	uint32_t LayerIndex;
 	VkImageView* ImageView;
-} Image;
+} image;
 
-int ImportImages (const char* FilePath, Image** Images, uint32_t* ImageCount);
+int import_images (const char* FilePath, image** Images, uint32_t* ImageCount);

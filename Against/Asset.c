@@ -32,13 +32,13 @@ void ImportAttribute (PrimitivePtr* PrimPtr, const cgltf_attribute* Attribute, E
 		if (PrimType == GraphicsPrimitiveType)
 		{
 			PrimPtr->GraphicsPrimPtr->PositionsSize = BufferView->size;
-			PrimPtr->GraphicsPrimPtr->Positions = (float*)MyMalloc (BufferView->size);
+			PrimPtr->GraphicsPrimPtr->Positions = (float*)my_malloc (BufferView->size);
 			memcpy (PrimPtr->GraphicsPrimPtr->Positions, Positions, BufferView->size);
 		}
 		else if (PrimType == PhysicsPrimitiveType)
 		{
 			PrimPtr->PhysicsPrimPtr->PositionsSize = BufferView->size;
-			PrimPtr->PhysicsPrimPtr->Positions = (float*)MyMalloc (BufferView->size);
+			PrimPtr->PhysicsPrimPtr->Positions = (float*)my_malloc (BufferView->size);
 			memcpy (PrimPtr->PhysicsPrimPtr->Positions, Positions, BufferView->size);
 		}
 
@@ -53,14 +53,14 @@ void ImportAttribute (PrimitivePtr* PrimPtr, const cgltf_attribute* Attribute, E
 			if (PrimType == GraphicsPrimitiveType)
 			{
 				PrimPtr->GraphicsPrimPtr->UV0sSize = BufferView->size;
-				PrimPtr->GraphicsPrimPtr->UV0s = (float*)MyMalloc (BufferView->size);
+				PrimPtr->GraphicsPrimPtr->UV0s = (float*)my_malloc (BufferView->size);
 				memcpy (PrimPtr->GraphicsPrimPtr->UV0s, UVs, BufferView->size);
 			}
 		}
 	}
 }
 
-void ImportMaterials (const char* FilePath, PrimitivePtr* PrimPtr, const cgltf_material* Material, cgltf_data* Data, Image* Images)
+void ImportMaterials (const char* FilePath, PrimitivePtr* PrimPtr, const cgltf_material* Material, cgltf_data* Data, image* Images)
 {
 	strcpy (PrimPtr->GraphicsPrimPtr->Material.Name, Material->name);
 
@@ -77,7 +77,7 @@ void ImportMaterials (const char* FilePath, PrimitivePtr* PrimPtr, const cgltf_m
 
 			if (Material->pbr_metallic_roughness.base_color_texture.texture->image == I)
 			{
-				PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.Image = Images + i;
+				PrimPtr->GraphicsPrimPtr->Material.BaseColorTexture.image = Images + i;
 			}
 		}
 	}
@@ -106,12 +106,12 @@ void ImportIndices (PrimitivePtr* PrimPtr, const cgltf_primitive* Primitive, EPr
 		if (PrimType == GraphicsPrimitiveType)
 		{
 			PrimPtr->GraphicsPrimPtr->IndicesSize = (VkDeviceSize)BufferView->size * 2;
-			PrimPtr->GraphicsPrimPtr->Indices = (uint32_t*)MyMalloc (2 * BufferView->size);
+			PrimPtr->GraphicsPrimPtr->Indices = (uint32_t*)my_malloc (2 * BufferView->size);
 		}
 		else if (PrimType == PhysicsPrimitiveType)
 		{
 			PrimPtr->PhysicsPrimPtr->IndicesSize = (VkDeviceSize)BufferView->size * 2;
-			PrimPtr->PhysicsPrimPtr->Indices = (uint32_t*)MyMalloc (2 * BufferView->size);
+			PrimPtr->PhysicsPrimPtr->Indices = (uint32_t*)my_malloc (2 * BufferView->size);
 		}
 
 		uint16_t* I16 = (uint16_t*)(DataStart + Accessor->offset + BufferView->offset);
@@ -134,12 +134,12 @@ void ImportIndices (PrimitivePtr* PrimPtr, const cgltf_primitive* Primitive, EPr
 		if (PrimType == GraphicsPrimitiveType)
 		{
 			PrimPtr->GraphicsPrimPtr->IndicesSize = BufferView->size;
-			PrimPtr->GraphicsPrimPtr->Indices = (uint32_t*)MyMalloc (BufferView->size);
+			PrimPtr->GraphicsPrimPtr->Indices = (uint32_t*)my_malloc (BufferView->size);
 		}
 		else if (PrimType == PhysicsPrimitiveType)
 		{
 			PrimPtr->PhysicsPrimPtr->IndicesSize = BufferView->size;
-			PrimPtr->PhysicsPrimPtr->Indices = (uint32_t*)MyMalloc (BufferView->size);
+			PrimPtr->PhysicsPrimPtr->Indices = (uint32_t*)my_malloc (BufferView->size);
 		}
 
 		uint32_t* I32 = (uint32_t*)(DataStart + Accessor->offset + BufferView->offset);
@@ -160,7 +160,7 @@ void ImportIndices (PrimitivePtr* PrimPtr, const cgltf_primitive* Primitive, EPr
 	}
 }
 
-void ImportGraphicsPrimitives (const char* FilePath, Asset* Assets, cgltf_data* Data, Image* Images)
+void ImportGraphicsPrimitives (const char* FilePath, Asset* Assets, cgltf_data* Data, image* Images)
 {
 	uint32_t CurrentMeshAssetCount = 0;
 
@@ -176,7 +176,7 @@ void ImportGraphicsPrimitives (const char* FilePath, Asset* Assets, cgltf_data* 
 			strcpy (TmpAsset.Name, Node_Orig->name);
 
 			TmpAsset.GraphicsPrimitiveCount = Node_Orig->mesh->primitives_count;
-			TmpAsset.GraphicsPrimitives = (GraphicsPrimitive*)MyCalloc (Node_Orig->mesh->primitives_count, sizeof (GraphicsPrimitive));
+			TmpAsset.GraphicsPrimitives = (GraphicsPrimitive*)my_calloc (Node_Orig->mesh->primitives_count, sizeof (GraphicsPrimitive));
 
 			for (uint32_t p = 0; p < Node_Orig->mesh->primitives_count; p++)
 			{
@@ -234,7 +234,7 @@ void ImportPhysicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Da
 
 					if (CurrentAsset->PhysicsPrimitiveCount == 0)
 					{
-						PhysicsPrimitive* Tmp = (PhysicsPrimitive*)MyRealloc (CurrentAsset->PhysicsPrimitives, (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount) * sizeof (PhysicsPrimitive));
+						PhysicsPrimitive* Tmp = (PhysicsPrimitive*)my_realloc (CurrentAsset->PhysicsPrimitives, (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount) * sizeof (PhysicsPrimitive));
 
 						if (Tmp != NULL)
 						{
@@ -243,7 +243,7 @@ void ImportPhysicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Da
 					}
 					else
 					{
-						CurrentAsset->PhysicsPrimitives = (PhysicsPrimitive*)MyCalloc (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount, sizeof (PhysicsPrimitive));
+						CurrentAsset->PhysicsPrimitives = (PhysicsPrimitive*)my_calloc (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount, sizeof (PhysicsPrimitive));
 					}
 
 					CurrentAsset->PhysicsPrimitiveCount = CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount;
@@ -271,7 +271,7 @@ void ImportPhysicsPrimitives (Asset* Assets, uint32_t AssetCount, cgltf_data* Da
 	}
 }
 
-int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, Image* Images)
+int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, image* Images)
 {
 	cgltf_options Options = { 0 };
 	cgltf_data* Data = NULL;
@@ -299,7 +299,7 @@ int ImportAssets (const char* FilePath, Asset** Assets, uint32_t* AssetCount, Im
 					++(*AssetCount);
 				}
 
-				*Assets = (Asset*)MyCalloc ((size_t)(*AssetCount), sizeof (Asset));
+				*Assets = (Asset*)my_calloc ((size_t)(*AssetCount), sizeof (Asset));
 
 				ImportGraphicsPrimitives (FilePath, *Assets, Data, Images);
 				ImportPhysicsPrimitives (*Assets, *AssetCount, Data);
@@ -328,25 +328,25 @@ void DestroyAssets (Asset* Assets, uint32_t AssetCount)
 
 					if (CurrentGP->Indices)
 					{
-						MyFree (CurrentGP->Indices);
+						my_free (CurrentGP->Indices);
 					}
 
 					if (CurrentGP->Positions)
 					{
-						MyFree (CurrentGP->Positions);
+						my_free (CurrentGP->Positions);
 					}
 
 					if (CurrentGP->UV0s)
 					{
-						MyFree (CurrentGP->UV0s);
+						my_free (CurrentGP->UV0s);
 					}
 
 					if (CurrentGP->Normals)
 					{
-						MyFree (CurrentGP->Normals);
+						my_free (CurrentGP->Normals);
 					}
 
-					MyFree (CurrentGP);
+					my_free (CurrentGP);
 				}
 			}
 
@@ -358,19 +358,19 @@ void DestroyAssets (Asset* Assets, uint32_t AssetCount)
 
 					if (CurrentPP->Indices)
 					{
-						MyFree (CurrentPP->Indices);
+						my_free (CurrentPP->Indices);
 					}
 
 					if (CurrentPP->Positions)
 					{
-						MyFree (CurrentPP->Positions);
+						my_free (CurrentPP->Positions);
 					}
 
-					MyFree (CurrentPP);
+					my_free (CurrentPP);
 				}
 			}
 		}
 	}
 
-	MyFree (Assets);
+	my_free (Assets);
 }

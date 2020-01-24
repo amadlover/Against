@@ -8,35 +8,35 @@
 
 #include <vulkan/vulkan_win32.h>
 
-bool IsValidationNeeded;
+bool is_validation_needed;
 
-const char* RequestedInstanceLayers[16];
-uint32_t RequestedInstanceLayerCount;
+const char* requested_instance_layers[16];
+uint32_t requested_instance_layer_count;
 
-const char* RequestedInstanceExtensions[16];
-uint32_t RequestedInstanceExtensionCount;
+const char* requested_instance_extensions[16];
+uint32_t requested_instance_extension_count;
 
-const char* RequestedDeviceExtensions[16];
-uint32_t RequestedDeviceExtensionCount;
+const char* requested_device_extensions[16];
+uint32_t requested_device_extension_count;
 
-VkInstance Instance;
-VkDebugUtilsMessengerEXT DebugUtilsMessenger;
-VkPhysicalDevice PhysicalDevice;
-VkSurfaceKHR Surface;
-VkPresentModeKHR ChosenPresentMode;
+VkInstance instance;
+VkDebugUtilsMessengerEXT debug_utils_messenger;
+VkPhysicalDevice physical_device;
+VkSurfaceKHR surface;
+VkPresentModeKHR chosen_present_mode;
 
-VkResult CreateDebugUtilsMessenger (VkInstance Instance,
+VkResult create_debug_utils_messenger (VkInstance instance,
 	const VkDebugUtilsMessengerCreateInfoEXT* DebugUtilsMessengerCreateInfo,
 	const VkAllocationCallbacks* AllocationCallbacks,
-	VkDebugUtilsMessengerEXT* DebugUtilsMessenger)
+	VkDebugUtilsMessengerEXT* debug_utils_messenger)
 {
-	OutputDebugString (L"CreateDebugUtilsMessenger\n");
+	OutputDebugString (L"create_debug_utils_messenger\n");
 
-	PFN_vkCreateDebugUtilsMessengerEXT Func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr (Instance, "vkCreateDebugUtilsMessengerEXT");
+	PFN_vkCreateDebugUtilsMessengerEXT Func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr (instance, "vkCreateDebugUtilsMessengerEXT");
 
 	if (Func)
 	{
-		return Func (Instance, DebugUtilsMessengerCreateInfo, AllocationCallbacks, DebugUtilsMessenger);
+		return Func (instance, DebugUtilsMessengerCreateInfo, AllocationCallbacks, debug_utils_messenger);
 	}
 	else
 	{
@@ -44,17 +44,17 @@ VkResult CreateDebugUtilsMessenger (VkInstance Instance,
 	}
 }
 
-void DestroyDebugUtilsMessenger (VkInstance Instance,
-	VkDebugUtilsMessengerEXT DebugUtilsMessenger,
+void destroy_debug_utils_messenger (VkInstance instance,
+	VkDebugUtilsMessengerEXT debug_utils_messenger,
 	const VkAllocationCallbacks* AllocationCallbacks)
 {
-	OutputDebugString (L"DestroyDebugUtilsMessenger\n");
+	OutputDebugString (L"destroy_debug_utils_messenger\n");
 
-	PFN_vkDestroyDebugUtilsMessengerEXT Func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr (Instance, "vkDestroyDebugUtilsMessengerEXT");
+	PFN_vkDestroyDebugUtilsMessengerEXT Func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr (instance, "vkDestroyDebugUtilsMessengerEXT");
 
 	if (Func)
 	{
-		Func (Instance, DebugUtilsMessenger, AllocationCallbacks);
+		Func (instance, debug_utils_messenger, AllocationCallbacks);
 	}
 	else
 	{
@@ -62,7 +62,7 @@ void DestroyDebugUtilsMessenger (VkInstance Instance,
 	}
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback (
+VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback (
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 	VkDebugUtilsMessageTypeFlagsEXT messageTypes,
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -78,63 +78,63 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback (
 	return 0;
 }
 
-int PopulateInstanceLayersAndExtensions ()
+int populate_instance_layers_and_extensions ()
 {
-	OutputDebugString (L"PopulateInstanceLayersAndExtensions\n");
+	OutputDebugString (L"populate_instance_layers_and_extensions\n");
 
-	if (IsValidationNeeded)
+	if (is_validation_needed)
 	{
 		uint32_t LayerCount = 0;
 		vkEnumerateInstanceLayerProperties (&LayerCount, NULL);
-		VkLayerProperties* LayerProperties = (VkLayerProperties*)MyMalloc (sizeof (VkLayerProperties) * LayerCount);
+		VkLayerProperties* LayerProperties = (VkLayerProperties*)my_malloc (sizeof (VkLayerProperties) * LayerCount);
 		vkEnumerateInstanceLayerProperties (&LayerCount, LayerProperties);
 
 		for (uint32_t l = 0; l < LayerCount; l++)
 		{
 			if (strcmp (LayerProperties[l].layerName, "VK_LAYER_LUNARG_standard_validation") == 0)
 			{
-				RequestedInstanceLayers[RequestedInstanceLayerCount++] = ("VK_LAYER_LUNARG_standard_validation");
+				requested_instance_layers[requested_instance_layer_count++] = ("VK_LAYER_LUNARG_standard_validation");
 				break;
 			}
 		}
 
-		MyFree (LayerProperties);
+		my_free (LayerProperties);
 	}
 
 	uint32_t ExtensionCount = 0;
 	vkEnumerateInstanceExtensionProperties (NULL, &ExtensionCount, NULL);
 
-	VkExtensionProperties* ExtensionProperties = (VkExtensionProperties*)MyMalloc (sizeof (VkExtensionProperties) * ExtensionCount);
+	VkExtensionProperties* ExtensionProperties = (VkExtensionProperties*)my_malloc (sizeof (VkExtensionProperties) * ExtensionCount);
 	vkEnumerateInstanceExtensionProperties (NULL, &ExtensionCount, ExtensionProperties);
 
 	for (uint32_t e = 0; e < ExtensionCount; e++)
 	{
 		if (strcmp (ExtensionProperties[e].extensionName, VK_KHR_SURFACE_EXTENSION_NAME) == 0)
 		{
-			RequestedInstanceExtensions[RequestedInstanceExtensionCount++] = VK_KHR_SURFACE_EXTENSION_NAME;
+			requested_instance_extensions[requested_instance_extension_count++] = VK_KHR_SURFACE_EXTENSION_NAME;
 		}
 		else if (strcmp (ExtensionProperties[e].extensionName, "VK_KHR_win32_surface") == 0)
 		{
-			RequestedInstanceExtensions[RequestedInstanceExtensionCount++] = "VK_KHR_win32_surface";
+			requested_instance_extensions[requested_instance_extension_count++] = "VK_KHR_win32_surface";
 		}
 
-		if (IsValidationNeeded)
+		if (is_validation_needed)
 		{
 			if (strcmp (ExtensionProperties[e].extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
 			{
-				RequestedInstanceExtensions[RequestedInstanceExtensionCount++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+				requested_instance_extensions[requested_instance_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 			}
 		}
 	}
 
-	MyFree (ExtensionProperties);
+	my_free (ExtensionProperties);
 
 	return 0;
 }
 
 int CreateInstance ()
 {
-	OutputDebugString (L"Create Instance\n");
+	OutputDebugString (L"Create instance\n");
 
 	VkApplicationInfo ApplicationInfo;
 	memset (&ApplicationInfo, 0, sizeof (VkApplicationInfo));
@@ -150,14 +150,14 @@ int CreateInstance ()
 	memset (&CreateInfo, 0, sizeof (VkInstanceCreateInfo));
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	CreateInfo.enabledExtensionCount = RequestedInstanceExtensionCount;
-	CreateInfo.ppEnabledExtensionNames = RequestedInstanceExtensions;
-	CreateInfo.enabledLayerCount = RequestedInstanceLayerCount;
-	CreateInfo.ppEnabledLayerNames = RequestedInstanceLayers;
+	CreateInfo.enabledExtensionCount = requested_instance_extension_count;
+	CreateInfo.ppEnabledExtensionNames = requested_instance_extensions;
+	CreateInfo.enabledLayerCount = requested_instance_layer_count;
+	CreateInfo.ppEnabledLayerNames = requested_instance_layers;
 	CreateInfo.pApplicationInfo = &ApplicationInfo;
 	CreateInfo.flags = 0;
 
-	if (vkCreateInstance (&CreateInfo, NULL, &Instance) != VK_SUCCESS)
+	if (vkCreateInstance (&CreateInfo, NULL, &instance) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_INSTANCE;
 	}
@@ -178,10 +178,10 @@ int SetupDebugUtilsMessenger ()
 	CreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	CreateInfo.pfnUserCallback = DebugMessengerCallback;
+	CreateInfo.pfnUserCallback = debug_messenger_callback;
 	CreateInfo.flags = 0;
 
-	if (CreateDebugUtilsMessenger (Instance, &CreateInfo, NULL, &DebugUtilsMessenger) != VK_SUCCESS)
+	if (create_debug_utils_messenger (instance, &CreateInfo, NULL, &debug_utils_messenger) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_DEBUG_UTILS_MESSENGER;
 	}
@@ -194,43 +194,43 @@ int GetPhysicalDevice ()
 	OutputDebugString (L"GetPhysicalDevice\n");
 
 	uint32_t PhysicalDeviceCount = 0;
-	vkEnumeratePhysicalDevices (Instance, &PhysicalDeviceCount, NULL);
+	vkEnumeratePhysicalDevices (instance, &PhysicalDeviceCount, NULL);
 
-	VkPhysicalDevice* PhysicalDevices = (VkPhysicalDevice*)MyMalloc (sizeof (VkPhysicalDevice) * PhysicalDeviceCount);
-	vkEnumeratePhysicalDevices (Instance, &PhysicalDeviceCount, PhysicalDevices);
+	VkPhysicalDevice* PhysicalDevices = (VkPhysicalDevice*)my_malloc (sizeof (VkPhysicalDevice) * PhysicalDeviceCount);
+	vkEnumeratePhysicalDevices (instance, &PhysicalDeviceCount, PhysicalDevices);
 
 	if (PhysicalDeviceCount == 0)
 	{
 		return AGAINST_ERROR_GRAPHICS_GET_PHYSICAL_DEVICE;
 	}
 
-	PhysicalDevice = PhysicalDevices[0];
+	physical_device = PhysicalDevices[0];
 
 	VkPhysicalDeviceFeatures DeviceFeatures;
-	vkGetPhysicalDeviceFeatures (PhysicalDevice, &DeviceFeatures);
+	vkGetPhysicalDeviceFeatures (physical_device, &DeviceFeatures);
 
 	uint32_t QueueFamilyCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties (PhysicalDevice, &QueueFamilyCount, NULL);
-	VkQueueFamilyProperties* QueueFamilyProperties = (VkQueueFamilyProperties*)MyMalloc (sizeof (VkQueueFamilyProperties) * QueueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties (PhysicalDevice, &QueueFamilyCount, QueueFamilyProperties);
+	vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &QueueFamilyCount, NULL);
+	VkQueueFamilyProperties* QueueFamilyProperties = (VkQueueFamilyProperties*)my_malloc (sizeof (VkQueueFamilyProperties) * QueueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &QueueFamilyCount, QueueFamilyProperties);
 
 	for (uint32_t i = 0; i < QueueFamilyCount; i++)
 	{
 		if ((QueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && (QueueFamilyProperties[i].queueCount > 1))
 		{
-			GraphicsQueueFamilyIndex = i;
+			graphics_queue_family_index = i;
 			break;
 		}
 	}
 
-	vkGetPhysicalDeviceMemoryProperties (PhysicalDevice, &PhysicalDeviceMemoryProperties);
+	vkGetPhysicalDeviceMemoryProperties (physical_device, &physical_device_memory_properties);
 
 	VkPhysicalDeviceProperties DeviceProperties;
-	vkGetPhysicalDeviceProperties (PhysicalDevice, &DeviceProperties);
-	PhysicalDeviceLimits = DeviceProperties.limits;
+	vkGetPhysicalDeviceProperties (physical_device, &DeviceProperties);
+	physical_device_limits = DeviceProperties.limits;
 
-	MyFree (PhysicalDevices);
-	MyFree (QueueFamilyProperties);
+	my_free (PhysicalDevices);
+	my_free (QueueFamilyProperties);
 
 	return 0;
 }
@@ -246,7 +246,7 @@ int CreateSurface (HINSTANCE HInstance, HWND HWnd)
 	CreateInfo.hinstance = HInstance;
 	CreateInfo.hwnd = HWnd;
 
-	if (vkCreateWin32SurfaceKHR (Instance, &CreateInfo, NULL, &Surface) != VK_SUCCESS)
+	if (vkCreateWin32SurfaceKHR (instance, &CreateInfo, NULL, &surface) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_SURFACE;
 	}
@@ -259,21 +259,21 @@ int PopulateGraphicsDeviceExtensions ()
 	OutputDebugString (L"PopulateGraphicsDeviceExtensions\n");
 
 	uint32_t ExtensionCount = 0;
-	vkEnumerateDeviceExtensionProperties (PhysicalDevice, NULL, &ExtensionCount, NULL);
+	vkEnumerateDeviceExtensionProperties (physical_device, NULL, &ExtensionCount, NULL);
 
-	VkExtensionProperties* ExtensionProperties = (VkExtensionProperties*)MyMalloc (sizeof (VkExtensionProperties) * ExtensionCount);
-	vkEnumerateDeviceExtensionProperties (PhysicalDevice, NULL, &ExtensionCount, ExtensionProperties);
+	VkExtensionProperties* ExtensionProperties = (VkExtensionProperties*)my_malloc (sizeof (VkExtensionProperties) * ExtensionCount);
+	vkEnumerateDeviceExtensionProperties (physical_device, NULL, &ExtensionCount, ExtensionProperties);
 
 	for (uint32_t e = 0; e < ExtensionCount; e++)
 	{
 		if (strcmp (ExtensionProperties[e].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
 		{
-			RequestedDeviceExtensions[RequestedDeviceExtensionCount++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+			requested_device_extensions[requested_device_extension_count++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 			break;
 		}
 	}
 
-	MyFree (ExtensionProperties);
+	my_free (ExtensionProperties);
 
 	return 0;
 }
@@ -291,7 +291,7 @@ int CreateGraphicsDevice ()
 	QueueCreateInfo.pNext = NULL;
 	QueueCreateInfo.pQueuePriorities = &Priorities;
 	QueueCreateInfo.queueCount = 1;
-	QueueCreateInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+	QueueCreateInfo.queueFamilyIndex = graphics_queue_family_index;
 	QueueCreateInfo.flags = 0;
 
 	VkDeviceCreateInfo CreateInfo;
@@ -299,20 +299,20 @@ int CreateGraphicsDevice ()
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	CreateInfo.pNext = NULL;
-	CreateInfo.enabledExtensionCount = RequestedDeviceExtensionCount;
-	CreateInfo.ppEnabledExtensionNames = RequestedDeviceExtensions;
+	CreateInfo.enabledExtensionCount = requested_device_extension_count;
+	CreateInfo.ppEnabledExtensionNames = requested_device_extensions;
 	CreateInfo.enabledLayerCount = 0;
 	CreateInfo.ppEnabledLayerNames = NULL;
 	CreateInfo.queueCreateInfoCount = 1;
 	CreateInfo.pQueueCreateInfos = &QueueCreateInfo;
 	CreateInfo.flags = 0;
 
-	if (vkCreateDevice (PhysicalDevice, &CreateInfo, NULL, &GraphicsDevice) != VK_SUCCESS)
+	if (vkCreateDevice (physical_device, &CreateInfo, NULL, &graphics_device) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_GRAPHICS_DEVICE;
 	}
 
-	vkGetDeviceQueue (GraphicsDevice, GraphicsQueueFamilyIndex, 0, &GraphicsQueue);
+	vkGetDeviceQueue (graphics_device, graphics_queue_family_index, 0, &graphics_queue);
 
 	return 0;
 }
@@ -322,7 +322,7 @@ int CreateSwapChain ()
 	OutputDebugString (L"CreateSwapChain\n");
 
 	VkBool32 IsSurfaceSupported = false;
-	vkGetPhysicalDeviceSurfaceSupportKHR (PhysicalDevice, GraphicsQueueFamilyIndex, Surface, &IsSurfaceSupported);
+	vkGetPhysicalDeviceSurfaceSupportKHR (physical_device, graphics_queue_family_index, surface, &IsSurfaceSupported);
 
 	if (!IsSurfaceSupported)
 	{
@@ -330,73 +330,73 @@ int CreateSwapChain ()
 	}
 
 	VkSurfaceCapabilitiesKHR SurfaceCapabilites;
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR (PhysicalDevice, Surface, &SurfaceCapabilites);
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR (physical_device, surface, &SurfaceCapabilites);
 
 	uint32_t SurfaceFormatCount = 0;
-	vkGetPhysicalDeviceSurfaceFormatsKHR (PhysicalDevice, Surface, &SurfaceFormatCount, NULL);
+	vkGetPhysicalDeviceSurfaceFormatsKHR (physical_device, surface, &SurfaceFormatCount, NULL);
 
-	VkSurfaceFormatKHR* SurfaceFormats = (VkSurfaceFormatKHR*)MyMalloc (sizeof (VkSurfaceFormatKHR) * SurfaceFormatCount);
-	vkGetPhysicalDeviceSurfaceFormatsKHR (PhysicalDevice, Surface, &SurfaceFormatCount, SurfaceFormats);
+	VkSurfaceFormatKHR* SurfaceFormats = (VkSurfaceFormatKHR*)my_malloc (sizeof (VkSurfaceFormatKHR) * SurfaceFormatCount);
+	vkGetPhysicalDeviceSurfaceFormatsKHR (physical_device, surface, &SurfaceFormatCount, SurfaceFormats);
 
 	for (uint32_t s = 0; s < SurfaceFormatCount; s++)
 	{
 		if (SurfaceFormats[s].format == VK_FORMAT_B8G8R8A8_UNORM)
 		{
-			ChosenSurfaceFormat = SurfaceFormats[s];
+			chosen_surface_format = SurfaceFormats[s];
 			break;
 		}
 	}
 
 	uint32_t PresentModeCount = 0;
-	vkGetPhysicalDeviceSurfacePresentModesKHR (PhysicalDevice, Surface, &PresentModeCount, NULL);
+	vkGetPhysicalDeviceSurfacePresentModesKHR (physical_device, surface, &PresentModeCount, NULL);
 
-	VkPresentModeKHR* PresentModes = (VkPresentModeKHR*)MyMalloc (sizeof (VkPresentModeKHR) * PresentModeCount);
-	vkGetPhysicalDeviceSurfacePresentModesKHR (PhysicalDevice, Surface, &PresentModeCount, PresentModes);
+	VkPresentModeKHR* PresentModes = (VkPresentModeKHR*)my_malloc (sizeof (VkPresentModeKHR) * PresentModeCount);
+	vkGetPhysicalDeviceSurfacePresentModesKHR (physical_device, surface, &PresentModeCount, PresentModes);
 
 	for (uint32_t p = 0; p < PresentModeCount; p++)
 	{
 		if (PresentModes[p] == VK_PRESENT_MODE_MAILBOX_KHR)
 		{
-			ChosenPresentMode = PresentModes[p];
+			chosen_present_mode = PresentModes[p];
 			break;
 		}
 	}
 
-	SurfaceExtent = SurfaceCapabilites.currentExtent;
+	surface_exten = SurfaceCapabilites.currentExtent;
 
 	VkSwapchainCreateInfoKHR CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkSwapchainCreateInfoKHR));
 
 	CreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	CreateInfo.surface = Surface;
+	CreateInfo.surface = surface;
 
 	CreateInfo.clipped = 1;
 	CreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	CreateInfo.imageArrayLayers = 1;
-	CreateInfo.imageColorSpace = ChosenSurfaceFormat.colorSpace;
+	CreateInfo.imageColorSpace = chosen_surface_format.colorSpace;
 	CreateInfo.imageExtent = SurfaceCapabilites.currentExtent;
-	CreateInfo.imageFormat = ChosenSurfaceFormat.format;
+	CreateInfo.imageFormat = chosen_surface_format.format;
 	CreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	CreateInfo.imageUsage = SurfaceCapabilites.supportedUsageFlags;
 	CreateInfo.minImageCount = SurfaceCapabilites.minImageCount + 1;
 	CreateInfo.oldSwapchain = VK_NULL_HANDLE;
-	CreateInfo.presentMode = ChosenPresentMode;
+	CreateInfo.presentMode = chosen_present_mode;
 	CreateInfo.preTransform = SurfaceCapabilites.currentTransform;
 
-	if (vkCreateSwapchainKHR (GraphicsDevice, &CreateInfo, NULL, &Swapchain) != VK_SUCCESS)
+	if (vkCreateSwapchainKHR (graphics_device, &CreateInfo, NULL, &swapchain) != VK_SUCCESS)
 	{
-		MyFree (SurfaceFormats);
-		MyFree (PresentModes);
+		my_free (SurfaceFormats);
+		my_free (PresentModes);
 
 		return AGAINST_ERROR_GRAPHICS_CREATE_SWAPCHAIN;
 	}
 
-	vkGetSwapchainImagesKHR (GraphicsDevice, Swapchain, &SwapchainImageCount, NULL);
-	SwapchainImages = (VkImage*)MyMalloc (sizeof (VkImage) * SwapchainImageCount);
+	vkGetSwapchainImagesKHR (graphics_device, swapchain, &swapchain_image_count, NULL);
+	swapchain_images = (VkImage*)my_malloc (sizeof (VkImage) * swapchain_image_count);
 
-	vkGetSwapchainImagesKHR (GraphicsDevice, Swapchain, &SwapchainImageCount, SwapchainImages);
+	vkGetSwapchainImagesKHR (graphics_device, swapchain, &swapchain_image_count, swapchain_images);
 
-	SwapchainImageViews = (VkImageView*)MyMalloc (sizeof (VkImageView) * SwapchainImageCount);
+	swapchain_imageviews = (VkImageView*)my_malloc (sizeof (VkImageView) * swapchain_image_count);
 
 	return 0;
 }
@@ -405,7 +405,7 @@ int CreateSwapchainImageViews ()
 {
 	OutputDebugString (L"CreateSwapchainImageViews\n");
 
-	for (uint32_t i = 0; i < SwapchainImageCount; i++)
+	for (uint32_t i = 0; i < swapchain_image_count; i++)
 	{
 		VkImageViewCreateInfo CreateInfo;
 		memset (&CreateInfo, 0, sizeof (VkImageViewCreateInfo));
@@ -427,13 +427,13 @@ int CreateSwapchainImageViews ()
 		SubresourceRange.layerCount = 1;
 
 		CreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		CreateInfo.image = SwapchainImages[i];
-		CreateInfo.format = ChosenSurfaceFormat.format;
+		CreateInfo.image = swapchain_images[i];
+		CreateInfo.format = chosen_surface_format.format;
 		CreateInfo.components = Components;
 		CreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		CreateInfo.subresourceRange = SubresourceRange;
 
-		if (vkCreateImageView (GraphicsDevice, &CreateInfo, NULL, &SwapchainImageViews[i]) != VK_SUCCESS)
+		if (vkCreateImageView (graphics_device, &CreateInfo, NULL, &swapchain_imageviews[i]) != VK_SUCCESS)
 		{
 			return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
 		}
@@ -442,17 +442,17 @@ int CreateSwapchainImageViews ()
 	return 0;
 }
 
-int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
+int graphics_init (HINSTANCE HInstance, HWND HWnd)
 {
-	OutputDebugString (L"GraphicsInit\n");
+	OutputDebugString (L"graphics_init\n");
 
 #ifdef _DEBUG
-	IsValidationNeeded = true;
+	is_validation_needed = true;
 #else
 	IsValidationNeeded = false;
 #endif
 
-	int Result = PopulateInstanceLayersAndExtensions ();
+	int Result = populate_instance_layers_and_extensions ();
 
 	if (Result != 0)
 	{
@@ -466,7 +466,7 @@ int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 		return Result;
 	}
 
-	if (IsValidationNeeded)
+	if (is_validation_needed)
 	{
 		Result = SetupDebugUtilsMessenger ();
 
@@ -521,55 +521,55 @@ int GraphicsInit (HINSTANCE HInstance, HWND HWnd)
 	return 0;
 }
 
-void GraphicsShutdown ()
+void graphics_exit ()
 {
-	OutputDebugString (L"GraphicsShutdown\n");
+	OutputDebugString (L"graphics_exit\n");
 
-	if (Swapchain != VK_NULL_HANDLE)
+	if (swapchain != VK_NULL_HANDLE)
 	{
-		vkDestroySwapchainKHR (GraphicsDevice, Swapchain, NULL);
+		vkDestroySwapchainKHR (graphics_device, swapchain, NULL);
 	}
 
-	if (SwapchainImageViews)
+	if (swapchain_imageviews)
 	{
-		for (uint32_t i = 0; i < SwapchainImageCount; i++)
+		for (uint32_t i = 0; i < swapchain_image_count; i++)
 		{
-			if (SwapchainImageViews[i] != VK_NULL_HANDLE)
+			if (swapchain_imageviews[i] != VK_NULL_HANDLE)
 			{
-				vkDestroyImageView (GraphicsDevice, SwapchainImageViews[i], NULL);
+				vkDestroyImageView (graphics_device, swapchain_imageviews[i], NULL);
 			}
 		}
 
-		MyFree (SwapchainImageViews);
+		my_free (swapchain_imageviews);
 	}
 
-	if (SwapchainImages)
+	if (swapchain_images)
 	{
-		MyFree (SwapchainImages);
+		my_free (swapchain_images);
 	}
 
-	if (GraphicsDevice != VK_NULL_HANDLE)
+	if (graphics_device != VK_NULL_HANDLE)
 	{
-		vkDestroyDevice (GraphicsDevice, NULL);
+		vkDestroyDevice (graphics_device, NULL);
 	}
 
-	if (Surface != VK_NULL_HANDLE)
+	if (surface != VK_NULL_HANDLE)
 	{
-		vkDestroySurfaceKHR (Instance, Surface, NULL);
+		vkDestroySurfaceKHR (instance, surface, NULL);
 	}
 
-	if (IsValidationNeeded)
+	if (is_validation_needed)
 	{
-		if (DebugUtilsMessenger != VK_NULL_HANDLE)
+		if (debug_utils_messenger != VK_NULL_HANDLE)
 		{
-			DestroyDebugUtilsMessenger (Instance, DebugUtilsMessenger, NULL);
+			destroy_debug_utils_messenger (instance, debug_utils_messenger, NULL);
 		}
 	}
 
-	if (Instance != VK_NULL_HANDLE)
+	if (instance != VK_NULL_HANDLE)
 	{
-		vkDestroyInstance (Instance, NULL);
+		vkDestroyInstance (instance, NULL);
 	}
 
-	OutputDebugString (L"Finished GraphicsShutdown\n");
+	OutputDebugString (L"Finished graphics_exit\n");
 }

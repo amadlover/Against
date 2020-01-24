@@ -17,11 +17,11 @@ typedef struct
 	actor* Actors;
 	uint32_t ActorCount;
 
-	Image* Images;
+	image* Images;
 	uint32_t ImageCount;
 } SplashScreen;
 
 int splash_screen_init ();
 int splash_screen_process_keyboard_input (WPARAM wParam, LPARAM lParam);
-int splash_screen_draw (uint64_t ElapsedTime);
-void DestroySplashScreen ();
+int splash_screen_main_loop (uint64_t ElapsedTime);
+void splash_screen_exit ();

@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int CreateBuffer (VkDevice GraphicsDevice,
+int CreateBuffer (VkDevice graphics_device,
 	VkDeviceSize Size,
 	VkBufferUsageFlags Usage,
 	VkSharingMode SharingMode,
-	uint32_t GraphicsQueueFamilyIndex,
+	uint32_t graphics_queue_family_index,
 	VkBuffer* OutBuffer)
 {
 	VkBufferCreateInfo BufferCreateInfo = { 0 };
@@ -17,10 +17,10 @@ int CreateBuffer (VkDevice GraphicsDevice,
 	BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	BufferCreateInfo.size = Size;
 	BufferCreateInfo.queueFamilyIndexCount = 1;
-	BufferCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
+	BufferCreateInfo.pQueueFamilyIndices = &graphics_queue_family_index;
 	BufferCreateInfo.usage = Usage;
 
-	if (vkCreateBuffer (GraphicsDevice, &BufferCreateInfo, NULL, OutBuffer) != VK_SUCCESS)
+	if (vkCreateBuffer (graphics_device, &BufferCreateInfo, NULL, OutBuffer) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
 	}
@@ -28,68 +28,68 @@ int CreateBuffer (VkDevice GraphicsDevice,
 	return 0;
 }
 
-int AllocateBindBufferMemory (VkDevice GraphicsDevice,
+int AllocateBindBufferMemory (VkDevice graphics_device,
 	VkBuffer* Buffers,
 	uint32_t BufferCount,
-	VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties,
+	VkPhysicalDeviceMemoryProperties physical_device_memory_properties,
 	VkMemoryPropertyFlags RequiredTypes,
 	VkDeviceMemory* OutBufferMemory)
 {
 	VkMemoryAllocateInfo MemoryAllocateInfo = { 0 };
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-	VkDeviceSize* Offsets = (VkDeviceSize*)MyCalloc (BufferCount, sizeof (VkDeviceSize));
+	VkDeviceSize* Offsets = (VkDeviceSize*)my_calloc (BufferCount, sizeof (VkDeviceSize));
 
 	for (uint32_t b = 0; b < BufferCount; b++)
 	{
 		Offsets[b] = MemoryAllocateInfo.allocationSize;
 
 		VkMemoryRequirements MemoryRequirements;
-		vkGetBufferMemoryRequirements (GraphicsDevice, Buffers[b], &MemoryRequirements);
+		vkGetBufferMemoryRequirements (graphics_device, Buffers[b], &MemoryRequirements);
 
 		MemoryAllocateInfo.allocationSize += MemoryRequirements.size;
-		GetMemoryTypeIndex (MemoryRequirements, PhysicalDeviceMemoryProperties, RequiredTypes, &MemoryAllocateInfo.memoryTypeIndex);
+		GetMemoryTypeIndex (MemoryRequirements, physical_device_memory_properties, RequiredTypes, &MemoryAllocateInfo.memoryTypeIndex);
 	}
 
-	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, OutBufferMemory) != VK_SUCCESS)
+	if (vkAllocateMemory (graphics_device, &MemoryAllocateInfo, NULL, OutBufferMemory) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
 	}
 
 	for (uint32_t b = 0; b < BufferCount; b++)
 	{
-		if (vkBindBufferMemory (GraphicsDevice, Buffers[b], *OutBufferMemory, Offsets[b]) != VK_SUCCESS)
+		if (vkBindBufferMemory (graphics_device, Buffers[b], *OutBufferMemory, Offsets[b]) != VK_SUCCESS)
 		{
 			return AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
 		}
 	}
 
-	MyFree (Offsets);
+	my_free (Offsets);
 
 	return 0;
 }
 
-int MapDataToBuffer (VkDevice GraphicsDevice,
+int MapDataToBuffer (VkDevice graphics_device,
 	VkDeviceMemory Memory,
 	VkDeviceSize Offset,
 	VkDeviceSize Size,
 	void* DataSource)
 {
 	void* Data;
-	if (vkMapMemory (GraphicsDevice, Memory, Offset, Size, 0, &Data) != VK_SUCCESS)
+	if (vkMapMemory (graphics_device, Memory, Offset, Size, 0, &Data) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_MAP_MEMORY;
 	}
 
 	memcpy (Data, DataSource, (size_t)Size);
-	vkUnmapMemory (GraphicsDevice, Memory);
+	vkUnmapMemory (graphics_device, Memory);
 
 	return 0;
 }
 
 int CreateImage (
-	VkDevice GraphicsDevice,
-	uint32_t GraphicsQueueFamilyIndex,
+	VkDevice graphics_device,
+	uint32_t graphics_queue_family_index,
 	VkExtent3D Extent,
 	uint32_t ArrayLayers,
 	VkFormat Format,
@@ -109,9 +109,9 @@ int CreateImage (
 	ImageCreateInfo.initialLayout = InitialLayout;
 	ImageCreateInfo.sharingMode = SharingMode;
 	ImageCreateInfo.queueFamilyIndexCount = 1;
-	ImageCreateInfo.pQueueFamilyIndices = &GraphicsQueueFamilyIndex;
+	ImageCreateInfo.pQueueFamilyIndices = &graphics_queue_family_index;
 
-	if (vkCreateImage (GraphicsDevice, &ImageCreateInfo, NULL, OutImage) != VK_SUCCESS)
+	if (vkCreateImage (graphics_device, &ImageCreateInfo, NULL, OutImage) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
 	}
@@ -119,38 +119,38 @@ int CreateImage (
 	return 0;
 }
 
-int AllocateBindImageMemory (VkDevice GraphicsDevice, VkImage* Images, uint32_t ImageCount, VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties, VkMemoryPropertyFlags RequiredTypes, VkDeviceMemory* OutMemory)
+int AllocateBindImageMemory (VkDevice graphics_device, VkImage* Images, uint32_t ImageCount, VkPhysicalDeviceMemoryProperties physical_device_memory_properties, VkMemoryPropertyFlags RequiredTypes, VkDeviceMemory* OutMemory)
 {
 	VkMemoryAllocateInfo MemoryAllocateInfo = { 0 };
 
 	MemoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-	VkDeviceSize* Offsets = (VkDeviceSize*)MyCalloc (ImageCount, sizeof (VkDeviceSize));
+	VkDeviceSize* Offsets = (VkDeviceSize*)my_calloc (ImageCount, sizeof (VkDeviceSize));
 
 	for (uint32_t i = 0; i < ImageCount; i++)
 	{
 		VkMemoryRequirements MemoryRequirements = { 0 };
-		vkGetImageMemoryRequirements (GraphicsDevice, Images[i], &MemoryRequirements);
+		vkGetImageMemoryRequirements (graphics_device, Images[i], &MemoryRequirements);
 
 		MemoryAllocateInfo.allocationSize += MemoryRequirements.size;
 
-		GetMemoryTypeIndex (MemoryRequirements, PhysicalDeviceMemoryProperties, RequiredTypes, &MemoryAllocateInfo.memoryTypeIndex);
+		GetMemoryTypeIndex (MemoryRequirements, physical_device_memory_properties, RequiredTypes, &MemoryAllocateInfo.memoryTypeIndex);
 	}
 
-	if (vkAllocateMemory (GraphicsDevice, &MemoryAllocateInfo, NULL, OutMemory) != VK_SUCCESS)
+	if (vkAllocateMemory (graphics_device, &MemoryAllocateInfo, NULL, OutMemory) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
 	}
 
 	for (uint32_t i = 0; i < ImageCount; i++)
 	{
-		if (vkBindImageMemory (GraphicsDevice, Images[i], *OutMemory, Offsets[i]) != VK_SUCCESS)
+		if (vkBindImageMemory (graphics_device, Images[i], *OutMemory, Offsets[i]) != VK_SUCCESS)
 		{
 			return AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
 		}
 	}
 
-	MyFree (Offsets);
+	my_free (Offsets);
 
 	return 0;
 }
@@ -170,7 +170,7 @@ errno_t ReadShaderFile (char* FullFilePath, char** FileContents)
 	uint32_t FileSize = (uint32_t)ftell (VertFile) / sizeof (uint32_t);
 	rewind (VertFile);
 
-	*FileContents = (char*)MyMalloc (sizeof (uint32_t) * FileSize);
+	*FileContents = (char*)my_malloc (sizeof (uint32_t) * FileSize);
 	fread (*FileContents, sizeof (uint32_t), FileSize, VertFile);
 	fclose (VertFile);
 
@@ -182,9 +182,9 @@ int ChangeImageLayout ()
 	return 0;
 }
 
-int CopyBufferToBuffer (VkDevice GraphicsDevice,
+int CopyBufferToBuffer (VkDevice graphics_device,
 	VkCommandPool CommandPool,
-	VkQueue GraphicsQueue,
+	VkQueue graphics_queue,
 	VkBuffer SrcBuffer,
 	VkBuffer DstBuffer,
 	VkDeviceSize Size)
@@ -198,7 +198,7 @@ int CopyBufferToBuffer (VkDevice GraphicsDevice,
 
 	VkCommandBuffer CommandBuffer;
 
-	if (vkAllocateCommandBuffers (GraphicsDevice, &CommandBufferAllocateInfo, &CommandBuffer) != VK_SUCCESS)
+	if (vkAllocateCommandBuffers (graphics_device, &CommandBufferAllocateInfo, &CommandBuffer) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
 	}
@@ -219,9 +219,9 @@ int CopyBufferToBuffer (VkDevice GraphicsDevice,
 
 	vkEndCommandBuffer (CommandBuffer);
 
-	SubmitOneTimeCmd (GraphicsQueue, CommandBuffer);
+	SubmitOneTimeCmd (graphics_queue, CommandBuffer);
 
-	vkFreeCommandBuffers (GraphicsDevice, CommandPool, 1, &CommandBuffer);
+	vkFreeCommandBuffers (graphics_device, CommandPool, 1, &CommandBuffer);
 
 	return 0;
 }
@@ -232,7 +232,7 @@ int CopyBufferToImage ()
 }
 
 int CreateShader (char* FullFilePath,
-	VkDevice GraphicsDevice,
+	VkDevice graphics_device,
 	VkShaderStageFlagBits ShaderStage,
 	VkShaderModule* ShaderModule,
 	VkPipelineShaderStageCreateInfo* ShaderStageCreateInfos)
@@ -252,7 +252,7 @@ int CreateShader (char* FullFilePath,
 	uint32_t FileSize = (uint32_t)ftell (VertFile);
 	rewind (VertFile);
 
-	FileContents = (char*)MyMalloc (FileSize);
+	FileContents = (char*)my_malloc (FileSize);
 	fread (FileContents, sizeof (uint32_t), FileSize, VertFile);
 	fclose (VertFile);
 
@@ -263,13 +263,13 @@ int CreateShader (char* FullFilePath,
 	ShaderModuleCreateInfo.pCode = (uint32_t*)FileContents;
 	ShaderModuleCreateInfo.codeSize = FileSize;
 
-	if (vkCreateShaderModule (GraphicsDevice, &ShaderModuleCreateInfo, NULL, ShaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule (graphics_device, &ShaderModuleCreateInfo, NULL, ShaderModule) != VK_SUCCESS)
 	{
-		MyFree (FileContents);
+		my_free (FileContents);
 		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
 	}
 
-	MyFree (FileContents);
+	my_free (FileContents);
 
 	VkPipelineShaderStageCreateInfo ShaderStageCreateInfo;
 	memset (&ShaderStageCreateInfo, 0, sizeof (VkPipelineShaderStageCreateInfo));
@@ -292,13 +292,13 @@ int CreateShader (char* FullFilePath,
 }
 
 int GetMemoryTypeIndex (VkMemoryRequirements MemoryRequirements,
-	VkPhysicalDeviceMemoryProperties PhysicalDeviceMemoryProperties,
+	VkPhysicalDeviceMemoryProperties physical_device_memory_properties,
 	VkMemoryPropertyFlags RequiredMemoryTypes,
 	uint32_t* MemoryTypeIndex)
 {
-	for (uint32_t i = 0; i < PhysicalDeviceMemoryProperties.memoryTypeCount; i++)
+	for (uint32_t i = 0; i < physical_device_memory_properties.memoryTypeCount; i++)
 	{
-		if (MemoryRequirements.memoryTypeBits & (1 << i) && RequiredMemoryTypes & PhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags)
+		if (MemoryRequirements.memoryTypeBits & (1 << i) && RequiredMemoryTypes & physical_device_memory_properties.memoryTypes[i].propertyFlags)
 		{
 			*MemoryTypeIndex = i;
 			break;
@@ -308,7 +308,7 @@ int GetMemoryTypeIndex (VkMemoryRequirements MemoryRequirements,
 	return 0;
 }
 
-int SubmitOneTimeCmd (VkQueue GraphicsQueue, VkCommandBuffer CommandBuffer)
+int SubmitOneTimeCmd (VkQueue graphics_queue, VkCommandBuffer CommandBuffer)
 {
 	VkSubmitInfo SubmitInfo = { 0 };
 
@@ -316,27 +316,27 @@ int SubmitOneTimeCmd (VkQueue GraphicsQueue, VkCommandBuffer CommandBuffer)
 	SubmitInfo.commandBufferCount = 1;
 	SubmitInfo.pCommandBuffers = &CommandBuffer;
 
-	if (vkQueueSubmit (GraphicsQueue, 1, &SubmitInfo, 0) != VK_SUCCESS)
+	if (vkQueueSubmit (graphics_queue, 1, &SubmitInfo, 0) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
 	}
 
-	vkQueueWaitIdle (GraphicsQueue);
+	vkQueueWaitIdle (graphics_queue);
 
 	return 0;
 }
 
-void DestroyBufferAndBufferMemory (VkDevice GraphicsDevice,
+void DestroyBufferAndBufferMemory (VkDevice graphics_device,
 	VkBuffer Buffer,
 	VkDeviceMemory BufferMemory)
 {
 	if (Buffer != VK_NULL_HANDLE)
 	{
-		vkDestroyBuffer (GraphicsDevice, Buffer, NULL);
+		vkDestroyBuffer (graphics_device, Buffer, NULL);
 	}
 
 	if (BufferMemory != VK_NULL_HANDLE)
 	{
-		vkFreeMemory (GraphicsDevice, BufferMemory, NULL);
+		vkFreeMemory (graphics_device, BufferMemory, NULL);
 	}
 }

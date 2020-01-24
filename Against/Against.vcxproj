@@ -37,7 +37,6 @@
     <ClCompile Include="import_assets.c" />
     <ClCompile Include="list.c" />
     <ClCompile Include="main.c" />
-    <ClCompile Include="main_game.c" />
     <ClCompile Include="main_menu.c" />
     <ClCompile Include="maths.cpp" />
     <ClCompile Include="physics.c" />
@@ -61,7 +60,6 @@
     <ClInclude Include="image.h" />
     <ClInclude Include="import_assets.h" />
     <ClInclude Include="list.h" />
-    <ClInclude Include="main_game.h" />
     <ClInclude Include="main_menu.h" />
     <ClInclude Include="maths.hpp" />
     <ClInclude Include="physics.h" />
@@ -164,10 +162,7 @@
     <PreBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Shaders" "$(SolutionDir)$(Platform)\$(Configuration)\Shaders" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Characters" "$(SolutionDir)$(Platform)\$(Configuration)\Characters" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Maps" "$(SolutionDir)$(Platform)\$(Configuration)\Maps" /I /Y /D /E /R 
-xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons" /I /Y /D /E /R </Command>
+xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -196,10 +191,7 @@ xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons
     <PreBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Shaders" "$(SolutionDir)$(Platform)\$(Configuration)\Shaders" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Characters" "$(SolutionDir)$(Platform)\$(Configuration)\Characters" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Maps" "$(SolutionDir)$(Platform)\$(Configuration)\Maps" /I /Y /D /E /R 
-xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons" /I /Y /D /E /R </Command>
+xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -233,10 +225,7 @@ xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons
     <PreBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Shaders" "$(SolutionDir)$(Platform)\$(Configuration)\Shaders" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Characters" "$(SolutionDir)$(Platform)\$(Configuration)\Characters" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Maps" "$(SolutionDir)$(Platform)\$(Configuration)\Maps" /I /Y /D /E /R 
-xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons" /I /Y /D /E /R </Command>
+xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -270,10 +259,7 @@ xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons
     <PreBuildEvent>
       <Command>xcopy "$(ProjectDir)Images" "$(SolutionDir)$(Platform)\$(Configuration)\Images" /I /Y /D /E /R 
 xcopy "$(ProjectDir)Shaders" "$(SolutionDir)$(Platform)\$(Configuration)\Shaders" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Characters" "$(SolutionDir)$(Platform)\$(Configuration)\Characters" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Maps" "$(SolutionDir)$(Platform)\$(Configuration)\Maps" /I /Y /D /E /R 
-xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R 
-xcopy "$(ProjectDir)Weapons" "$(SolutionDir)$(Platform)\$(Configuration)\Weapons" /I /Y /D /E /R </Command>
+xcopy "$(ProjectDir)UIElements" "$(SolutionDir)$(Platform)\$(Configuration)\UIElements" /I /Y /D /E /R </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

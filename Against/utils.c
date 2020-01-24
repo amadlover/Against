@@ -2,52 +2,52 @@
 #include <Shlwapi.h>
 #include <strsafe.h>
 
-void GetFullTexturePathFromURI (const char* FilePath, const char* URI, char* OutFullTexturePath)
+void get_full_texture_path_from_uri (const char* file_path, const char* uri, char* out_full_texture_path)
 {
-	TCHAR TextureFile[MAX_PATH];
-	mbstowcs (TextureFile, FilePath, MAX_PATH);
+	TCHAR texture_file[MAX_PATH];
+	mbstowcs (texture_file, file_path, MAX_PATH);
 
-	PathRemoveFileSpec (TextureFile);
-	TCHAR Uri[MAX_PATH];
-	mbstowcs (Uri, URI, MAX_PATH);
+	PathRemoveFileSpec (texture_file);
+	TCHAR t_uri[MAX_PATH];
+	mbstowcs (t_uri, uri, MAX_PATH);
 
-	TCHAR URIPath[MAX_PATH];
-	StringCchCopy (URIPath, MAX_PATH, L"\\");
-	StringCchCat (URIPath, MAX_PATH, Uri);
+	TCHAR uri_path[MAX_PATH];
+	StringCchCopy (uri_path, MAX_PATH, L"\\");
+	StringCchCat (uri_path, MAX_PATH, t_uri);
 
-	StringCchCat (TextureFile, MAX_PATH, URIPath);
-	wcstombs (OutFullTexturePath, TextureFile, MAX_PATH);
+	StringCchCat (texture_file, MAX_PATH, uri_path);
+	wcstombs (out_full_texture_path, texture_file, MAX_PATH);
 }
 
-void GetFullFilePath (char* OutFilePath, char* PartialFilePath)
+void get_full_file_path (char* out_file_path, char* partial_file_path)
 {
-	char Path[MAX_PATH];
+	char path[MAX_PATH];
 
-	TCHAR TPath[MAX_PATH];
-	HMODULE Module = GetModuleHandle (NULL);
-	GetModuleFileName (Module, TPath, MAX_PATH);
-	PathRemoveFileSpec (TPath);
+	TCHAR t_path[MAX_PATH];
+	HMODULE module = GetModuleHandle (NULL);
+	GetModuleFileName (module, t_path, MAX_PATH);
+	PathRemoveFileSpec (t_path);
 
-	wcstombs_s (NULL, Path, MAX_PATH, TPath, MAX_PATH);
-	memcpy (OutFilePath, strcat (Path, PartialFilePath), MAX_PATH);
+	wcstombs_s (NULL, path, MAX_PATH, t_path, MAX_PATH);
+	memcpy (out_file_path, strcat (path, partial_file_path), MAX_PATH);
 }
 
-void* MyMalloc (size_t Size)
+void* my_malloc (size_t size)
 {
-	return malloc (Size);
+	return malloc (size);
 }
 
-void* MyCalloc (size_t Count, size_t Size)
+void* my_calloc (size_t count, size_t size)
 {
-	return calloc (Count, Size);
+	return calloc (count, size);
 }
 
-void* MyRealloc (void* Ptr, size_t Size)
+void* my_realloc (void* ptr, size_t size)
 {
-	return realloc (Ptr, Size);
+	return realloc (ptr, size);
 }
 
-void MyFree (void* Ptr)
+void my_free (void* ptr)
 {
-	free (Ptr);
+	free (ptr);
 }
