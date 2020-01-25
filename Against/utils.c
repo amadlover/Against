@@ -2,6 +2,10 @@
 #include <Shlwapi.h>
 #include <strsafe.h>
 
+#ifdef WIN32
+#pragma comment (lib, "Shlwapi.lib")
+#endif
+
 void get_full_texture_path_from_uri (const char* file_path, const char* uri, char* out_full_texture_path)
 {
 	TCHAR texture_file[MAX_PATH];
