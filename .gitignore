@@ -8,5 +8,5 @@ build
 # Visual Studio
 .vs
 
-# Automation
-*.bat
+# Visual Studio Code
+.vscode

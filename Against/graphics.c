@@ -132,7 +132,7 @@ int populate_instance_layers_and_extensions ()
 	return 0;
 }
 
-int CreateInstance ()
+int create_instance ()
 {
 	OutputDebugString (L"Create instance\n");
 
@@ -165,9 +165,9 @@ int CreateInstance ()
 	return 0;
 }
 
-int SetupDebugUtilsMessenger ()
+int setup_debug_utils_messenger ()
 {
-	OutputDebugString (L"SetupDebugUtilsMessenger\n");
+	OutputDebugString (L"setup_debug_utils_messenger\n");
 
 	VkDebugUtilsMessengerCreateInfoEXT CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkDebugUtilsMessengerCreateInfoEXT));
@@ -189,9 +189,9 @@ int SetupDebugUtilsMessenger ()
 	return 0;
 }
 
-int GetPhysicalDevice ()
+int get_physical_device ()
 {
-	OutputDebugString (L"GetPhysicalDevice\n");
+	OutputDebugString (L"get_physical_device\n");
 
 	uint32_t PhysicalDeviceCount = 0;
 	vkEnumeratePhysicalDevices (instance, &PhysicalDeviceCount, NULL);
@@ -235,9 +235,9 @@ int GetPhysicalDevice ()
 	return 0;
 }
 
-int CreateSurface (HINSTANCE HInstance, HWND HWnd)
+int create_surface (HINSTANCE HInstance, HWND HWnd)
 {
-	OutputDebugString (L"CreateSurface\n");
+	OutputDebugString (L"create_surface\n");
 
 	VkWin32SurfaceCreateInfoKHR CreateInfo;
 	memset (&CreateInfo, 0, sizeof (VkWin32SurfaceCreateInfoKHR));
@@ -254,9 +254,9 @@ int CreateSurface (HINSTANCE HInstance, HWND HWnd)
 	return 0;
 }
 
-int PopulateGraphicsDeviceExtensions ()
+int populate_graphics_device_extensions ()
 {
-	OutputDebugString (L"PopulateGraphicsDeviceExtensions\n");
+	OutputDebugString (L"populate_graphics_device_extensions\n");
 
 	uint32_t ExtensionCount = 0;
 	vkEnumerateDeviceExtensionProperties (physical_device, NULL, &ExtensionCount, NULL);
@@ -278,9 +278,9 @@ int PopulateGraphicsDeviceExtensions ()
 	return 0;
 }
 
-int CreateGraphicsDevice ()
+int create_graphics_device ()
 {
-	OutputDebugString (L"CreateGraphicsDevice\n");
+	OutputDebugString (L"create_graphics_device\n");
 
 	float Priorities = 1.f;
 
@@ -317,9 +317,9 @@ int CreateGraphicsDevice ()
 	return 0;
 }
 
-int CreateSwapChain ()
+int create_swapchain ()
 {
-	OutputDebugString (L"CreateSwapChain\n");
+	OutputDebugString (L"create_swapchain\n");
 
 	VkBool32 IsSurfaceSupported = false;
 	vkGetPhysicalDeviceSurfaceSupportKHR (physical_device, graphics_queue_family_index, surface, &IsSurfaceSupported);
@@ -401,9 +401,9 @@ int CreateSwapChain ()
 	return 0;
 }
 
-int CreateSwapchainImageViews ()
+int create_swapchain_imageviews ()
 {
-	OutputDebugString (L"CreateSwapchainImageViews\n");
+	OutputDebugString (L"create_swapchain_imageviews\n");
 
 	for (uint32_t i = 0; i < swapchain_image_count; i++)
 	{
@@ -449,7 +449,7 @@ int graphics_init (HINSTANCE HInstance, HWND HWnd)
 #ifdef _DEBUG
 	is_validation_needed = true;
 #else
-	IsValidationNeeded = false;
+	is_validation_needed = false;
 #endif
 
 	int Result = populate_instance_layers_and_extensions ();
@@ -459,7 +459,7 @@ int graphics_init (HINSTANCE HInstance, HWND HWnd)
 		return Result;
 	}
 
-	Result = CreateInstance ();
+	Result = create_instance ();
 
 	if (Result != 0)
 	{
@@ -468,7 +468,7 @@ int graphics_init (HINSTANCE HInstance, HWND HWnd)
 
 	if (is_validation_needed)
 	{
-		Result = SetupDebugUtilsMessenger ();
+		Result = setup_debug_utils_messenger ();
 
 		if (Result != 0)
 		{
@@ -476,42 +476,42 @@ int graphics_init (HINSTANCE HInstance, HWND HWnd)
 		}
 	}
 
-	Result = GetPhysicalDevice ();
+	Result = get_physical_device ();
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = CreateSurface (HInstance, HWnd);
+	Result = create_surface (HInstance, HWnd);
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = PopulateGraphicsDeviceExtensions ();
+	Result = populate_graphics_device_extensions ();
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = CreateGraphicsDevice ();
+	Result = create_graphics_device ();
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = CreateSwapChain ();
+	Result = create_swapchain ();
 
 	if (Result != 0)
 	{
 		return Result;
 	}
 
-	Result = CreateSwapchainImageViews ();
+	Result = create_swapchain_imageviews ();
 
 	if (Result != 0)
 	{

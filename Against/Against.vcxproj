@@ -34,6 +34,7 @@
     <ClInclude Include="graphics.h" />
     <ClInclude Include="graphics_utils.h" />
     <ClInclude Include="list.h" />
+    <ClInclude Include="log.h" />
     <ClInclude Include="main_menu.h" />
     <ClInclude Include="maths.h" />
     <ClInclude Include="maths.hpp" />
@@ -43,12 +44,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="asset.c" />
-    <ClCompile Include="error.c" />
     <ClCompile Include="event.c" />
     <ClCompile Include="game.c" />
     <ClCompile Include="graphics.c" />
     <ClCompile Include="graphics_utils.c" />
     <ClCompile Include="list.c" />
+    <ClCompile Include="log.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="main_menu.c" />
     <ClCompile Include="maths.c" />

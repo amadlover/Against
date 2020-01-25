@@ -83,6 +83,9 @@
     <ClInclude Include="actor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="utils.c">
@@ -118,10 +121,10 @@
     <ClCompile Include="event.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="error.c">
+    <ClCompile Include="asset.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="asset.c">
+    <ClCompile Include="log.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
