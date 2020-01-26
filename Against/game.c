@@ -110,6 +110,8 @@ int game_init (HINSTANCE hInstance, HWND hWnd)
 		return result;
 	}
 
+	splash_screen_state = e_scene_state_inited;
+
 	return 0;
 }
 

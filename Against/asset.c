@@ -139,16 +139,16 @@ int import_mesh_graphics_primitives (const char* file_path, asset_mesh* meshes, 
 		if (node->mesh == NULL) continue;
 		if (strstr (node->name, "CS_") != NULL) continue;
 
-		asset_mesh tmp_mesh = { 0 };
-		strcpy (tmp_mesh.name, node->name);
+		asset_mesh* current_mesh = meshes + graphics_mesh_counter;
+		strcpy (current_mesh->name, node->name);
 
-		tmp_mesh.graphics_primitive_count = (uint32_t)node->mesh->primitives_count;
-		tmp_mesh.graphics_primitives = (asset_mesh_graphics_primitive*)my_calloc (tmp_mesh.graphics_primitive_count, sizeof (asset_mesh_graphics_primitive));
+		current_mesh->graphics_primitive_count = (uint32_t)node->mesh->primitives_count;
+		current_mesh->graphics_primitives = (asset_mesh_graphics_primitive*)my_calloc (current_mesh->graphics_primitive_count, sizeof (asset_mesh_graphics_primitive));
 
 		for (uint32_t p = 0; p < node->mesh->primitives_count; p++)
 		{
 			cgltf_primitive* primitive = node->mesh->primitives + p;
-			asset_mesh_graphics_primitive* current_graphics_primitive = tmp_mesh.graphics_primitives + p;
+			asset_mesh_graphics_primitive* current_graphics_primitive = current_mesh->graphics_primitives + p;
 
 			for (uint32_t a = 0; a < primitive->attributes_count; a++)
 			{
@@ -175,25 +175,25 @@ int import_asset_meshes (const char* file_path, asset_mesh** meshes, uint32_t* m
 	cgltf_options options = { 0 };
 	cgltf_data* data = NULL;
 
-	cgltf_result Result = cgltf_parse_file (&options, file_path, &data);
+	cgltf_result result = cgltf_parse_file (&options, file_path, &data);
 
-	if (Result == cgltf_result_success)
+	if (result == cgltf_result_success)
 	{
-		Result = cgltf_load_buffers (&options, data, file_path);
+		result = cgltf_load_buffers (&options, data, file_path);
 
-		if (Result == cgltf_result_success)
+		if (result == cgltf_result_success)
 		{
-			Result = cgltf_validate (data);
+			result = cgltf_validate (data);
 
-			if (Result == cgltf_result_success)
+			if (result == cgltf_result_success)
 			{
 				for (uint32_t n = 0; n < data->nodes_count; n++)
 				{
-					cgltf_node* Node_Orig = data->nodes + n;
+					cgltf_node* node = data->nodes + n;
 
-					if (Node_Orig->mesh == NULL) continue;
+					if (node->mesh == NULL) continue;
 
-					if (strstr (Node_Orig->name, "CS_") != NULL) continue;
+					if (strstr (node->name, "CS_") != NULL) continue;
 
 					++(*mesh_count);
 				}
@@ -227,58 +227,55 @@ void destroy_asset_meshes (asset_mesh* assets, uint32_t asset_count)
 {
 	for (uint32_t a = 0; a < asset_count; a++)
 	{
-		for (uint32_t a = 0; a < asset_count; a++)
+		asset_mesh* current_asset = assets + a;
+
+		if (current_asset->graphics_primitives)
 		{
-			asset_mesh* current_asset = assets + a;
-
-			if (current_asset->graphics_primitives)
+			for (uint32_t i = 0; i < current_asset->graphics_primitive_count; i++)
 			{
-				for (uint32_t i = 0; i < current_asset->graphics_primitive_count; i++)
+				asset_mesh_graphics_primitive* current_gp = current_asset->graphics_primitives + i;
+
+				if (current_gp->indices)
 				{
-					asset_mesh_graphics_primitive* current_gp = current_asset->graphics_primitives + i;
-
-					if (current_gp->indices)
-					{
-						my_free (current_gp->indices);
-					}
-
-					if (current_gp->positions)
-					{
-						my_free (current_gp->positions);
-					}
-
-					if (current_gp->uv0s)
-					{
-						my_free (current_gp->uv0s);
-					}
-
-					if (current_gp->normals)
-					{
-						my_free (current_gp->normals);
-					}
-
-					my_free (current_gp);
+					my_free (current_gp->indices);
 				}
+
+				if (current_gp->positions)
+				{
+					my_free (current_gp->positions);
+				}
+
+				if (current_gp->uv0s)
+				{
+					my_free (current_gp->uv0s);
+				}
+
+				if (current_gp->normals)
+				{
+					my_free (current_gp->normals);
+				}
+
+				my_free (current_gp);
 			}
+		}
 
-			if (current_asset->physics_primitives)
+		if (current_asset->physics_primitives)
+		{
+			for (uint32_t i = 0; i < current_asset->physics_primitive_count; i++)
 			{
-				for (uint32_t i = 0; i < current_asset->physics_primitive_count; i++)
+				asset_mesh_physics_primitive* current_pp = current_asset->physics_primitives + i;
+
+				if (current_pp->indices)
 				{
-					asset_mesh_physics_primitive* current_pp = current_asset->physics_primitives + i;
-
-					if (current_pp->indices)
-					{
-						my_free (current_pp->indices);
-					}
-
-					if (current_pp->positions)
-					{
-						my_free (current_pp->positions);
-					}
-
-					my_free (current_pp);
+					my_free (current_pp->indices);
 				}
+
+				if (current_pp->positions)
+				{
+					my_free (current_pp->positions);
+				}
+
+				my_free (current_pp);
 			}
 		}
 	}

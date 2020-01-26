@@ -54,5 +54,7 @@ int splash_screen_main_loop ()
 int splash_screen_exit ()
 {
     OutputDebugString (L"splash_screen_exit\n");
+
+    destroy_asset_meshes (meshes, meshes_count);
     return 0;
 }
