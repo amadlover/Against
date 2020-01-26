@@ -26,7 +26,7 @@ typedef struct
 typedef struct
 {
 	char name[256];
-	image* image;
+	image image;
 } asset_mesh_texture;
 
 typedef struct
@@ -85,7 +85,5 @@ typedef struct
 	uint32_t graphics_primitive_count;
 } asset_mesh;
 
-int import_asset_meshes (const char* file_path, asset_mesh** assets, uint32_t* asset_count, image* images);
+int import_asset_meshes (const char* file_path, asset_mesh** assets, uint32_t* asset_count);
 void destroy_asset_meshes (asset_mesh* meshes, uint32_t mesh_count);
-
-int import_images (const char* file_path, image** images, uint32_t* image_count);

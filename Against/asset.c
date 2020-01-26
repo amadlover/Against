@@ -58,7 +58,7 @@ void import_graphics_primitive_attribute (asset_mesh_graphics_primitive* graphic
 	}
 }
 
-void import_graphics_primitive_material (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_material* material, const cgltf_data* Data, image* Images)
+void import_graphics_primitive_material (const char* file_path, asset_mesh_graphics_primitive* graphics_primitive, const cgltf_material* material, const cgltf_data* data)
 {
 	strcpy (graphics_primitive->material.name, material->name);
 
@@ -69,15 +69,10 @@ void import_graphics_primitive_material (asset_mesh_graphics_primitive* graphics
 			strcpy (graphics_primitive->material.base_color_texture.name, material->pbr_metallic_roughness.base_color_texture.texture->name);
 		}
 
-		for (uint32_t i = 0; i < Data->images_count; i++)
-		{
-			cgltf_image* I = Data->images + i;
-
-			if (material->pbr_metallic_roughness.base_color_texture.texture->image == I)
-			{
-				graphics_primitive->material.base_color_texture.image = Images + i;
-			}
-		}
+		char full_texture_path[256];
+		get_full_texture_path_from_uri (file_path, material->pbr_metallic_roughness.base_color_texture.texture->image->uri, full_texture_path);
+		graphics_primitive->material.base_color_texture.image.pixels = stbi_load (full_texture_path, (int*)&graphics_primitive->material.base_color_texture.image.width, (int*)&graphics_primitive->material.base_color_texture.image.height, (int*)&graphics_primitive->material.base_color_texture.image.bpp, 4);
+		graphics_primitive->material.base_color_texture.image.size = graphics_primitive->material.base_color_texture.image.width * graphics_primitive->material.base_color_texture.image.height * graphics_primitive->material.base_color_texture.image.bpp;
 	}
 }
 
@@ -106,117 +101,34 @@ void import_graphics_primitive_indices (asset_mesh_graphics_primitive* graphics_
 		break;
 	}
 }
-/*
-void ImportGraphicsPrimitives (const char* file_path, asset_mesh* meshes, cgltf_data* data, image* images)
+
+void import_physics_primitive_indices (asset_mesh_physics_primitive* physics_primitive, const cgltf_primitive* primitive)
 {
-	uint32_t CurrentMeshAssetCount = 0;
+	cgltf_accessor* accessor = primitive->indices;
+	cgltf_buffer_view* buffer_view = accessor->buffer_view;
 
-	for (uint32_t n = 0; n < data->nodes_count; n++)
+	char* indices = (char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+	physics_primitive->index_count = (uint32_t)accessor->count;
+	physics_primitive->indices_size = (VkDeviceSize)buffer_view->size;
+	physics_primitive->indices = (uint8_t*)my_malloc (buffer_view->size);
+	memcpy (physics_primitive->indices, indices, buffer_view->size);
+
+	switch (accessor->component_type)
 	{
-		cgltf_node* node = data->nodes + n;
+	case cgltf_component_type_r_16u:
+		physics_primitive->index_type = VK_INDEX_TYPE_UINT16;
+		break;
 
-		if (node->mesh == NULL) continue;
+	case cgltf_component_type_r_32u:
+		physics_primitive->index_type = VK_INDEX_TYPE_UINT32;
+		break;
 
-		if (strstr (node->name, "CS_") == NULL)
-		{
-			asset_mesh TmpAsset = { 0 };
-			strcpy (TmpAsset.name, node->name);
-
-			TmpAsset.graphics_primitive_count = node->mesh->primitives_count;
-			TmpAsset.asset_mesh_graphics_primitive = (asset_mesh_graphics_primitive*)my_calloc (node->mesh->primitives_count, sizeof (asset_mesh_graphics_primitive));
-
-			for (uint32_t p = 0; p < node->mesh->primitives_count; p++)
-			{
-				cgltf_primitive* Primitive = node->mesh->primitives + p;
-				asset_mesh_graphics_primitive* CurrentGraphicsPrimitive = TmpAsset.asset_mesh_graphics_primitive + p;
-
-				for (uint32_t a = 0; a < Primitive->attributes_count; a++)
-				{
-					cgltf_attribute* Attribute = Primitive->attributes + a;
-					ImportAttribute (&PrimPtr, Attribute);
-				}
-
-				ImportMaterials (file_path, &PrimPtr, Primitive->material, data, images);
-				import_graphics_primitive_indices (&PrimPtr, Primitive);
-			}
-
-			memcpy ((meshes + CurrentMeshAssetCount), &TmpAsset, sizeof (asset_mesh));
-
-			++CurrentMeshAssetCount;
-		}
+	default:
+		break;
 	}
 }
 
-void ImportPhysicsPrimitives (asset_mesh* meshes, uint32_t mesh_count, cgltf_data* data)
-{
-	uint32_t CurrentMeshAssetCount = 0;
-
-	for (uint32_t n = 0; n < data->nodes_count; n++)
-	{
-		cgltf_node* node = data->nodes + n;
-
-		if (node->mesh == NULL) continue;
-
-		if (strstr (node->name, "CS_") != NULL)
-		{
-			char* name = node->name;
-
-			char* First = strtok (name, "_");
-			char* Second = strtok (NULL, "_");
-			char* Third = strtok (NULL, "_");
-
-			for (uint32_t a = 0; a < mesh_count; a++)
-			{
-				asset_mesh* CurrentAsset = meshes + a;
-
-				if (strcmp (CurrentAsset->name, Second) == 0)
-				{
-					uint32_t CurrentAssetPhysicsPrimitiveCount = CurrentAsset->physics_primitive_count;
-					cgltf_mesh* mesh = node->mesh;
-
-					uint32_t AdditionalPrimitiveCount = mesh->primitives_count;
-
-					if (CurrentAsset->physics_primitive_count == 0)
-					{
-						asset_mesh_physics_primitive* Tmp = (asset_mesh_physics_primitive*)my_realloc (CurrentAsset->asset_mesh_physics_primitive, (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount) * sizeof (asset_mesh_physics_primitive));
-
-						if (Tmp != NULL)
-						{
-							CurrentAsset->asset_mesh_physics_primitive = Tmp;
-						}
-					}
-					else
-					{
-						CurrentAsset->asset_mesh_physics_primitive = (asset_mesh_physics_primitive*)my_calloc (CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount, sizeof (asset_mesh_physics_primitive));
-					}
-
-					CurrentAsset->physics_primitive_count = CurrentAssetPhysicsPrimitiveCount + AdditionalPrimitiveCount;
-
-					for (uint32_t p = 0; p < mesh->primitives_count; p++)
-					{
-						asset_mesh_physics_primitive* CurrentPhysicsPrimitive = (CurrentAsset->asset_mesh_physics_primitive + (CurrentAssetPhysicsPrimitiveCount + p));
-
-						cgltf_primitive* Primitive = mesh->primitives + p;
-
-						PrimitivePtr PrimPtr = { 0 };
-						PrimPtr.PhysicsPrimPtr = CurrentPhysicsPrimitive;
-
-						for (uint32_t a = 0; a < Primitive->attributes_count; a++)
-						{
-							cgltf_attribute* Attribute = Primitive->attributes + a;
-							ImportAttribute (&PrimPtr, Attribute, PhysicsPrimitiveType);
-						}
-
-						import_graphics_primitive_indices (&PrimPtr, Primitive, PhysicsPrimitiveType);
-					}
-				}
-			}
-		}
-	}
-}
-*/
-
-int import_mesh_graphics_primitives (const char* file_path, asset_mesh* meshes, const cgltf_data* data, image* images)
+int import_mesh_graphics_primitives (const char* file_path, asset_mesh* meshes, const cgltf_data* data)
 {
 	uint32_t graphics_mesh_counter = 0;
 
@@ -243,7 +155,7 @@ int import_mesh_graphics_primitives (const char* file_path, asset_mesh* meshes, 
 				import_graphics_primitive_attribute (current_graphics_primitive, primitive->attributes + a);
 			}
 
-			import_graphics_primitive_material (current_graphics_primitive, primitive->material, data, images);
+			import_graphics_primitive_material (file_path, current_graphics_primitive, primitive->material, data);
 			import_graphics_primitive_indices (current_graphics_primitive, primitive);
 		}
 
@@ -258,7 +170,7 @@ int import_mesh_physics_primitives (const char* file_path, asset_mesh* meshes, c
 	return 0;
 }
 
-int import_asset_meshes (const char* file_path, asset_mesh** meshes, uint32_t* mesh_count, image* images)
+int import_asset_meshes (const char* file_path, asset_mesh** meshes, uint32_t* mesh_count)
 {
 	cgltf_options options = { 0 };
 	cgltf_data* data = NULL;
@@ -288,10 +200,22 @@ int import_asset_meshes (const char* file_path, asset_mesh** meshes, uint32_t* m
 
 				*meshes = (asset_mesh*)my_calloc ((size_t)(*mesh_count), sizeof (asset_mesh));
 
-				import_mesh_graphics_primitives (file_path, *meshes, data, images);
+				import_mesh_graphics_primitives (file_path, *meshes, data);
 				import_mesh_physics_primitives (file_path, *meshes, data);
 			}
+			else
+			{
+				return AGAINST_ERROR_GLTF_IMPORT;
+			}
 		}
+		else
+		{
+			return AGAINST_ERROR_GLTF_IMPORT;
+		}
+	}
+	else 
+	{
+		return AGAINST_ERROR_GLTF_IMPORT;
 	}
 
 	cgltf_free (data);

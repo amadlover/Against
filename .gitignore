@@ -10,3 +10,7 @@ build
 
 # Visual Studio Code
 .vscode
+
+
+#CMake build folder
+build*

@@ -44,8 +44,9 @@ int process_keyboard_input (WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void go_to_scene (e_scene_type scene_type)
+int go_to_scene (e_scene_type scene_type)
 {
+	int result = 0;
 	switch (scene_type)
 	{
 	case e_scene_type_splash_screen:
@@ -56,7 +57,11 @@ void go_to_scene (e_scene_type scene_type)
 		current_scene_process_keyboard_input = splash_screen_process_keyboard_input;
 		current_scene_main_loop = splash_screen_main_loop;
 
-		splash_screen_init ();
+		result = splash_screen_init ();
+		if (result != 0)
+		{
+			return result;
+		}
 		splash_screen_state = e_scene_state_inited;
 		break;
 
@@ -68,13 +73,19 @@ void go_to_scene (e_scene_type scene_type)
 		current_scene_process_keyboard_input = main_menu_process_keyboard_input;
 		current_scene_main_loop = main_menu_main_loop;
 
-		main_menu_init ();
+		result = main_menu_init ();
+		if (result != 0)
+		{
+			return result;
+		}
 		main_menu_state = e_scene_state_inited;
 		break;
 
 	default:
 		break;
 	}
+
+	return 0;
 }
 
 int game_init (HINSTANCE hInstance, HWND hWnd)
@@ -92,7 +103,12 @@ int game_init (HINSTANCE hInstance, HWND hWnd)
 	current_scene_main_loop = splash_screen_main_loop;
 	event_go_to_scene_fp = go_to_scene;
 
-	splash_screen_init ();
+	result = splash_screen_init ();
+
+	if (result != 0) 
+	{
+		return result;
+	}
 
 	return 0;
 }

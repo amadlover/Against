@@ -16,7 +16,4 @@ int copy_buffer_to_image ();
 
 int create_shader (const char* file_path, VkDevice graphics_device, VkShaderStageFlagBits shader_stage, VkShaderModule* shader_module, VkPipelineShaderStageCreateInfo* shader_stage_create_info);
 
-int get_memory_type_index (VkMemoryRequirements memory_requirements, VkPhysicalDeviceMemoryProperties physical_device_memory_properties, VkMemoryPropertyFlags required_types, uint32_t* memory_type_index);
-int submit_one_time_cmd (VkQueue graphics_queue, VkCommandBuffer command_buffer);
-
 void destroy_buffer_and_buffer_memory (VkDevice graphics_device, VkBuffer buffer, VkDeviceMemory buffer_memory);

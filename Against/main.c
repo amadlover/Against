@@ -6,10 +6,13 @@
 #include "log.h"
 #include "utils.h"
 
-LRESULT CALLBACK WindowProc (HWND hWnd, 
-								UINT msg, 
-								WPARAM wParam, 
-								LPARAM lParam)
+LRESULT CALLBACK WindowProc 
+(
+	HWND hWnd, 
+	UINT msg, 
+	WPARAM wParam, 
+	LPARAM lParam
+)
 {
 	switch (msg)
 	{
@@ -123,17 +126,20 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 		return 0;
 	}
 
-	HWND hWnd = CreateWindow (L"Against", 
-										L"Against", 
-										WS_OVERLAPPEDWINDOW, 
-										CW_USEDEFAULT, 
-										CW_USEDEFAULT, 
-										1280, 
-										720, 
-										NULL, 
-										NULL, 
-										hInstance, 
-										NULL);
+	HWND hWnd = CreateWindow 
+	(
+		L"Against", 
+		L"Against", 
+		WS_OVERLAPPEDWINDOW, 
+		CW_USEDEFAULT, 
+		CW_USEDEFAULT, 
+		1280, 
+		720, 
+		NULL, 
+		NULL, 
+		hInstance, 
+		NULL
+	);
 
 	if (!hWnd)
 	{

@@ -5,12 +5,17 @@ cmake_minimum_required (VERSION 3.8)
 
 include_directories (${CMAKE_SOURCE_DIR})
 include_directories ($ENV{VULKAN_SDK}/Include)
+include_directories (${CMAKE_SOURCE_DIR}/External/glm)
+include_directories (${CMAKE_SOURCE_DIR}/External/cgltf)
+include_directories (${CMAKE_SOURCE_DIR}/External/cglm)
+include_directories (${CMAKE_SOURCE_DIR}/External/stb)
 
 link_directories ($ENV{VULKAN_SDK}/Lib32)
 link_directories ($ENV{VULKAN_SDK}/Lib)
 
-add_executable (Against "event.c" "game.c" "graphics.c" "graphics_utils.c" "list.c" "log.c" "main.c" "main_menu.c" "splash_screen.c" "utils.c")
-add_compile_definitions (Against _CRT_SECURE_NO_WARNINGS)
+add_executable (Against WIN32 "asset.h" "enums.h" "event.h" "error.h" "game.h" "graphics.h" "graphics_utils.h" "list.h" "log.h" "main_menu.h" "maths.hpp" "splash_screen.h" "utils.h" "asset.c" "event.c" "game.c" "graphics.c" "graphics_utils.c" "list.c" "log.c" "main.c" "main_menu.c" "splash_screen.c" "utils.c")
+add_compile_definitions (Against _CRT_SECURE_NO_WARNINGS UNICODE)
 target_link_libraries (Against vulkan-1)
+target_link_libraries (Against Shlwapi)
 
-# TODO: Add tests and install targets if needed.
+add_custom_command (TARGET Against POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/Against/Assets/" $<TARGET_FILE_DIR:Against>)

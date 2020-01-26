@@ -2,20 +2,18 @@
 #include <Shlwapi.h>
 #include <strsafe.h>
 
-#ifdef WIN32
 #pragma comment (lib, "Shlwapi.lib")
-#endif
 
 void get_full_texture_path_from_uri (const char* file_path, const char* uri, char* out_full_texture_path)
 {
-	TCHAR texture_file[MAX_PATH];
+	wchar_t texture_file[MAX_PATH];
 	mbstowcs (texture_file, file_path, MAX_PATH);
 
 	PathRemoveFileSpec (texture_file);
-	TCHAR t_uri[MAX_PATH];
+	wchar_t t_uri[MAX_PATH];
 	mbstowcs (t_uri, uri, MAX_PATH);
 
-	TCHAR uri_path[MAX_PATH];
+	wchar_t uri_path[MAX_PATH];
 	StringCchCopy (uri_path, MAX_PATH, L"\\");
 	StringCchCat (uri_path, MAX_PATH, t_uri);
 
@@ -27,13 +25,14 @@ void get_full_file_path (char* out_file_path, char* partial_file_path)
 {
 	char path[MAX_PATH];
 
-	TCHAR t_path[MAX_PATH];
+	wchar_t t_path[MAX_PATH];
 	HMODULE module = GetModuleHandle (NULL);
 	GetModuleFileName (module, t_path, MAX_PATH);
 	PathRemoveFileSpec (t_path);
 
 	wcstombs_s (NULL, path, MAX_PATH, t_path, MAX_PATH);
-	memcpy (out_file_path, strcat (path, partial_file_path), MAX_PATH);
+	strcpy (out_file_path, path);
+	strcat (out_file_path, partial_file_path);
 }
 
 void* my_malloc (size_t size)

@@ -136,8 +136,7 @@ int create_instance ()
 {
 	OutputDebugString (L"Create instance\n");
 
-	VkApplicationInfo application_info;
-	memset (&application_info, 0, sizeof (VkApplicationInfo));
+	VkApplicationInfo application_info = { 0 };
 
 	application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	application_info.pEngineName = "AGE";
@@ -146,8 +145,7 @@ int create_instance ()
 	application_info.engineVersion = VK_MAKE_VERSION (1, 0, 0);
 	application_info.pApplicationName = "Against";
 
-	VkInstanceCreateInfo create_info;
-	memset (&create_info, 0, sizeof (VkInstanceCreateInfo));
+	VkInstanceCreateInfo create_info = { 0 };
 
 	create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	create_info.enabledExtensionCount = requested_instance_extension_count;
@@ -169,8 +167,7 @@ int setup_debug_utils_messenger ()
 {
 	OutputDebugString (L"setup_debug_utils_messenger\n");
 
-	VkDebugUtilsMessengerCreateInfoEXT create_info;
-	memset (&create_info, 0, sizeof (VkDebugUtilsMessengerCreateInfoEXT));
+	VkDebugUtilsMessengerCreateInfoEXT create_info = { 0 };
 
 	create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
@@ -239,8 +236,7 @@ int create_surface (HINSTANCE HInstance, HWND HWnd)
 {
 	OutputDebugString (L"create_surface\n");
 
-	VkWin32SurfaceCreateInfoKHR create_info;
-	memset (&create_info, 0, sizeof (VkWin32SurfaceCreateInfoKHR));
+	VkWin32SurfaceCreateInfoKHR create_info = { 0 };
 
 	create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	create_info.hinstance = HInstance;
@@ -284,8 +280,7 @@ int create_graphics_device ()
 
 	float priorities = 1.f;
 
-	VkDeviceQueueCreateInfo queue_create_info;
-	memset (&queue_create_info, 0, sizeof (VkDeviceQueueCreateInfo));
+	VkDeviceQueueCreateInfo queue_create_info = { 0 };
 
 	queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queue_create_info.pNext = NULL;
@@ -294,8 +289,7 @@ int create_graphics_device ()
 	queue_create_info.queueFamilyIndex = graphics_queue_family_index;
 	queue_create_info.flags = 0;
 
-	VkDeviceCreateInfo create_info;
-	memset (&create_info, 0, sizeof (VkDeviceCreateInfo));
+	VkDeviceCreateInfo create_info = { 0 };
 
 	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	create_info.pNext = NULL;
@@ -364,8 +358,7 @@ int create_swapchain ()
 
 	surface_exten = surface_capabilites.currentExtent;
 
-	VkSwapchainCreateInfoKHR create_info;
-	memset (&create_info, 0, sizeof (VkSwapchainCreateInfoKHR));
+	VkSwapchainCreateInfoKHR create_info = { 0 };
 
 	create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	create_info.surface = surface;
