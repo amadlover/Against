@@ -2,21 +2,21 @@
 
 #include <vulkan/vulkan.h>
 
-int CreateBuffer (VkDevice graphics_device, VkDeviceSize size, VkBufferUsageFlags Usage, VkSharingMode SharingMode, uint32_t graphics_queue_family_index, VkBuffer* OutBuffer);
-int AllocateBindBufferMemory (VkDevice graphics_device, VkBuffer* Buffers, uint32_t BufferCount, VkPhysicalDeviceMemoryProperties physical_device_memory_properties, VkMemoryPropertyFlags RequiredTypes, VkDeviceMemory* OutMemory);
-int MapDataToBuffer (VkDevice graphics_device, VkDeviceMemory Memory, VkDeviceSize offset, VkDeviceSize size, void* DataSource);
+int create_buffer (VkDevice graphics_device, VkDeviceSize size, VkBufferUsageFlags usage, VkSharingMode sharing_mode, uint32_t graphics_queue_family_index, VkBuffer* out_buffer);
+int allocate_bind_buffer_memory (VkDevice graphics_device, VkBuffer* buffers, uint32_t buffer_count, VkPhysicalDeviceMemoryProperties physical_device_memory_properties, VkMemoryPropertyFlags required_types, VkDeviceMemory* out_memory);
+int map_data_to_buffer (VkDevice graphics_device, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size, void* data_source);
 
-int CreateImage (VkDevice graphics_device, uint32_t graphics_queue_family_index, VkExtent3D Extent, uint32_t ArrayLayers, VkFormat Format, VkImageLayout InitialLayout, VkSharingMode SharingMode, VkImage* OutImage);
-int AllocateBindImageMemory (VkDevice graphics_device, VkImage* Images, uint32_t ImageCount, VkPhysicalDeviceMemoryProperties physical_device_memory_properties, VkMemoryPropertyFlags RequiredTypes, VkDeviceMemory* OutMemory);
+int create_image (VkDevice graphics_device, uint32_t graphics_queue_family_index, VkExtent3D extent, uint32_t array_layers, VkFormat format, VkImageLayout initial_layout, VkSharingMode sharing_mode, VkImage* out_image);
+int allocate_bind_image_memory (VkDevice graphics_device, VkImage* images, uint32_t image_count, VkPhysicalDeviceMemoryProperties physical_device_memory_properties, VkMemoryPropertyFlags required_types, VkDeviceMemory* out_memory);
 
-int ChangeImageLayout ();
+int change_image_layout ();
 
-int CopyBufferToBuffer (VkDevice graphics_device, VkCommandPool CommandPool, VkQueue graphics_queue, VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize size);
-int CopyBufferToImage ();
+int copy_buffer_to_buffer (VkDevice graphics_device, VkCommandPool command_pool, VkQueue graphics_queue, VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size);
+int copy_buffer_to_image ();
 
-int CreateShader (char* FilePath, VkDevice graphics_device, VkShaderStageFlagBits ShaderStage, VkShaderModule* ShaderModule, VkPipelineShaderStageCreateInfo* ShaderStageCreateInfo);
+int create_shader (const char* file_path, VkDevice graphics_device, VkShaderStageFlagBits shader_stage, VkShaderModule* shader_module, VkPipelineShaderStageCreateInfo* shader_stage_create_info);
 
-int GetMemoryTypeIndex (VkMemoryRequirements MemoryRequirements, VkPhysicalDeviceMemoryProperties physical_device_memory_properties, VkMemoryPropertyFlags RequiredMemoryTypes, uint32_t* MemoryTypeIndex);
-int SubmitOneTimeCmd (VkQueue graphics_queue, VkCommandBuffer CommandBuffer);
+int get_memory_type_index (VkMemoryRequirements memory_requirements, VkPhysicalDeviceMemoryProperties physical_device_memory_properties, VkMemoryPropertyFlags required_types, uint32_t* memory_type_index);
+int submit_one_time_cmd (VkQueue graphics_queue, VkCommandBuffer command_buffer);
 
-void DestroyBufferAndBufferMemory (VkDevice graphics_device, VkBuffer Buffer, VkDeviceMemory BufferMemory);
+void destroy_buffer_and_buffer_memory (VkDevice graphics_device, VkBuffer buffer, VkDeviceMemory buffer_memory);

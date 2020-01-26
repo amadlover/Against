@@ -6,12 +6,12 @@
 #include "log.h"
 #include "utils.h"
 
-LRESULT CALLBACK WindowProc (HWND WindowHandle, 
-								UINT Msg, 
+LRESULT CALLBACK WindowProc (HWND hWnd, 
+								UINT msg, 
 								WPARAM wParam, 
 								LPARAM lParam)
 {
-	switch (Msg)
+	switch (msg)
 	{
 	case WM_COMMAND:
 		switch (wParam)
@@ -73,57 +73,57 @@ LRESULT CALLBACK WindowProc (HWND WindowHandle,
 		break;
 	}
 
-	return DefWindowProc (WindowHandle, Msg, wParam, lParam);
+	return DefWindowProc (hWnd, msg, wParam, lParam);
 }
 
 #include "test.h"
 
-int WINAPI wWinMain (_In_ HINSTANCE HInstance, 
-						_In_opt_ HINSTANCE PreviousHInstance, 
-						_In_ PWSTR CmdLine, 
-						_In_ int CmdShow)
+int WINAPI wWinMain (_In_ HINSTANCE hInstance, 
+						_In_opt_ HINSTANCE previous_instance, 
+						_In_ PWSTR cmd_line, 
+						_In_ int cmd_show)
 {
-	int Result = log_init ();
-	if (Result != 0)
+	int result = log_init ();
+	if (result != 0)
 	{
-		log_error (Result);
+		log_error (result);
 	}
 
-	Result = log_info ("TEST", "Testing....");
+	result = log_info ("TEST", "Testing....");
 
-	if (Result != 0)
+	if (result != 0)
 	{
-		log_error (Result);
+		log_error (result);
 	}
 
-	Result = log_info ("TEST", "Still Testing....");
+	result = log_info ("TEST", "Still Testing....");
 
-	if (Result != 0)
+	if (result != 0)
 	{
-		log_error (Result);
+		log_error (result);
 	}
 
-	Result = log_exit ();
+	result = log_exit ();
 
-	if (Result != 0) 
+	if (result != 0) 
 	{
-		log_error (Result);
+		log_error (result);
 	}
 
-	WNDCLASS WC = { 0 };
+	WNDCLASS wc = { 0 };
 
-	WC.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-	WC.lpfnWndProc = WindowProc;
-	WC.hInstance = HInstance;
-	WC.lpszClassName = L"Against";
-	WC.hCursor = LoadCursor (HInstance, IDC_ARROW);
+	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	wc.lpfnWndProc = WindowProc;
+	wc.hInstance = hInstance;
+	wc.lpszClassName = L"Against";
+	wc.hCursor = LoadCursor (hInstance, IDC_ARROW);
 
-	if (!RegisterClass (&WC))
+	if (!RegisterClass (&wc))
 	{
 		return 0;
 	}
 
-	HWND WindowHandle = CreateWindow (L"Against", 
+	HWND hWnd = CreateWindow (L"Against", 
 										L"Against", 
 										WS_OVERLAPPEDWINDOW, 
 										CW_USEDEFAULT, 
@@ -132,62 +132,62 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance,
 										720, 
 										NULL, 
 										NULL, 
-										HInstance, 
+										hInstance, 
 										NULL);
 
-	if (!WindowHandle)
+	if (!hWnd)
 	{
 		return -1;
 	}
 
-	Result = game_init (HInstance, WindowHandle);
+	result = game_init (hInstance, hWnd);
 
-	ShowWindow (WindowHandle, CmdShow);
-	UpdateWindow (WindowHandle);
+	ShowWindow (hWnd, cmd_show);
+	UpdateWindow (hWnd);
 
-	if (Result != 0)
+	if (result != 0)
 	{
 		wchar_t Buff[8];
 		swprintf_s (Buff, 8, L"Init ");
 		OutputDebugString (Buff);
 
-		log_error (Result);
+		log_error (result);
 
 		game_exit ();
 
-		return Result;
+		return result;
 	}
 
-	MSG Msg;
-	ZeroMemory (&Msg, sizeof (Msg));
+	MSG msg;
+	ZeroMemory (&msg, sizeof (msg));
 
-	while (Msg.message != WM_QUIT)
+	while (msg.message != WM_QUIT)
 	{
-		if (PeekMessage (&Msg, NULL, 0, 0, PM_REMOVE))
+		if (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			TranslateMessage (&Msg);
-			DispatchMessage (&Msg);
+			TranslateMessage (&msg);
+			DispatchMessage (&msg);
 		}
 
-		Result = game_main_loop ();
+		result = game_main_loop ();
 
-		if (Result != 0)
+		if (result != 0)
 		{
 			wchar_t Buff[16];
 			swprintf_s (Buff, 16, L"Main Loop ");
 			OutputDebugString (Buff);
 
-			log_error (Result);
+			log_error (result);
 
 			game_exit ();
 
-			return Result;
+			return result;
 		}
 	}
 
 	game_exit ();
 
-	DestroyWindow (WindowHandle);
+	DestroyWindow (hWnd);
 
 	return 0;
 }
