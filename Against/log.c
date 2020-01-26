@@ -5,18 +5,28 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
-#include <errno.h>
+
+char file_name_base[256];
+char* file_name_suffix = ".txt";
+char file_name_timestamp[256];
+char old_file_name[256];
 
 FILE* log_file;
 
 int log_init ()
 {
-	char* file_name = strcat (getenv ("TMP"), "\\Against\\log.txt");
-	log_file = fopen (file_name, "w");
+	strcpy (file_name_base, getenv ("TMP"));
+	strcat (file_name_base, "\\Against\\log");
+	
+	strcpy (old_file_name, file_name_base);
+	strcat (old_file_name, "_live");
+	strcat (old_file_name, file_name_suffix);
+	
+	log_file = fopen (old_file_name, "w");
 
-	if (log_file == NULL)
+	if (log_file != NULL)
 	{
-		return AGAINST_ERROR_SYSTEM_COULD_NOT_CREATE_FILE;
+		return AGAINST_ERROR_SYSTEM_TMP_FILE;
 	}
 
 	return 0;
@@ -24,17 +34,32 @@ int log_init ()
 
 int log_info (const char* category, const char* message)
 {
-	if (log_file != NULL)
+	if (log_file == NULL)
 	{
-		char* Buffer = strcat (category, message);
-		fwrite (Buffer, strlen (Buffer), sizeof (char), log_file);
+		return AGAINST_ERROR_SYSTEM_TMP_FILE;
 	}
 
-    return 0;
+	char buffer[256];
+	strcpy (buffer, category);
+	strcat (buffer, ":");
+	strcat (buffer, message);
+	strcat (buffer, "\n");
+	fwrite (buffer, sizeof (char), strlen (buffer), log_file);
+
+	wchar_t buff[256];
+	swprintf (buff, 256, L"%hs", buffer);
+	OutputDebugString (buff);
+
+	return 0;
 }
 
 int log_error (AGAINSTRESULT Result)
 {
+	if (!log_file)
+	{
+		return AGAINST_ERROR_SYSTEM_TMP_FILE;
+	}
+
 	switch (Result)
 	{
 	case AGAINST_ERROR_GRAPHICS_POPULATE_INSTANCE_LAYERS_AND_EXTENSIONS:
@@ -88,15 +113,15 @@ int log_error (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_BUFFER:
-		OutputDebugString (L"Graphics Error: Create Buffer\n");
+		OutputDebugString (L"Graphics Error: Create buffer\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY:
-		OutputDebugString (L"Graphics Error: Allocate Buffer Memory\n");
+		OutputDebugString (L"Graphics Error: Allocate buffer Memory\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY:
-		OutputDebugString (L"Graphics Error: Bind Buffer Memory\n");
+		OutputDebugString (L"Graphics Error: Bind buffer Memory\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_IMAGE:
@@ -140,11 +165,11 @@ int log_error (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER:
-		OutputDebugString (L"Graphics Error: Begin Command Buffer\n");
+		OutputDebugString (L"Graphics Error: Begin Command buffer\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER:
-		OutputDebugString (L"Graphics Error: End Command Buffer\n");
+		OutputDebugString (L"Graphics Error: End Command buffer\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL:
@@ -152,7 +177,7 @@ int log_error (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER:
-		OutputDebugString (L"Graphics Error: Allocate Command Buffer\n");
+		OutputDebugString (L"Graphics Error: Allocate Command buffer\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_GRAPHICS_PIPELINE:
@@ -188,7 +213,7 @@ int log_error (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_UPDATE_UNIFORM_BUFFER:
-		OutputDebugString (L"Graphics Error: Update Uniform Buffer\n");
+		OutputDebugString (L"Graphics Error: Update Uniform buffer\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_SAMPLER:
@@ -203,6 +228,10 @@ int log_error (AGAINSTRESULT Result)
 		OutputDebugString (L"System Error: Allocate Memory\n");
 		break;
 
+	case AGAINST_ERROR_SYSTEM_TMP_FILE:
+		OutputDebugString (L"System Error: Create TMP File\n");
+		break;
+
 	default:
 		break;
 	}
@@ -212,10 +241,20 @@ int log_error (AGAINSTRESULT Result)
 
 int log_exit ()
 {
-	if (log_file != NULL)
+	if (log_file == NULL)
 	{
-		fclose (log_file);
+		return AGAINST_ERROR_SYSTEM_TMP_FILE;
 	}
+
+	fclose (log_file);
+
+	strcpy (file_name_timestamp, "_sometime");
+	char new_file_name[256];
+	strcpy (new_file_name, file_name_base);
+	strcat (new_file_name, file_name_timestamp);
+	strcat (new_file_name, file_name_suffix);
+
+	rename (old_file_name, new_file_name);
 
 	return 0;
 }

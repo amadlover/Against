@@ -83,6 +83,33 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance,
 						_In_ PWSTR CmdLine, 
 						_In_ int CmdShow)
 {
+	int Result = log_init ();
+	if (Result != 0)
+	{
+		log_error (Result);
+	}
+
+	Result = log_info ("TEST", "Testing....");
+
+	if (Result != 0)
+	{
+		log_error (Result);
+	}
+
+	Result = log_info ("TEST", "Still Testing....");
+
+	if (Result != 0)
+	{
+		log_error (Result);
+	}
+
+	Result = log_exit ();
+
+	if (Result != 0) 
+	{
+		log_error (Result);
+	}
+
 	WNDCLASS WC = { 0 };
 
 	WC.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -113,7 +140,7 @@ int WINAPI wWinMain (_In_ HINSTANCE HInstance,
 		return -1;
 	}
 
-	int Result = game_init (HInstance, WindowHandle);
+	Result = game_init (HInstance, WindowHandle);
 
 	ShowWindow (WindowHandle, CmdShow);
 	UpdateWindow (WindowHandle);
