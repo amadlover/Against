@@ -50,9 +50,6 @@
     <ClInclude Include="maths.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="maths.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="main_menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -97,9 +94,6 @@
     <ClCompile Include="splash_screen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="maths.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main_menu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -125,6 +119,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="log.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="maths.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

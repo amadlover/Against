@@ -36,7 +36,6 @@
     <ClInclude Include="list.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="main_menu.h" />
-    <ClInclude Include="maths.h" />
     <ClInclude Include="maths.hpp" />
     <ClInclude Include="splash_screen.h" />
     <ClInclude Include="test.h" />
@@ -52,7 +51,7 @@
     <ClCompile Include="log.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="main_menu.c" />
-    <ClCompile Include="maths.c" />
+    <ClCompile Include="maths.cpp" />
     <ClCompile Include="splash_screen.c" />
     <ClCompile Include="test.c" />
     <ClCompile Include="utils.c" />
