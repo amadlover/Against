@@ -136,8 +136,15 @@ int import_mesh_graphics_primitives (const char* file_path, asset_mesh* meshes, 
 	{
 		cgltf_node* node = data->nodes + n;
 
-		if (node->mesh == NULL) continue;
-		if (strstr (node->name, "CS_") != NULL) continue;
+		if (node->mesh == NULL)
+		{
+			continue;
+		}
+
+		if (strstr (node->name, "CS_") != NULL)
+		{
+			continue;
+		}
 
 		asset_mesh* current_mesh = meshes + graphics_mesh_counter;
 		strcpy (current_mesh->name, node->name);
@@ -250,13 +257,23 @@ void destroy_asset_meshes (asset_mesh* assets, uint32_t asset_count)
 					my_free (current_gp->uv0s);
 				}
 
+				if (current_gp->uv1s)
+				{
+					my_free (current_gp->uv1s);
+				}
+
 				if (current_gp->normals)
 				{
 					my_free (current_gp->normals);
 				}
 
-				my_free (current_gp);
+				if (current_gp->material.base_color_texture.image.pixels)
+				{
+					my_free (current_gp->material.base_color_texture.image.pixels);
+				}
 			}
+
+			my_free (current_asset->graphics_primitives);
 		}
 
 		if (current_asset->physics_primitives)
@@ -274,9 +291,9 @@ void destroy_asset_meshes (asset_mesh* assets, uint32_t asset_count)
 				{
 					my_free (current_pp->positions);
 				}
-
-				my_free (current_pp);
 			}
+
+			my_free (current_asset->physics_primitives);
 		}
 	}
 
