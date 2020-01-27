@@ -6,38 +6,65 @@
 #include "utils.h"
 #include "list.h"
 
+#include <stdio.h>
+
 VkBuffer vertex_index_buffer;
 VkDeviceMemory vertex_index_buffer_memory;
 
 int create_vulkan_handles_for_images (asset_mesh* meshes, uint32_t mesh_count)
 {
-    list* image_list = (list*)my_calloc (1, sizeof (list));
-    list_init (image_list, e_list_asset_image);
+    uint32_t image_count = 0;
+
+    /*for (uint32_t m = 0; m < mesh_count; m++)
+    {
+        asset_mesh* current_mesh = meshes + m;
+        for (uint32_t p = 0; p < current_mesh->graphics_primitive_count; p++)
+        {
+            asset_mesh_graphics_primitive* current_gp = current_mesh->graphics_primitives + p;
+            if (current_gp->material.base_color_texture.image.size > 0)
+            {
+                ++image_count;
+            }
+        }
+    }
+
+    asset_image* images = (asset_image*)my_calloc (image_count, sizeof (asset_image));
+
+    uint32_t image_counter = 0;
+    for (uint32_t m = 0; m < mesh_count; m++)
+    {
+        asset_mesh* current_mesh = meshes + m;
+        for (uint32_t p = 0; p < current_mesh->graphics_primitive_count; p++)
+        {
+            asset_mesh_graphics_primitive* current_gp = current_mesh->graphics_primitives + p;
+            if (current_gp->material.base_color_texture.image.size > 0)
+            {
+                images[image_counter] = current_gp->material.base_color_texture.image;
+                ++image_counter;
+            }
+        }
+    }*/
+
+    list* images = (list*)my_calloc (1, sizeof (list));
+    list_init (images, e_list_asset_image);
 
     for (uint32_t m = 0; m < mesh_count; m++)
     {
         asset_mesh* current_mesh = meshes + m;
-
         for (uint32_t p = 0; p < current_mesh->graphics_primitive_count; p++)
         {
             asset_mesh_graphics_primitive* current_gp = current_mesh->graphics_primitives + p;
-
-            list_insert (image_list, (void*)&current_gp->material.base_color_texture.image);
+            if (current_gp->material.base_color_texture.image.size > 0)
+            {
+                list_insert (images, &current_gp->material.base_color_texture.image);
+            }
         }
     }
 
-    VkDeviceSize total_size = 0;
+    list_print (images);
 
-    list_node* list_node = list_iter (image_list);
-
-    while (list_node != NULL)
-    {
-        total_size += list_node->data.image.size;
-        list_node = list_iter (image_list);
-    }
-
-    list_destroy (image_list);
-    my_free (image_list);
+    list_destroy (images);
+    my_free (images);
 
     return 0;
 }

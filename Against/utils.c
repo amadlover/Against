@@ -52,5 +52,8 @@ void* my_realloc (void* ptr, size_t size)
 
 void my_free (void* ptr)
 {
-	free (ptr);
+	if (ptr != NULL)
+	{
+		free (ptr);
+	}
 }

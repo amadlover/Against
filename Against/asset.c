@@ -243,35 +243,12 @@ void destroy_asset_meshes (asset_mesh* assets, uint32_t asset_count)
 			{
 				asset_mesh_graphics_primitive* current_gp = current_asset->graphics_primitives + i;
 
-				if (current_gp->indices)
-				{
-					my_free (current_gp->indices);
-				}
-
-				if (current_gp->positions)
-				{
-					my_free (current_gp->positions);
-				}
-
-				if (current_gp->uv0s)
-				{
-					my_free (current_gp->uv0s);
-				}
-
-				if (current_gp->uv1s)
-				{
-					my_free (current_gp->uv1s);
-				}
-
-				if (current_gp->normals)
-				{
-					my_free (current_gp->normals);
-				}
-
-				if (current_gp->material.base_color_texture.image.pixels)
-				{
-					my_free (current_gp->material.base_color_texture.image.pixels);
-				}
+				my_free (current_gp->indices);
+				my_free (current_gp->positions);
+				my_free (current_gp->uv0s);
+				my_free (current_gp->uv1s);
+				my_free (current_gp->normals);
+				my_free (current_gp->material.base_color_texture.image.pixels);
 			}
 
 			my_free (current_asset->graphics_primitives);
@@ -282,16 +259,8 @@ void destroy_asset_meshes (asset_mesh* assets, uint32_t asset_count)
 			for (uint32_t i = 0; i < current_asset->physics_primitive_count; i++)
 			{
 				asset_mesh_physics_primitive* current_pp = current_asset->physics_primitives + i;
-
-				if (current_pp->indices)
-				{
-					my_free (current_pp->indices);
-				}
-
-				if (current_pp->positions)
-				{
-					my_free (current_pp->positions);
-				}
+				my_free (current_pp->indices);
+				my_free (current_pp->positions);
 			}
 
 			my_free (current_asset->physics_primitives);

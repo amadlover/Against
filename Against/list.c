@@ -17,7 +17,13 @@ void list_insert (list* list_ptr, void* data)
 		struct _list_node* new_node = (struct _list_node*)my_calloc (1, sizeof (struct _list_node));
 		if (list_ptr->data_type == e_list_asset_image)
 		{
-			new_node->data.image = *((asset_image*)(data));
+			new_node->data.image_ptr = (asset_image*)my_calloc (1, sizeof (asset_image));
+			memcpy (new_node->data.image_ptr, data, sizeof (asset_image));
+		}
+		else if (list_ptr->data_type == e_list_uint32)
+		{
+			new_node->data.uint32_ptr = (uint32_t*)my_calloc (1, sizeof (uint32_t));
+			memcpy (new_node->data.uint32_ptr, data, sizeof (uint32_t));
 		}
 
 		list_ptr->begin_node->next_node = new_node;
@@ -48,9 +54,14 @@ void list_insert (list* list_ptr, void* data)
 			struct _list_node* new_node = (struct _list_node*)my_calloc (1, sizeof (struct _list_node));
 			if (list_ptr->data_type == e_list_asset_image)
 			{
-				new_node->data.image = *((asset_image*)(data));
+				new_node->data.image_ptr = (asset_image*)my_calloc (1, sizeof (asset_image));
+				memcpy (new_node->data.image_ptr, data, sizeof (asset_image));
 			}
-
+			else if (list_ptr->data_type == e_list_uint32)
+			{
+				new_node->data.uint32_ptr = (uint32_t*)my_calloc (1, sizeof (uint32_t));
+				memcpy (new_node->data.uint32_ptr, data, sizeof (uint32_t));
+			}
 			new_node->preview_node = last_node;
 			new_node->next_node = list_ptr->end_node;
 			last_node->next_node = new_node;
@@ -75,8 +86,18 @@ void list_print (const list* list_ptr)
 		if (list_ptr->data_type == e_list_asset_image)
 		{
 			wchar_t Buff[64];
-			swprintf (Buff, 64, L"Node has image %hs\n", node->data.image.name);
+			swprintf (Buff, 64, L"Node has image %hs\n", node->data.image_ptr->name);
 			OutputDebugString (Buff);
+		}
+		else if (list_ptr->data_type == e_list_uint32)
+		{
+			wchar_t Buff[64];
+			swprintf (Buff, 64, L"Node has uint32 %d\n", *node->data.uint32_ptr);
+			OutputDebugString (Buff);
+		}
+		else if (list_ptr->data_type == e_list_list)
+		{
+			list_print (node->data.list_ptr);
 		}
 
 		if (node->next_node != list_ptr->end_node)
@@ -123,10 +144,15 @@ void list_delete (list* list_ptr, void* data)
 	{
 		if (list_ptr->data_type == e_list_asset_image)
 		{
-			if (strcmp (node->data.image.name, (*(asset_image*)data).name) == 0)
+			if (strcmp (node->data.image_ptr->name, (*(asset_image*)data).name) == 0)
 			{
 				struct _list_node* next_node = node->next_node;
 				struct _list_node* preview_node = node->preview_node;
+
+				if (list_ptr->list_iter == node)
+				{
+					list_ptr->list_iter = next_node;
+				}
 
 				my_free (node);
 				--list_ptr->num_nodes;
@@ -144,6 +170,10 @@ void list_delete (list* list_ptr, void* data)
 					break;
 				}
 			}
+		}
+		else if (list_ptr->data_type == e_list_list)
+		{
+
 		}
 
 		if (node->next_node != list_ptr->end_node)
@@ -168,6 +198,15 @@ void list_destroy (list* list_ptr)
 
 	while (node != list_ptr->end_node)
 	{
+		if (list_ptr->data_type == e_list_asset_image)
+		{
+			my_free (node->data.image_ptr);
+		}
+		else if (list_ptr->data_type == e_list_list)
+		{
+			list_destroy (node->data.list_ptr);
+		}
+	
 		struct _list_node* next_node = node->next_node;
 
 		my_free (node);

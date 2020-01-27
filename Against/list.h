@@ -8,7 +8,9 @@
 
 typedef enum
 {
+	e_list_uint32,
 	e_list_asset_image,
+	e_list_list
 } e_list_data_type;
 
 typedef struct _list_node
@@ -18,11 +20,13 @@ typedef struct _list_node
 
 	union
 	{
-		asset_image image;
+		uint32_t* uint32_ptr;
+		asset_image* image_ptr;
+		struct _list* list_ptr;
 	} data;
 } list_node;
 
-typedef struct
+typedef struct _list
 {
 	struct _list_node* begin_node;
 	struct _list_node* end_node;
