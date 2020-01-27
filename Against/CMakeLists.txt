@@ -13,9 +13,9 @@ include_directories (${CMAKE_SOURCE_DIR}/External/stb)
 link_directories ($ENV{VULKAN_SDK}/Lib32)
 link_directories ($ENV{VULKAN_SDK}/Lib)
 
-add_executable (Against WIN32 "asset.h" "enums.h" "event.h" "error.h" "game.h" "graphics.h" "graphics_utils.h" "list.h" "log.h" "main_menu.h" "maths.hpp" "splash_screen.h" "utils.h" "asset.c" "event.c" "game.c" "graphics.c" "graphics_utils.c" "list.c" "log.c" "main.c" "main_menu.c" "splash_screen.c" "utils.c")
+add_executable (Against WIN32 "asset.h" "enums.h" "event.h" "error.h" "game.h" "common_graphics.h" "graphics_utils.h" "list.h" "log.h" "main_menu.h" "maths.hpp" "splash_screen.h" "splash_screen_graphics.h" "utils.h" "asset.c" "event.c" "game.c" "common_graphics.c" "graphics_utils.c" "list.c" "log.c" "main.c" "main_menu.c" "splash_screen.c" "splash_screen_graphics.c" "utils.c")
 add_compile_definitions (Against _CRT_SECURE_NO_WARNINGS UNICODE)
 target_link_libraries (Against vulkan-1)
 target_link_libraries (Against Shlwapi)
 
-add_custom_command (TARGET Against POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/Against/Assets/" $<TARGET_FILE_DIR:Against>)
+add_custom_command (TARGET Against POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/Against/Assets" $<TARGET_FILE_DIR:Against>)

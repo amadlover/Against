@@ -49,6 +49,9 @@ typedef struct
 	VkDeviceSize normals_size;
 	VkDeviceSize indices_size;
 
+	VkBuffer buffer;
+	VkDeviceMemory buffer_memory;
+
 	uint32_t index_count;
 	VkIndexType index_type;
 

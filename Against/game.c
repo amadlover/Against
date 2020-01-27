@@ -1,9 +1,10 @@
 #include "game.h"
-#include "graphics.h"
+#include "common_graphics.h"
 #include "splash_screen.h"
 #include "main_menu.h"
 #include "event.h"
 #include "enums.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -92,23 +93,13 @@ int game_init (HINSTANCE hInstance, HWND hWnd)
 {
 	OutputDebugString (L"game_init\n");
 
-	int result = graphics_init (hInstance, hWnd);
-
-	if (result != 0)
-	{
-		return result;
-	}
+	CHECK_AGAINST_RESULT (common_graphics_init (hInstance, hWnd));
 
 	current_scene_process_keyboard_input = splash_screen_process_keyboard_input;
 	current_scene_main_loop = splash_screen_main_loop;
 	event_go_to_scene_fp = go_to_scene;
 
-	result = splash_screen_init ();
-
-	if (result != 0) 
-	{
-		return result;
-	}
+	CHECK_AGAINST_RESULT (splash_screen_init ());
 
 	splash_screen_state = e_scene_state_inited;
 
@@ -145,5 +136,5 @@ void game_exit ()
 		main_menu_state = e_scene_state_exited;
 	}
 
-	graphics_exit ();
+	common_graphics_exit ();
 }

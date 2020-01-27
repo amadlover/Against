@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int create_buffer (VkDevice graphics_device,
+int graphics_utils_create_buffer (VkDevice graphics_device,
 	VkDeviceSize size,
 	VkBufferUsageFlags usage,
 	VkSharingMode sharing_mode,
@@ -65,7 +65,7 @@ int submit_one_time_cmd (VkQueue graphics_queue, VkCommandBuffer command_buffer)
 	return 0;
 }
 
-int allocate_bind_buffer_memory (VkDevice graphics_device,
+int graphics_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 	VkBuffer* buffers,
 	uint32_t buffer_count,
 	VkPhysicalDeviceMemoryProperties physical_device_memory_properties,
@@ -106,7 +106,7 @@ int allocate_bind_buffer_memory (VkDevice graphics_device,
 	return 0;
 }
 
-int map_data_to_buffer (VkDevice graphics_device,
+int graphics_utils_map_data_to_buffer (VkDevice graphics_device,
 	VkDeviceMemory memory,
 	VkDeviceSize offset,
 	VkDeviceSize size,
@@ -124,7 +124,7 @@ int map_data_to_buffer (VkDevice graphics_device,
 	return 0;
 }
 
-int create_image (
+int graphics_utils_create_image (
 	VkDevice graphics_device,
 	uint32_t graphics_queue_family_index,
 	VkExtent3D extent,
@@ -156,7 +156,7 @@ int create_image (
 	return 0;
 }
 
-int allocate_bind_image_memory (
+int graphics_utils_allocate_bind_image_memory (
 	VkDevice graphics_device, 
 	VkImage* images, 
 	uint32_t image_count, 
@@ -221,12 +221,12 @@ errno_t ReadShaderFile (char* full_file_path, char** file_contents)
 	return 0;
 }
 
-int change_image_layout ()
+int graphics_utils_change_image_layout ()
 {
 	return 0;
 }
 
-int copy_buffer_to_buffer (
+int graphics_utils_copy_buffer_to_buffer (
 	VkDevice graphics_device,
 	VkCommandPool command_pool,
 	VkQueue graphics_queue,
@@ -271,12 +271,12 @@ int copy_buffer_to_buffer (
 	return 0;
 }
 
-int copy_buffer_to_image ()
+int graphics_utils_copy_buffer_to_image ()
 {
 	return 0;
 }
 
-int create_shader (const char* full_file_path,
+int graphics_utils_create_shader (const char* full_file_path,
 	VkDevice graphics_device,
 	VkShaderStageFlagBits shader_stage,
 	VkShaderModule* shader_module,
@@ -334,7 +334,7 @@ int create_shader (const char* full_file_path,
 	return 0;
 }
 
-void destroy_buffer_and_buffer_memory (VkDevice graphics_device,
+void graphics_utils_destroy_buffer_and_buffer_memory (VkDevice graphics_device,
 	VkBuffer buffer,
 	VkDeviceMemory buffer_memory)
 {
