@@ -202,6 +202,10 @@ void list_destroy (list* list_ptr)
 		{
 			my_free (node->data.image_ptr);
 		}
+		else if (list_ptr->data_type == e_list_uint32)
+		{
+			my_free (node->data.uint32_ptr);
+		}
 		else if (list_ptr->data_type == e_list_list)
 		{
 			list_destroy (node->data.list_ptr);

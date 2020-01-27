@@ -60,7 +60,7 @@ int create_vulkan_handles_for_images (asset_mesh* meshes, uint32_t mesh_count)
             }
         }
     }
-
+    
     list_print (images);
 
     list_destroy (images);
