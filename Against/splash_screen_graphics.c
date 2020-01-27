@@ -4,9 +4,43 @@
 #include "graphics_utils.h"
 
 #include "utils.h"
+#include "list.h"
 
 VkBuffer vertex_index_buffer;
 VkDeviceMemory vertex_index_buffer_memory;
+
+int create_vulkan_handles_for_images (asset_mesh* meshes, uint32_t mesh_count)
+{
+    list* image_list = (list*)my_calloc (1, sizeof (list));
+    list_init (image_list, e_list_asset_image);
+
+    for (uint32_t m = 0; m < mesh_count; m++)
+    {
+        asset_mesh* current_mesh = meshes + m;
+
+        for (uint32_t p = 0; p < current_mesh->graphics_primitive_count; p++)
+        {
+            asset_mesh_graphics_primitive* current_gp = current_mesh->graphics_primitives + p;
+
+            list_insert (image_list, (void*)&current_gp->material.base_color_texture.image);
+        }
+    }
+
+    VkDeviceSize total_size = 0;
+
+    list_node* list_node = list_iter (image_list);
+
+    while (list_node != NULL)
+    {
+        total_size += list_node->data.image.size;
+        list_node = list_iter (image_list);
+    }
+
+    list_destroy (image_list);
+    my_free (image_list);
+
+    return 0;
+}
 
 int create_vulkan_handles_for_meshes (asset_mesh* meshes, uint32_t mesh_count)
 {
@@ -160,6 +194,7 @@ int create_vulkan_handles_for_meshes (asset_mesh* meshes, uint32_t mesh_count)
 int splash_screen_graphics_init (asset_mesh* meshes, uint32_t mesh_count)
 {
     CHECK_AGAINST_RESULT (create_vulkan_handles_for_meshes (meshes, mesh_count));
+    CHECK_AGAINST_RESULT (create_vulkan_handles_for_images (meshes, mesh_count));
 
     return 0;
 }

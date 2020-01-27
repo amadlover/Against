@@ -71,6 +71,7 @@ void import_graphics_primitive_material (const char* file_path, asset_mesh_graph
 
 		char full_texture_path[256];
 		get_full_texture_path_from_uri (file_path, material->pbr_metallic_roughness.base_color_texture.texture->image->uri, full_texture_path);
+		strcpy (graphics_primitive->material.base_color_texture.image.name, material->pbr_metallic_roughness.base_color_texture.texture->image->name);
 		graphics_primitive->material.base_color_texture.image.pixels = stbi_load (full_texture_path, (int*)&graphics_primitive->material.base_color_texture.image.width, (int*)&graphics_primitive->material.base_color_texture.image.height, (int*)&graphics_primitive->material.base_color_texture.image.bpp, 4);
 		graphics_primitive->material.base_color_texture.image.size = graphics_primitive->material.base_color_texture.image.width * graphics_primitive->material.base_color_texture.image.height * graphics_primitive->material.base_color_texture.image.bpp;
 	}
@@ -300,7 +301,7 @@ void destroy_asset_meshes (asset_mesh* assets, uint32_t asset_count)
 	my_free (assets);
 }
 
-int import_images (const char* file_path, image** images, uint32_t* image_count)
+int import_images (const char* file_path, asset_image** images, uint32_t* image_count)
 {
 	cgltf_options options = { 0 };
 	cgltf_data* data = NULL;
@@ -318,12 +319,12 @@ int import_images (const char* file_path, image** images, uint32_t* image_count)
 			if (result == cgltf_result_success)
 			{
 				*image_count = (uint32_t)data->images_count;
-				*images = (image*)my_calloc (data->images_count, sizeof (image));
+				*images = (asset_image*)my_calloc (data->images_count, sizeof (asset_image));
 
 				for (uint32_t i = 0; i < data->images_count; i++)
 				{
 					cgltf_image* I = data->images + i;
-					image* current_image = (*images) + i;
+					asset_image* current_image = (*images) + i;
 
 					strcpy (current_image->name, I->name);
 

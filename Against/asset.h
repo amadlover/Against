@@ -18,15 +18,15 @@ typedef struct
 	VkDeviceSize size;
 	VkDeviceSize offset;
 
-	VkImage* image;
+	VkImage* vk_image;
 	uint32_t layer_index;
 	VkImageView* image_view;
-} image;
+} asset_image;
 
 typedef struct
 {
 	char name[256];
-	image image;
+	asset_image image;
 } asset_mesh_texture;
 
 typedef struct
