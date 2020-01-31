@@ -14,7 +14,7 @@ link_directories ($ENV{VULKAN_SDK}/Lib32)
 link_directories ($ENV{VULKAN_SDK}/Lib)
 
 add_executable (Against WIN32 "asset.h" "enums.h" "event.h" "error.h" "game.h" "common_graphics.h" "graphics_utils.h" "list.h" "log.h" "main_menu.h" "maths.hpp" "splash_screen.h" "splash_screen_graphics.h" "utils.h" "asset.c" "event.c" "game.c" "common_graphics.c" "graphics_utils.c" "list.c" "log.c" "main.c" "main_menu.c" "splash_screen.c" "splash_screen_graphics.c" "utils.c")
-add_compile_definitions (Against _CRT_SECURE_NO_WARNINGS UNICODE)
+add_compile_definitions (Against _CRT_SECURE_NO_WARNINGS UNICODE WIN32_LEAN_AND_MEAN)
 target_link_libraries (Against vulkan-1)
 target_link_libraries (Against Shlwapi)
 

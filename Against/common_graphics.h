@@ -10,7 +10,7 @@ VkDevice graphics_device;
 VkPhysicalDeviceMemoryProperties physical_device_memory_properties;
 VkPhysicalDeviceLimits physical_device_limits;
 VkSurfaceFormatKHR chosen_surface_format;
-VkExtent2D surface_exten;
+VkExtent2D surface_extent;
 VkSwapchainKHR swapchain;
 VkImage* swapchain_images;
 VkImageView* swapchain_imageviews;

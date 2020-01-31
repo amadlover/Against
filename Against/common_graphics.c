@@ -356,7 +356,7 @@ int create_swapchain ()
 		}
 	}
 
-	surface_exten = surface_capabilites.currentExtent;
+	surface_extent = surface_capabilites.currentExtent;
 
 	VkSwapchainCreateInfoKHR create_info = { 0 };
 

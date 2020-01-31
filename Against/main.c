@@ -146,7 +146,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 		return -1;
 	}
 
-	result = game_init (hInstance, hWnd);
+	CHECK_AGAINST_RESULT (game_init (hInstance, hWnd));
 
 	ShowWindow (hWnd, cmd_show);
 	UpdateWindow (hWnd);
