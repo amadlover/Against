@@ -1,10 +1,12 @@
 #include "test_scene.h"
 #include "game.h"
-
+#include "gltf.h"
 
 int test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
 {
     OutputDebugString (L"test_scene_init\n");
+    import_gltf_files_from_folder ("Assets");
+
     return 0;
 }
 

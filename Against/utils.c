@@ -21,7 +21,7 @@ void get_full_texture_path_from_uri (const char* file_path, const char* uri, cha
 	wcstombs (out_full_texture_path, texture_file, MAX_PATH);
 }
 
-void get_full_file_path (char* out_file_path, char* partial_file_path)
+void get_full_file_path (const char* partial_file_path, char* out_file_path)
 {
 	char path[MAX_PATH];
 
@@ -32,6 +32,7 @@ void get_full_file_path (char* out_file_path, char* partial_file_path)
 
 	wcstombs_s (NULL, path, MAX_PATH, t_path, MAX_PATH);
 	strcpy (out_file_path, path);
+	strcat (out_file_path, "\\");
 	strcat (out_file_path, partial_file_path);
 }
 
