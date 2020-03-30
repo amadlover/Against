@@ -79,40 +79,11 @@ LRESULT CALLBACK WindowProc
 	return DefWindowProc (hWnd, msg, wParam, lParam);
 }
 
-#include "test.h"
-
 int WINAPI wWinMain (_In_ HINSTANCE hInstance, 
 						_In_opt_ HINSTANCE previous_instance, 
 						_In_ PWSTR cmd_line, 
 						_In_ int cmd_show)
 {
-	int result = log_init ();
-	if (result != 0)
-	{
-		log_error (result);
-	}
-
-	result = log_info ("TEST", "Testing....");
-
-	if (result != 0)
-	{
-		log_error (result);
-	}
-
-	result = log_info ("TEST", "Still Testing....");
-
-	if (result != 0)
-	{
-		log_error (result);
-	}
-
-	result = log_exit ();
-
-	if (result != 0) 
-	{
-		log_error (result);
-	}
-
 	WNDCLASS wc = { 0 };
 
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -150,6 +121,8 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 
 	ShowWindow (hWnd, cmd_show);
 	UpdateWindow (hWnd);
+
+	int result = 0;
 
 	if (result != 0)
 	{

@@ -2,8 +2,7 @@
 
 typedef enum
 {
-	e_scene_type_splash_screen,
-	e_scene_type_main_menu
+	e_scene_type_test
 } e_scene_type;
 
 typedef enum
