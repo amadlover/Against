@@ -439,7 +439,7 @@ int create_swapchain_imageviews ()
 
 int create_command_pool ()
 {
-	OutputDebugString (L"create_swapchain_imageviews\n");
+	OutputDebugString (L"create_command_pool\n");
 
 	VkCommandPoolCreateInfo command_pool_create_info = { 0 };
 	command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
