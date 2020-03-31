@@ -54,8 +54,15 @@ void get_files_in_folder (const char* partial_folder_path, char** out_file_paths
 	{
 		if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
-			OutputDebugString (ffd.cFileName);
-			++file_count;
+			char file_name[MAX_PATH];
+			wcstombs (file_name, ffd.cFileName, MAX_PATH);
+			char* base_name = strtok (file_name, ".");
+			char* ext = strtok (NULL, ".");
+
+			if (strcmp (ext, "glb") == 0)
+			{
+ 				++file_count;
+			}
 		}
 	} while (FindNextFile (find_handle, &ffd) != 0);
 }

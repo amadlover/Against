@@ -1,16 +1,7 @@
 # Build
 Debug
 Release
-
-# CMake
-build
+build*
 
 # Visual Studio
 .vs
-
-# Visual Studio Code
-.vscode
-
-
-#CMake build folder
-build*

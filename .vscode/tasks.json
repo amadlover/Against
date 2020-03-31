@@ -1,0 +1,164 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Debug X86",
+        "type": "shell",
+        "command": "cl.exe",
+        "args": [
+          "/GR-",
+          "/DDEBUG",
+          "/D_DEBUG",
+          "/DUNICODE",
+          "/DWIN32_LEAN_AND_MEAN",
+          "/DWIN32",
+          "/D_CRT_SECURE_NO_WARNINGS",
+          "/DVK_USE_PLATFORM_WIN32_KHR",
+          "/D_HAS_EXCEPTIONS=0",
+          "/I${env:VULKAN_SDK}/Include",
+          "/I${workspaceFolder}/AgainstPP",
+          "/I${workspaceFolder}/External/glm",
+          "/I${workspaceFolder}/External/stb",
+          "/I${workspaceFolder}/External/tinygltf",
+          "/I${workspaceFolder}/External/cgltf",
+          "/MDd",
+          "/W3",
+          "/Z7",
+          "/MP",
+          "Against/main.c",
+          "Against/game.c",
+          "Against/gltf.c",
+          "Against/log.c",
+          "Against/test_scene.c",
+          "Against/common_graphics.c",
+          "Against/utils.c",
+          "Against/graphics_utils.c",
+          "Shlwapi.lib",
+          "kernel32.lib",
+          "user32.lib",
+          "gdi32.lib",
+          "winspool.lib",
+          "shell32.lib",
+          "ole32.lib",
+          "oleaut32.lib",
+          "uuid.lib",
+          "comdlg32.lib",
+          "advapi32.lib",
+          "vulkan-1.lib",
+          "/Fo${workspaceFolder}/build32/vscode/debug/",
+          "/Fe${workspaceFolder}/build32/vscode/debug/Against.exe",
+          "/link",
+          "/LIBPATH:${env:VULKAN_SDK}/Lib32",
+          "/DEBUG:FASTLINK",
+          "/MACHINE:X86",
+          "/SUBSYSTEM:WINDOWS",
+          "/incremental"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "reveal": "always"
+        },
+        "problemMatcher": "$msCompile"
+      },
+      {
+        "label": "Release X86",
+        "type": "shell",
+        "command": "cl.exe",
+        "args": [
+          "/GR-",
+          "/DNDEBUG",
+          "/DUNICODE",
+          "/DWIN32_LEAN_AND_MEAN",
+          "/DWIN32",
+          "/D_CRT_SECURE_NO_WARNINGS",
+          "/DVK_USE_PLATFORM_WIN32_KHR",
+          "/D_HAS_EXCEPTIONS=0",
+          "/I${env:VULKAN_SDK}/Include",
+          "/I${workspaceFolder}/AgainstPP",
+          "/I${workspaceFolder}/External/glm",
+          "/I${workspaceFolder}/External/stb",
+          "/I${workspaceFolder}/External/tinygltf",
+          "/I${workspaceFolder}/External/cgltf",
+          "/MD",
+          "/W3",
+          "/Ox",
+          "/MP",
+          "Against/main.c",
+          "Against/game.c",
+          "Against/gltf.c",
+          "Against/log.c",
+          "Against/test_scene.c",
+          "Against/common_graphics.c",
+          "Against/utils.c",
+          "Against/graphics_utils.c",
+          "Shlwapi.lib",
+          "kernel32.lib",
+          "user32.lib",
+          "gdi32.lib",
+          "winspool.lib",
+          "shell32.lib",
+          "ole32.lib",
+          "oleaut32.lib",
+          "uuid.lib",
+          "comdlg32.lib",
+          "advapi32.lib",
+          "vulkan-1.lib",
+          "/Fo${workspaceFolder}/build32/vscode/release/",
+          "/Fe${workspaceFolder}/build32/vscode/release/Against.exe",
+          "/link",
+          "/LIBPATH:${env:VULKAN_SDK}/Lib32",
+          "/MACHINE:X86",
+          "/SUBSYSTEM:WINDOWS",
+          "/incremental"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "reveal": "always"
+        },
+        "problemMatcher": "$msCompile"
+      },
+      {
+        "label": "Debug Asset Copy",
+        "type": "shell",
+        "command": "Copy-Item -Path '${workspaceFolder}/Against/Assets/*' -Destination '${workspaceFolder}/build32/vscode/debug/' -Recurse -Force",
+        "group":{
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "reveal": "always",
+        }
+      },
+      {
+        "label": "Release Asset Copy",
+        "type": "shell",
+        "command": "Copy-Item -Path '${workspaceFolder}/Against/Assets/*' -Destination '${workspaceFolder}/build32/vscode/release/' -Recurse -Force",
+        "group":{
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "reveal": "always",
+        }
+      },
+      {
+        "label": "Launch Release",
+        "type": "shell",
+        "command": "${workspaceFolder}/build32/vscode/release/Against.exe",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation":{
+          "reveal": "always",
+        },
+        "problemMatcher": []
+      }
+    ]
+  }
