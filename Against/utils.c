@@ -36,6 +36,30 @@ void get_full_file_path (const char* partial_file_path, char* out_file_path)
 	strcat (out_file_path, partial_file_path);
 }
 
+void get_files_in_folder (const char* partial_folder_path, char** out_file_paths)
+{
+	char full_folder_path[MAX_PATH];
+	get_full_file_path (partial_folder_path, full_folder_path);
+	strcat (full_folder_path, "*");
+
+	wchar_t folder_path[MAX_PATH];
+	mbstowcs (folder_path, full_folder_path, MAX_PATH);
+
+	WIN32_FIND_DATA ffd;
+	HANDLE find_handle = INVALID_HANDLE_VALUE;
+
+	find_handle = FindFirstFile (folder_path, &ffd);
+	uint8_t file_count = 0;
+	do
+	{
+		if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		{
+			OutputDebugString (ffd.cFileName);
+			++file_count;
+		}
+	} while (FindNextFile (find_handle, &ffd) != 0);
+}
+
 void* my_malloc (size_t size)
 {
 	return malloc (size);
