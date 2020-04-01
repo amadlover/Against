@@ -77,28 +77,15 @@ void get_files_in_folder (const char* partial_folder_path, file_path** out_file_
 		{
 			char file_name[MAX_PATH];
 			wcstombs (file_name, ffd.cFileName, MAX_PATH);
-			char* tmp_base_name = strtok (file_name, ".");
-			char* tmp_ext = strtok (NULL, ".");
-			char folder_with_star[MAX_PATH];
-			
-			wcstombs (folder_with_star, folder_path, MAX_PATH);
-			char* folder_without_star = strtok (folder_with_star, "*");
-
-			char base_name[MAX_PATH];
-			char ext[MAX_PATH];
-			strcpy (base_name, tmp_base_name);
-			strcpy (ext, tmp_ext);
-
-			char full_file_path[MAX_PATH];
+			char* base_name = strtok (file_name, ".");
+			char* ext = strtok (NULL, ".");
 
 			if (strcmp (ext, "glb") == 0)
 			{
-				strcpy (full_file_path, folder_without_star);
-				strcat (full_file_path, base_name);
-				strcat (full_file_path, ".");
-				strcat (full_file_path, ext);
 				file_path* current_file_path = *out_file_paths + current_file_index;
-				strcpy (current_file_path->path, full_file_path);
+				strcpy (current_file_path->path, base_name);
+				strcat (current_file_path->path, ".");
+				strcat (current_file_path->path, ext);
 				++current_file_index;
 			}
 		}
