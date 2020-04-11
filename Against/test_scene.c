@@ -1,6 +1,10 @@
 #include "test_scene.h"
 #include "game.h"
 #include "gltf.h"
+#include "graphics_pipeline.h"
+#include "asset.h"
+
+gltf_scene_data* scene_data;
 
 int test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
 {

@@ -2,10 +2,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
 #include <vulkan/vulkan.h>
 
-typedef struct
+#include "graphics_pipeline.h"
+
+/*typedef struct
 {
 	char name[256];
 
@@ -90,3 +91,50 @@ typedef struct
 
 int import_asset_meshes (const char* file_path, asset_mesh** assets, uint32_t* asset_count);
 void destroy_asset_meshes (asset_mesh* meshes, uint32_t mesh_count);
+*/
+
+typedef struct
+{
+	size_t x;
+} asset_image;
+
+typedef struct
+{
+	size_t x;
+} asset_animation;
+
+typedef struct
+{
+	size_t x;
+} asset_skin;
+
+typedef struct
+{
+	size_t x;
+} asset_material_opaque;
+
+typedef struct
+{
+	size_t x;
+} asset_material_alpha;
+
+typedef struct
+{
+	size_t x;
+} asset_physics_primitive;
+
+typedef struct
+{
+	size_t x;
+} asset_graphics_primitive;
+
+typedef struct
+{
+	char name[256];
+
+	asset_graphics_primitive* graphics_primitives;
+	size_t graphics_primitives_count;
+
+	asset_physics_primitive* physics_primitives;
+	size_t physics_primitives_count;
+} asset_mesh;

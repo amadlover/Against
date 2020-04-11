@@ -16,7 +16,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-void import_graphics_primitive_attribute (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_attribute* attribute)
+/*void import_graphics_primitive_attribute (asset_mesh_graphics_primitive* graphics_primitive, const cgltf_attribute* attribute)
 {
 	cgltf_accessor* accessor = attribute->data;
 	cgltf_buffer_view* buffer_view = accessor->buffer_view;
@@ -310,4 +310,4 @@ int import_images (const char* file_path, asset_image** images, uint32_t* image_
 	cgltf_free (data);
 
 	return 0;
-}
+}*/
