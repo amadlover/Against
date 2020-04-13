@@ -117,14 +117,13 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 		return -1;
 	}
 
-	CHECK_AGAINST_RESULT (game_init (hInstance, hWnd));
+	AGAINSTRESULT result;
+	CHECK_AGAINST_RESULT (game_init (hInstance, hWnd), result);
 
 	ShowWindow (hWnd, cmd_show);
 	UpdateWindow (hWnd);
 
-	int result = 0;
-
-	if (result != 0)
+	if (result != AGAINST_SUCCESS)
 	{
 		wchar_t Buff[8];
 		swprintf_s (Buff, 8, L"Init ");
@@ -150,7 +149,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 
 		result = game_main_loop ();
 
-		if (result != 0)
+		if (result != AGAINST_SUCCESS)
 		{
 			wchar_t Buff[16];
 			swprintf_s (Buff, 16, L"Main Loop ");

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define CHECK_AGAINST_RESULT(result) if (result != 0) return result;
+#define CHECK_AGAINST_RESULT(func, result) result = func; if (result != 0) return result;
 
 typedef struct
 {

@@ -3,6 +3,7 @@
 #include "enums.h"
 #include "utils.h"
 #include "test_scene.h"
+#include "error.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -38,8 +39,10 @@ int process_keyboard_input (WPARAM wParam, LPARAM lParam)
 {
 	if (current_scene_process_keyboard_input != NULL)
 	{
-		CHECK_AGAINST_RESULT (current_scene_process_keyboard_input (wParam, lParam));
+		AGAINSTRESULT result;
+		CHECK_AGAINST_RESULT (current_scene_process_keyboard_input (wParam, lParam), result);
 	}
+
 	return 0;
 }
 
@@ -47,8 +50,10 @@ int game_init (HINSTANCE hInstance, HWND hWnd)
 {
 	OutputDebugString (L"game_init\n");
 
-	//CHECK_AGAINST_RESULT (common_graphics_init (hInstance, hWnd));
-	CHECK_AGAINST_RESULT (game_set_current_scene (e_scene_type_test));
+	AGAINSTRESULT result;
+
+	//CHECK_AGAINST_RESULT (common_graphics_init (hInstance, hWnd), result);
+	CHECK_AGAINST_RESULT (game_set_current_scene (e_scene_type_test), result);
 
 	return 0;
 }
@@ -84,7 +89,8 @@ int game_main_loop ()
 {
 	if (current_scene_main_loop != NULL)
 	{
-		CHECK_AGAINST_RESULT (current_scene_main_loop ());
+		AGAINSTRESULT result;
+		CHECK_AGAINST_RESULT (current_scene_main_loop (), result);
 	}
 
 	return 0;

@@ -7,36 +7,32 @@
 
 int import_graphics_primitives (cgltf_data* data)
 {
-    
-    for (size_t n = 0; n < data->nodes_count; ++n)
-    {
-        cgltf_node* node = data->nodes + n;
+    return 0;
+}
 
-        if (node->mesh == NULL)
+int import_meshes_from_nodes (cgltf_node* nodes, size_t nodes_count)
+{
+    for (size_t n = 0 ; n < nodes_count; ++n)
+    {
+        if (nodes[n].mesh == NULL)
         {
             continue;
         }
 
-        if (strstr (node->name, "CS_") != NULL)
-        {
-             continue;
-        }
-
-        char* name = node->name;
-        char* first = strtok (name, "_");
-        char* second = strtok (NULL, "_");
-        char* third = strtok (NULL, "_");
+        wchar_t name[1024];
+        swprintf (name, 1024, L"%hs\n", nodes[n].name);
+        OutputDebugString (name);
     }
 
     return 0;
 }
 
-int import_meshes ()
+int import_materials ()
 {
     return 0;
 }
 
-int import_materials ()
+int import_textures ()
 {
     return 0;
 }
@@ -56,7 +52,7 @@ int import_animations ()
     return 0;
 }
 
-int import_gltf_file (const char* partial_file_path)
+int import_gltf_file (const char* partial_file_path, gltf_scene_data* gltf_data)
 {
     cgltf_options options = { 0 };
 	cgltf_data* data = NULL;
@@ -79,32 +75,37 @@ int import_gltf_file (const char* partial_file_path)
         return AGAINST_ERROR_GLTF_IMPORT;
     }
 
-    CHECK_AGAINST_RESULT (import_meshes ());
-    CHECK_AGAINST_RESULT (import_materials ());
-    CHECK_AGAINST_RESULT (import_images ());
-    CHECK_AGAINST_RESULT (import_skins ());
-    CHECK_AGAINST_RESULT (import_animations ());
+    AGAINSTRESULT result;
+
+    CHECK_AGAINST_RESULT (import_materials (), result);
+    CHECK_AGAINST_RESULT (import_textures (), result);
+    CHECK_AGAINST_RESULT (import_images (), result);
+    CHECK_AGAINST_RESULT (import_skins (), result);
+    CHECK_AGAINST_RESULT (import_animations (), result);
+    CHECK_AGAINST_RESULT (import_meshes_from_nodes (data->nodes, data->nodes_count), result);
     
     cgltf_free (data);
 
     return 0;
 }
 
-void import_gltf_files_from_folder (const char* partial_folder_path)
+int import_gltf_files_from_folder (const char* partial_folder_path, gltf_scene_data* gltf_data)
 {
     file_path* file_paths;
     size_t num_files = 0;
     get_files_in_folder (partial_folder_path, &file_paths, &num_files);
+
+    AGAINSTRESULT result;
 
     for (size_t f = 0 ; f < num_files; ++f)
     {
         char partial_file_path[MAX_PATH];
         strcpy (partial_file_path, partial_folder_path);
         strcat (partial_file_path, file_paths[f].path);
-        import_gltf_file (partial_file_path);
+        CHECK_AGAINST_RESULT (import_gltf_file (partial_file_path, gltf_data), result);
     }
 
     my_free (file_paths);
 
-    return;
+    return 0;
 }

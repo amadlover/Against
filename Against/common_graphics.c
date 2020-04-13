@@ -464,21 +464,23 @@ int common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 	is_validation_needed = false;
 #endif
 
-	CHECK_AGAINST_RESULT (populate_instance_layers_and_extensions ());
-	CHECK_AGAINST_RESULT (create_instance ());
+	AGAINSTRESULT result;
+
+	CHECK_AGAINST_RESULT (populate_instance_layers_and_extensions (), result);
+	CHECK_AGAINST_RESULT (create_instance (), result);
 
 	if (is_validation_needed)
 	{
-		CHECK_AGAINST_RESULT (setup_debug_utils_messenger ());
+		CHECK_AGAINST_RESULT (setup_debug_utils_messenger (), result);
 	}
 
-	CHECK_AGAINST_RESULT (get_physical_device ());
-	CHECK_AGAINST_RESULT (create_surface (HInstance, HWnd));
-	CHECK_AGAINST_RESULT (populate_graphics_device_extensions ());
-	CHECK_AGAINST_RESULT (create_graphics_device ());
-	CHECK_AGAINST_RESULT (create_swapchain ());
-	CHECK_AGAINST_RESULT (create_swapchain_imageviews ());
-	CHECK_AGAINST_RESULT (create_command_pool ());
+	CHECK_AGAINST_RESULT (get_physical_device (), result);
+	CHECK_AGAINST_RESULT (create_surface (HInstance, HWnd), result);
+	CHECK_AGAINST_RESULT (populate_graphics_device_extensions (), result);
+	CHECK_AGAINST_RESULT (create_graphics_device (), result);
+	CHECK_AGAINST_RESULT (create_swapchain (), result);
+	CHECK_AGAINST_RESULT (create_swapchain_imageviews (), result);
+	CHECK_AGAINST_RESULT (create_command_pool (), result);
 
 	return 0;
 }
