@@ -4,6 +4,9 @@
 
 #pragma comment (lib, "Shlwapi.lib")
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 void get_full_texture_path_from_uri (const char* file_path, const char* uri, char* out_full_texture_path)
 {
 	wchar_t texture_file[MAX_PATH];
@@ -59,7 +62,7 @@ void get_files_in_folder (const char* partial_folder_path, file_path** out_file_
 			char* base_name = strtok (file_name, ".");
 			char* ext = strtok (NULL, ".");
 
-			if (strcmp (ext, "glb") == 0)
+			if (strcmp (ext, "glb") == 0 || strcmp (ext, "gltf") == 0)
 			{
  				++file_count;
 			}
@@ -80,7 +83,7 @@ void get_files_in_folder (const char* partial_folder_path, file_path** out_file_
 			char* base_name = strtok (file_name, ".");
 			char* ext = strtok (NULL, ".");
 
-			if (strcmp (ext, "glb") == 0)
+			if (strcmp (ext, "glb") == 0 || strcmp (ext, "gltf") == 0)
 			{
 				file_path* current_file_path = *out_file_paths + current_file_index;
 				strcpy (current_file_path->path, base_name);
@@ -90,6 +93,12 @@ void get_files_in_folder (const char* partial_folder_path, file_path** out_file_
 			}
 		}
 	} while (FindNextFile (find_handle, &ffd) != 0);
+}
+
+void read_image_from_uri (const char* file_path, const char* uri, int* width, int* height, int* bpp, uint8_t* pixels)
+{
+	char full_path[MAX_PATH];
+	get_full_texture_path_from_uri (file_path, uri, full_path);
 }
 
 void* my_malloc (size_t size)
@@ -113,4 +122,9 @@ void my_free (void* ptr)
 	{
 		free (ptr);
 	}
+}
+
+void free_image_data (uint8_t* pixels)
+{
+	stbi_image_free (pixels);
 }
