@@ -117,24 +117,18 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 		return -1;
 	}
 
-	AGAINSTRESULT result;
-	CHECK_AGAINST_RESULT (game_init (hInstance, hWnd), result);
-
-	ShowWindow (hWnd, cmd_show);
-	UpdateWindow (hWnd);
+	AGAINSTRESULT result = game_init (hInstance, hWnd);
 
 	if (result != AGAINST_SUCCESS)
 	{
-		wchar_t Buff[8];
-		swprintf_s (Buff, 8, L"Init ");
-		OutputDebugString (Buff);
-
 		log_error (result);
-
 		game_exit ();
 
 		return result;
 	}
+
+	ShowWindow (hWnd, cmd_show);
+	UpdateWindow (hWnd);
 
 	MSG msg;
 	ZeroMemory (&msg, sizeof (msg));
@@ -151,12 +145,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 
 		if (result != AGAINST_SUCCESS)
 		{
-			wchar_t Buff[16];
-			swprintf_s (Buff, 16, L"Main Loop ");
-			OutputDebugString (Buff);
-
 			log_error (result);
-
 			game_exit ();
 
 			return result;
@@ -164,7 +153,6 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 	}
 
 	game_exit ();
-
 	DestroyWindow (hWnd);
 
 	return 0;

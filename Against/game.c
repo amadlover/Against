@@ -82,7 +82,7 @@ int game_set_current_scene (e_scene_type scene_type)
 		current_scene_init ();
 	}
 
-	return 0;
+	return AGAINST_ERROR_GLTF_IMPORT;
 }
 
 int game_main_loop ()

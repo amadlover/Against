@@ -27,7 +27,7 @@ typedef struct
 
     asset_animation* animations;
     size_t animation_count;
-} gltf_scene_data;
+} gltf_asset_data;
 
-int import_gltf_file (const char* partial_file_path, gltf_scene_data** out_gltf_data);
-int import_gltf_files_from_folder (const char* partial_folder_path, gltf_scene_data** out_gltf_data);
+int import_gltf_file (const char* partial_file_path, gltf_asset_data** out_gltf_data);
+int import_gltf_files_from_folder (const char* partial_folder_path, gltf_asset_data** out_gltf_data);

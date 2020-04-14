@@ -55,17 +55,10 @@ int log_info (const char* category, const char* message)
 
 int log_error (AGAINSTRESULT Result)
 {
-	if (!log_file)
-	{
-		return AGAINST_ERROR_SYSTEM_TMP_FILE;
-	}
-
 	switch (Result)
 	{
 	case AGAINST_ERROR_GRAPHICS_POPULATE_INSTANCE_LAYERS_AND_EXTENSIONS:
 		OutputDebugString (L"Graphics Error: Populating instance Layers and Extensions\n");
-		char* Buffer = "Graphics Error: Populating instance Layers and Extensions\n";
-		fwrite (Buffer, strnlen (Buffer, 1024), sizeof (char), log_file);
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_INSTANCE:
