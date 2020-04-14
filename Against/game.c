@@ -61,6 +61,7 @@ int game_init (HINSTANCE hInstance, HWND hWnd)
 int game_set_current_scene (e_scene_type scene_type)
 {
 	OutputDebugString (L"game_set_current_scene\n");
+	
 	if (current_scene_exit != NULL)
 	{
 		current_scene_exit ();
@@ -79,10 +80,11 @@ int game_set_current_scene (e_scene_type scene_type)
 
 	if (current_scene_init != NULL)
 	{
-		current_scene_init ();
+		AGAINSTRESULT result;
+		CHECK_AGAINST_RESULT (current_scene_init (), result);
 	}
 
-	return AGAINST_ERROR_GLTF_IMPORT;
+	return 0;
 }
 
 int game_main_loop ()

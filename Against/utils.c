@@ -5,6 +5,9 @@
 #pragma comment (lib, "Shlwapi.lib")
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_ONLY_PNG
+#define STB_ONLY_TGA
+
 #include <stb_image.h>
 
 void get_full_texture_path_from_uri (const char* file_path, const char* uri, char* out_full_texture_path)
@@ -99,6 +102,7 @@ void read_image_from_uri (const char* file_path, const char* uri, int* width, in
 {
 	char full_path[MAX_PATH];
 	get_full_texture_path_from_uri (file_path, uri, full_path);
+	pixels = stbi_load (full_path, width, height, bpp, 4);
 }
 
 void* my_malloc (size_t size)

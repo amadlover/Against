@@ -5,6 +5,40 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
+int import_images (const char* file_path, cgltf_data* data, gltf_asset_data* out_gltf_data)
+{
+    for (size_t i = 0; i < data->images_count; ++i)
+    {
+        cgltf_image* image = data->images + i;
+        int width; int height; int bpp; uint8_t* pixels = NULL;
+        read_image_from_uri (file_path, image->uri, &width, &height, &bpp, pixels);
+
+        stbi_image_free (pixels);
+    }
+
+    return 0;
+}
+
+int import_textures (cgltf_data* data, gltf_asset_data* out_gltf_data)
+{
+    return 0;
+}
+
+int import_materials (cgltf_data* data, gltf_asset_data* out_gltf_data)
+{
+    return 0;
+}
+
+int import_skins (cgltf_data* data, gltf_asset_data* out_gltf_data)
+{
+    return 0;
+}
+
+int import_animations (cgltf_data* data, gltf_asset_data* out_gltf_data)
+{
+    return 0;
+}
+
 int import_graphics_primitives (cgltf_data* data, gltf_asset_data* out_gltf_data)
 {
     return 0;
@@ -24,55 +58,6 @@ int import_meshes_from_nodes (cgltf_data* data, gltf_asset_data* out_gltf_data)
         OutputDebugString (name);
     }
 
-    return 0;
-}
-
-int import_images (const char* file_path, cgltf_data* data, gltf_asset_data* out_gltf_data)
-{
-    out_gltf_data->images_count = data->images_count;
-    out_gltf_data->images = (asset_image*)my_calloc (data->images_count, sizeof (asset_image));
-
-    for (size_t i = 0; i < data->images_count; ++i)
-    {
-        cgltf_image* image = data->images + i;
-        asset_image* ass_image = out_gltf_data->images + i;
-
-        strcpy (ass_image->name, image->name);
-        //read_image_from_uri (file_path, image->uri, &ass_image->width, &ass_image->height, &ass_image->bpp, ass_image->pixels);
-    }
-
-    return 0;
-}
-
-int import_textures (cgltf_data* data, gltf_asset_data* out_gltf_data)
-{
-    return 0;
-}
-
-int import_materials (cgltf_data* data, gltf_asset_data* out_gltf_data)
-{
-    out_gltf_data->materials_count = data->materials_count;
-    out_gltf_data->materials = (asset_material*)my_calloc (out_gltf_data->materials_count, sizeof (asset_material));
-
-    for (size_t m = 0; m < data->materials_count; ++m)
-    {
-        cgltf_material* mat = data->materials + m;
-        asset_material* ass_mat = out_gltf_data->materials;
-
-        strcpy (ass_mat->name, mat->name);
-        ass_mat->alpha_mode = mat->alpha_mode;
-    }
-
-    return 0;
-}
-
-int import_skins (cgltf_data* data, gltf_asset_data* out_gltf_data)
-{
-    return 0;
-}
-
-int import_animations (cgltf_data* data, gltf_asset_data* out_gltf_data)
-{
     return 0;
 }
 
