@@ -106,7 +106,7 @@ int graphics_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 	return 0;
 }
 
-int graphics_utils_map_data_to_buffer (VkDevice graphics_device,
+int graphics_utils_map_data_to_device_memory (VkDevice graphics_device,
 	VkDeviceMemory memory,
 	VkDeviceSize offset,
 	VkDeviceSize size,

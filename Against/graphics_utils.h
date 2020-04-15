@@ -20,7 +20,7 @@ int graphics_utils_allocate_bind_buffer_memory (
     VkDeviceMemory* out_memory
 );
 
-int graphics_utils_map_data_to_buffer (
+int graphics_utils_map_data_to_device_memory (
     VkDevice graphics_device, 
     VkDeviceMemory memory, 
     VkDeviceSize offset, 

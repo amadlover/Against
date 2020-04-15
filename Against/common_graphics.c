@@ -134,7 +134,7 @@ int populate_instance_layers_and_extensions ()
 
 int create_instance ()
 {
-	OutputDebugString (L"Create instance\n");
+	OutputDebugString (L"create_instance\n");
 
 	VkApplicationInfo application_info = { 0 };
 
