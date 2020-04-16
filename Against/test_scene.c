@@ -58,20 +58,15 @@ void test_scene_exit ()
             for (size_t i = 0; i < asset_data->images_count; ++i)
             {
                 vkDestroyImage (graphics_device, asset_data->images[i], NULL);
+                vkDestroyImageView (graphics_device, asset_data->image_views[i], NULL);
             }
             my_free (asset_data->images);
         }
 
-        if (asset_data->image_views)
-        {
-            for (size_t iv = 0; iv < asset_data->images_count; ++iv)
-            {
-                vkDestroyImageView (graphics_device, asset_data->image_views[iv], NULL);
-            }
-            my_free (asset_data->image_views);
-        }
-
         graphics_utils_destroy_buffer_and_buffer_memory (graphics_device, asset_data->vb_ib, asset_data->vb_ib_memory);
+        vkFreeMemory (graphics_device, asset_data->images_memory, NULL);
+
+        my_free (asset_data->materials);
 
         my_free (asset_data);
     }
