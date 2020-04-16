@@ -42,7 +42,7 @@ int graphics_utils_create_image (
 int graphics_utils_create_image_view (
     VkDevice graphics_device,
     VkImage image,
-    VkImageView out_image_view
+    VkImageView* out_image_view
 );
 
 int graphics_utils_allocate_bind_image_memory (
@@ -55,6 +55,18 @@ int graphics_utils_allocate_bind_image_memory (
 );
 
 int graphics_utils_change_image_layout (
+    VkDevice graphics_device,
+    VkQueue graphics_queue,
+    VkCommandPool command_pool,
+    uint32_t graphics_queue_family_index,
+    VkImage image,
+    uint32_t layer_count,
+    VkImageLayout old_layout,
+    VkImageLayout new_layout,
+    VkAccessFlags src_access,
+    VkAccessFlags dst_access,
+    VkPipelineStageFlags src_stage,
+    VkPipelineStageFlags dst_stage
 );
 
 int graphics_utils_copy_buffer_to_buffer (
@@ -67,6 +79,14 @@ int graphics_utils_copy_buffer_to_buffer (
 );
 
 int graphics_utils_copy_buffer_to_image (
+    VkDevice graphics_device,
+    VkCommandPool command_pool,
+    VkQueue graphics_queue,
+    VkDeviceSize offset,
+    VkBuffer buffer,
+    VkImage* image,
+    VkExtent3D extent,
+    uint32_t layer_count
 );
 
 int graphics_utils_create_shader (

@@ -119,13 +119,22 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
     for (size_t i = 0; i < num_temp_images; ++i)
     {
         CHECK_AGAINST_RESULT (graphics_utils_map_data_to_device_memory (graphics_device, staging_memory, img_offsets[i], img_sizes[i], img_pixels[i]), result);
+        CHECK_AGAINST_RESULT (graphics_utils_change_image_layout (graphics_device, graphics_queue, command_pool, graphics_queue_family_index, temp_images[i], 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT), result);
     }
 
     CHECK_AGAINST_RESULT (graphics_utils_allocate_bind_image_memory (graphics_device, temp_images, num_temp_images, physical_device_memory_properties, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &images_memory), result);
 
     for (size_t i = 0; i < num_temp_images; ++i)
     {
-        //vkDestroyImageView (graphics_device, *(temp_image_views + i), NULL);
+        VkExtent3D img_extent = { img_widths[i], img_heights[i], 1 };
+        CHECK_AGAINST_RESULT (graphics_utils_copy_buffer_to_image (graphics_device, command_pool, graphics_queue, img_offsets[i], staging_buffer, temp_images + i, img_extent, 1), result);
+        CHECK_AGAINST_RESULT (graphics_utils_change_image_layout (graphics_device, graphics_queue, command_pool, graphics_queue_family_index, temp_images[i], 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT), result);
+        CHECK_AGAINST_RESULT (graphics_utils_create_image_view (graphics_device, temp_images[i], temp_image_views + i), result);
+    }
+
+    for (size_t i = 0; i < num_temp_images; ++i)
+    {
+        vkDestroyImageView (graphics_device, *(temp_image_views + i), NULL);
         vkDestroyImage (graphics_device, *(temp_images + i), NULL);
     }
 
