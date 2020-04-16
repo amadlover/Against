@@ -52,7 +52,7 @@ int game_init (HINSTANCE hInstance, HWND hWnd)
 
 	AGAINSTRESULT result;
 
-	//CHECK_AGAINST_RESULT (common_graphics_init (hInstance, hWnd), result);
+	CHECK_AGAINST_RESULT (common_graphics_init (hInstance, hWnd), result);
 	CHECK_AGAINST_RESULT (game_set_current_scene (e_scene_type_test), result);
 
 	return 0;
@@ -107,5 +107,5 @@ void game_exit ()
 		current_scene_exit ();
 	}
 
-	//common_graphics_exit ();
+	common_graphics_exit ();
 }

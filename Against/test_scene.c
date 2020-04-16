@@ -2,8 +2,10 @@
 #include "game.h"
 #include "gltf.h"
 #include "graphics_pipeline.h"
+#include "common_graphics.h"
 #include "asset.h"
 #include "utils.h"
+#include "graphics_utils.h"
 
 #include <stb_image.h>
 
@@ -51,6 +53,26 @@ void test_scene_exit ()
     
     if (asset_data)
     {
+        if (asset_data->images)
+        {
+            for (size_t i = 0; i < asset_data->images_count; ++i)
+            {
+                vkDestroyImage (graphics_device, asset_data->images[i], NULL);
+            }
+            my_free (asset_data->images);
+        }
+
+        if (asset_data->image_views)
+        {
+            for (size_t iv = 0; iv < asset_data->images_count; ++iv)
+            {
+                vkDestroyImageView (graphics_device, asset_data->image_views[iv], NULL);
+            }
+            my_free (asset_data->image_views);
+        }
+
+        graphics_utils_destroy_buffer_and_buffer_memory (graphics_device, asset_data->vb_ib, asset_data->vb_ib_memory);
+
         my_free (asset_data);
     }
 }

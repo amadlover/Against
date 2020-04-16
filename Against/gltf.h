@@ -11,6 +11,7 @@ typedef struct
 
     VkImage* images;
     size_t images_count;
+    VkImageView* image_views;
     VkDeviceMemory images_memory;
 } gltf_asset_data;
 

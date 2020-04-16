@@ -141,7 +141,7 @@ int graphics_utils_create_image (
 	create_info.arrayLayers = array_layers;
 	create_info.extent = extent;
 	create_info.format = format;
-	create_info.mipLevels = 0;
+	create_info.mipLevels = 1;
 	create_info.samples = VK_SAMPLE_COUNT_1_BIT;
 	create_info.initialLayout = initial_layout;
 	create_info.sharingMode = sharing_mode;
@@ -151,6 +151,34 @@ int graphics_utils_create_image (
 	if (vkCreateImage (graphics_device, &create_info, NULL, out_image) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
+	}
+
+	return 0;
+}
+
+int graphics_utils_create_image_view (
+	VkDevice graphics_device,
+	VkImage image,
+	VkImageView out_image_view
+)
+{
+	VkComponentMapping components = { 0 };
+	VkImageSubresourceRange subresource_range = { 0 };
+	subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subresource_range.layerCount = 1;
+	subresource_range.levelCount = 1;
+
+	VkImageViewCreateInfo create_info = { 0 };
+	create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	create_info.image = image;
+	create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+	create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	create_info.components = components;
+	create_info.subresourceRange = subresource_range;	
+
+	if (vkCreateImageView (graphics_device, &create_info, NULL, &out_image_view) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
 	}
 
 	return 0;

@@ -385,11 +385,11 @@ int create_swapchain ()
 	}
 
 	vkGetSwapchainImagesKHR (graphics_device, swapchain, &swapchain_image_count, NULL);
-	swapchain_images = (VkImage*)my_malloc (sizeof (VkImage) * swapchain_image_count);
+	swapchain_images = (VkImage*)my_calloc (swapchain_image_count, sizeof (VkImage));
 
 	vkGetSwapchainImagesKHR (graphics_device, swapchain, &swapchain_image_count, swapchain_images);
 
-	swapchain_imageviews = (VkImageView*)my_malloc (sizeof (VkImageView) * swapchain_image_count);
+	swapchain_imageviews = (VkImageView*)my_calloc (swapchain_image_count, sizeof (VkImageView));
 	
 	my_free (surface_formats);
 	my_free (present_modes);
@@ -401,20 +401,10 @@ int create_swapchain_imageviews ()
 {
 	OutputDebugString (L"create_swapchain_imageviews\n");
 
-	VkComponentMapping components;
-
-	components.a = VK_COMPONENT_SWIZZLE_A;
-	components.b = VK_COMPONENT_SWIZZLE_B;
-	components.g = VK_COMPONENT_SWIZZLE_G;
-	components.r = VK_COMPONENT_SWIZZLE_R;
-
-	VkImageSubresourceRange subresource_range;
-
+	VkComponentMapping components = { 0 };
+	VkImageSubresourceRange subresource_range = { 0 };
 	subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subresource_range.baseMipLevel = 0;
 	subresource_range.levelCount = 1;
-
-	subresource_range.baseArrayLayer = 0;
 	subresource_range.layerCount = 1;
 
 	VkImageViewCreateInfo create_info = { 0 };
@@ -428,7 +418,7 @@ int create_swapchain_imageviews ()
 	for (uint32_t i = 0; i < swapchain_image_count; i++)
 	{
 		create_info.image = swapchain_images[i];
-		if (vkCreateImageView (graphics_device, &create_info, NULL, &swapchain_imageviews[i]) != VK_SUCCESS)
+		if (vkCreateImageView (graphics_device, &create_info, NULL, swapchain_imageviews + i) != VK_SUCCESS)
 		{
 			return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
 		}

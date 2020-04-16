@@ -39,6 +39,12 @@ int graphics_utils_create_image (
     VkImage* out_image
 );
 
+int graphics_utils_create_image_view (
+    VkDevice graphics_device,
+    VkImage image,
+    VkImageView out_image_view
+);
+
 int graphics_utils_allocate_bind_image_memory (
     VkDevice graphics_device, 
     VkImage* images, 
