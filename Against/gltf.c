@@ -120,6 +120,7 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
         }
 
         num_images += datas[d]->images_count;
+        out_data->images_count += datas[d]->images_count;
     }
 
     VkBuffer staging_buffer; VkDeviceMemory staging_memory;
@@ -159,31 +160,86 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
 
 int import_materials (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
 {
-    vk_material* materials = NULL;
-    size_t num_materials = 0;
-
     for (size_t d = 0; d < num_datas; ++d)
     {
-        if (materials == NULL)
+        if (out_data->materials == NULL)
         {
-            materials = (vk_material*)my_calloc (datas[d]->materials_count, sizeof (vk_material));
+            out_data->materials = (vk_material*)my_calloc (datas[d]->materials_count, sizeof (vk_material));
         }
         else
         {
-            materials = (vk_material*)my_realloc (materials, sizeof (vk_material) * (datas[d]->materials_count + num_materials));
+            out_data->materials = (vk_material*)my_realloc (out_data->materials, sizeof (vk_material) * (datas[d]->materials_count + out_data->materials_count));
         }
 
         for (size_t m = 0; m < datas[d]->materials_count; ++m)
         {
-            size_t current_index = num_materials + m;
+            size_t current_index = out_data->materials_count + m;
             cgltf_material* material = datas[d]->materials + m;
+
+            strcpy (out_data->materials[current_index].name, material->name);
 
             for (size_t i = 0; i < num_images; ++i)
             {
+                if (material->pbr_metallic_roughness.base_color_texture.texture)
+                {
+                    if (material->pbr_metallic_roughness.base_color_texture.texture->image == ref_cgltf_images[i])
+                    {
+                        strcpy (out_data->materials[current_index].base_texture.name, ref_cgltf_images[i]->name);
+                        out_data->materials[current_index].base_texture.image = out_data->images + current_index;
+                        out_data->materials[current_index].base_texture.image_view = out_data->image_views + current_index;
+                    }
+                }
+
+                if (material->pbr_metallic_roughness.metallic_roughness_texture.texture)
+                {
+                    if (material->pbr_metallic_roughness.metallic_roughness_texture.texture->image == ref_cgltf_images[i])
+                    {
+                        strcpy (out_data->materials[current_index].metalness_roughness_texture.name, ref_cgltf_images[i]->name);
+                        out_data->materials[current_index].metalness_roughness_texture.image = out_data->images + current_index;
+                        out_data->materials[current_index].metalness_roughness_texture.image_view = out_data->image_views + current_index;
+                    }
+                }
+                
+                if (material->normal_texture.texture)
+                {
+                    if (material->normal_texture.texture->image == ref_cgltf_images[i])
+                    {
+                        strcpy (out_data->materials[current_index].normal_texture.name, ref_cgltf_images[i]->name);
+                        out_data->materials[current_index].normal_texture.image = out_data->images + current_index;
+                        out_data->materials[current_index].normal_texture.image_view = out_data->image_views + current_index;
+                    }
+                }
+
+                if (material->emissive_texture.texture)
+                {
+                    if (material->emissive_texture.texture->image == ref_cgltf_images[i])
+                    {
+                        strcpy (out_data->materials[current_index].emissive_texture.name, ref_cgltf_images[i]->name);
+                        out_data->materials[current_index].emissive_texture.image = out_data->images + current_index;
+                        out_data->materials[current_index].emissive_texture.image_view = out_data->image_views + current_index;
+                    }
+                }
+                
+                if (material->occlusion_texture.texture)
+                {
+                    if (material->occlusion_texture.texture->image == ref_cgltf_images[i])
+                    {
+                        strcpy (out_data->materials[current_index].occlusion_texture.name, ref_cgltf_images[i]->name);
+                        out_data->materials[current_index].occlusion_texture.image = out_data->images + current_index;
+                        out_data->materials[current_index].occlusion_texture.image_view = out_data->image_views + current_index;
+
+                    }
+                }
             }
+
+            out_data->materials[current_index].alpha_mode = material->alpha_mode;
+            out_data->materials[current_index].metalness_factor = material->pbr_metallic_roughness.metallic_factor;
+            out_data->materials[current_index].roughness_factor = material->pbr_metallic_roughness.roughness_factor;
+            memcpy (out_data->materials[current_index].emissive_factor, material->emissive_factor, sizeof (float) * 4);
+            memcpy (out_data->materials[current_index].base_color_factor, material->pbr_metallic_roughness.base_color_factor, sizeof (float) * 4);
         }
 
-        num_materials += datas[d]->materials_count;
+        out_data->materials_count += datas[d]->materials_count;
     }
 
     return 0;

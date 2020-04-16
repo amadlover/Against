@@ -8,8 +8,8 @@
 typedef struct
 {
     char name[1024];
-    VkImage image;
-    VkImageView image_view;
+    VkImage* image;
+    VkImageView* image_view;
 } vk_image;
 
 typedef enum 
@@ -23,16 +23,16 @@ typedef struct
 {
     char name[1024];
 
-    VkImageView* base_texture;
-    VkImageView* metalness_roughness_texture;
-    VkImageView* normal_texture;
-    VkImageView* occlusion_texture;
-    VkImageView* emissive_texture;
+    vk_image base_texture;
+    vk_image metalness_roughness_texture;
+    vk_image normal_texture;
+    vk_image occlusion_texture;
+    vk_image emissive_texture;
 
     float base_color_factor[4];
     float metalness_factor;
     float roughness_factor;
-    float emissive_factor[4];
+    float emissive_factor[3];
 
     vk_material_alpha_mode alpha_mode;
 } vk_material;
