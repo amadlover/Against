@@ -40,12 +40,38 @@ typedef struct
 typedef struct
 {
     char name[1024];
+
 } vk_animation;
 
 typedef struct
 {
     char name[1024];
+
+    float* joints[4];
+    float* weights[4];
+
+    size_t num_joints;
+    size_t num_weights;
 } vk_skin;
+
+typedef struct
+{
+    char namr[256];
+    VkIndexType index_type;
+
+    VkBuffer* vb_ib;
+    VkDeviceMemory* vb_ib_memory;
+
+    size_t positions_offset;
+    size_t normals_offset;
+    size_t uv0s_offset;
+    size_t uv1s_offset;
+    size_t indices_offset;
+
+    size_t indices_count;
+
+    vk_material* material;
+} vk_graphics_primitive;
 
 typedef struct
 {

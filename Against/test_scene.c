@@ -50,24 +50,6 @@ int test_scene_main_loop ()
 void test_scene_exit ()
 {
     OutputDebugString (L"test_scene_exit\n");
-    
-    if (asset_data)
-    {
-        if (asset_data->images)
-        {
-            for (size_t i = 0; i < asset_data->images_count; ++i)
-            {
-                vkDestroyImage (graphics_device, asset_data->images[i], NULL);
-                vkDestroyImageView (graphics_device, asset_data->image_views[i], NULL);
-            }
-            my_free (asset_data->images);
-        }
 
-        graphics_utils_destroy_buffer_and_buffer_memory (graphics_device, asset_data->vb_ib, asset_data->vb_ib_memory);
-        vkFreeMemory (graphics_device, asset_data->images_memory, NULL);
-
-        my_free (asset_data->materials);
-
-        my_free (asset_data);
-    }
+    cleanup_gltf_data (asset_data);
 }
