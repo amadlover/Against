@@ -46,9 +46,16 @@ typedef struct
 typedef struct
 {
     char name[1024];
+    struct vk_joint* parent;
 
-    float* joints[4];
-    float* weights[4];
+    float position[3];
+    float rotation[4];
+    float scale[3];
+} vk_joint;
+
+typedef struct
+{
+    char name[1024];
 
     size_t num_joints;
     size_t num_weights;
@@ -56,7 +63,6 @@ typedef struct
 
 typedef struct
 {
-    char namr[256];
     VkIndexType index_type;
 
     VkBuffer* vb_ib;
@@ -66,12 +72,14 @@ typedef struct
     size_t normals_offset;
     size_t uv0s_offset;
     size_t uv1s_offset;
+    size_t weights_offset;
+    size_t joints_offset;
     size_t indices_offset;
 
     size_t indices_count;
 
     vk_material* material;
-} vk_graphics_primitive;
+} vk_skeletal_graphics_primitive;
 
 typedef struct
 {
@@ -81,4 +89,7 @@ typedef struct
 typedef struct
 {
     char name[1024];
+    
+    vk_skeletal_graphics_primitive* skeletal_graphics_primitives;
+    size_t num_skeletal_graphics_primitives;
 } vk_skeletal_mesh;
