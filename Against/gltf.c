@@ -352,16 +352,34 @@ int import_graphics_meshes (cgltf_data** datas, size_t num_datas, gltf_asset_dat
     unsigned char** positions = NULL;
     unsigned char** normals = NULL;
     unsigned char** uv0s = NULL;
+    unsigned char** uv1s = NULL;
     unsigned char** joints = NULL;
     unsigned char** weights = NULL;
     unsigned char** indices = NULL;
 
-    size_t* positions_sizes, positions_offsets;
-    size_t* normals_sizes, normals_offsets;
-    size_t* uv0s_sizes, uv0s_offsets;
-    size_t* joints_sizes, joints_offsets;
-    size_t* weights_sizes, weights_offsets;
-    size_t* indices_sizes, indices_offsets;
+    size_t* positions_sizes = NULL;
+    size_t* positions_offsets = NULL;
+    size_t* normals_sizes = NULL;
+    size_t* normals_offsets = NULL;
+    size_t* uv0s_sizes = NULL;
+    size_t* uv0s_offsets = NULL;
+    size_t* uv1s_sizes = NULL;
+    size_t* uv1s_offsets = NULL;
+    size_t* joints_sizes = NULL;
+    size_t* joints_offsets = NULL;
+    size_t* weights_sizes = NULL;
+    size_t* weights_offsets = NULL;
+    size_t* indices_sizes = NULL;
+    size_t* indices_offsets = NULL;
+
+    cgltf_primitive** ref_cgltf_primitives = NULL;
+
+    size_t num_primitives_data = 0;
+    
+    size_t total_data_size = 0;
+    size_t current_primitive_data_offset = 0;
+
+    size_t current_primitive_index = 0;
 
     for (size_t d = 0; d < num_datas; ++d)
     {
@@ -374,32 +392,309 @@ int import_graphics_meshes (cgltf_data** datas, size_t num_datas, gltf_asset_dat
             if (current_node->mesh == NULL) continue;
             if (strstr (current_node->name, "CS_") != NULL) continue;
 
+            size_t current_mesh_index = out_data->skeletal_mesh_count;
+            cgltf_mesh* current_mesh = current_node->mesh;
 
-            if (out_data->skeletal_meshes == NULL)
+            if (positions == NULL)
             {
-                out_data->skeletal_meshes = (vk_skeletal_mesh*)my_calloc (1, sizeof (vk_skeletal_mesh));
+                positions = (unsigned char**)my_calloc (current_mesh->primitives_count, sizeof (unsigned char*));
             }
             else
             {
-                out_data->skeletal_meshes = (vk_skeletal_mesh*)my_realloc (out_data->skeletal_meshes, sizeof (vk_skeletal_mesh) * (out_data->skeletal_mesh_count + 1));
+                positions = (unsigned char**)my_realloc (positions, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
             }
-            
-            size_t current_mesh_index = out_data->skeletal_mesh_count;
-            
-            cgltf_mesh* current_mesh = current_node->mesh;
-            strcpy (out_data->skeletal_meshes[current_mesh_index].name, current_mesh->name);
-            out_data->skeletal_meshes[current_mesh_index].num_skeletal_graphics_primitives = current_mesh->primitives_count;
-            out_data->skeletal_meshes[current_mesh_index].skeletal_graphics_primitives = (vk_skeletal_graphics_primitive*)my_calloc (current_mesh->primitives_count, sizeof (vk_skeletal_graphics_primitive));
+
+            if (positions_sizes == NULL)
+            {
+                positions_sizes = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                positions_sizes = (size_t*)my_realloc (positions_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (positions_offsets == NULL)
+            {
+                positions_offsets = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                positions_offsets = (size_t*)my_realloc (positions_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (normals == NULL)
+            {
+                normals = (unsigned char**)my_calloc (current_mesh->primitives_count, sizeof (unsigned char*));
+            }
+            else
+            {
+                normals = (unsigned char**)my_realloc (normals, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (normals_sizes == NULL)
+            {
+                normals_sizes = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                normals_sizes = (size_t*)my_realloc (normals_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (normals_offsets == NULL)
+            {
+                normals_offsets = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                normals_offsets = (size_t*)my_realloc (normals_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (uv0s == NULL)
+            {
+                uv0s = (unsigned char**)my_calloc (current_mesh->primitives_count, sizeof (unsigned char*));
+            }
+            else
+            {
+                uv0s = (unsigned char**)my_realloc (uv0s, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (uv0s_sizes == NULL)
+            {
+                uv0s_sizes = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                uv0s_sizes = (size_t*)my_realloc (uv0s_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (uv0s_offsets == NULL)
+            {
+                uv0s_offsets = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                uv0s_offsets = (size_t*)my_realloc (uv0s_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (uv1s == NULL)
+            {
+                uv1s = (unsigned char**)my_calloc (current_mesh->primitives_count, sizeof (unsigned char*));
+            }
+            else
+            {
+                uv1s = (unsigned char**)my_realloc (uv1s, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (uv1s_sizes == NULL)
+            {
+                uv1s_sizes = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                uv1s_sizes = (size_t*)my_realloc (uv1s_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (uv1s_offsets == NULL)
+            {
+                uv1s_offsets = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                uv1s_offsets = (size_t*)my_realloc (uv1s_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (joints == NULL)
+            {
+                joints = (unsigned char**)my_calloc (current_mesh->primitives_count, sizeof (unsigned char*));
+            }
+            else
+            {
+                joints = (unsigned char**)my_realloc (joints, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (joints_sizes == NULL)
+            {
+                joints_sizes = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                joints_sizes = (size_t*)my_realloc (joints_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (joints_offsets == NULL)
+            {
+                joints_offsets = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                joints_offsets = (size_t*)my_realloc (joints_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (weights == NULL)
+            {
+                weights = (unsigned char**)my_calloc (current_mesh->primitives_count, sizeof (unsigned char*));
+            }
+            else
+            {
+                weights = (unsigned char**)my_realloc (weights, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (weights_sizes == NULL)
+            {
+                weights_sizes = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                weights_sizes = (size_t*)my_realloc (weights_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (weights_offsets == NULL)
+            {
+                weights_offsets = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                weights_offsets = (size_t*)my_realloc (weights_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (indices == NULL)
+            {
+                indices = (unsigned char**)my_calloc (current_mesh->primitives_count, sizeof (unsigned char*));
+            }
+            else
+            {
+                indices = (unsigned char**)my_realloc (indices, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (indices_sizes == NULL)
+            {
+                indices_sizes = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                indices_sizes = (size_t*)my_realloc (indices_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (indices_offsets == NULL)
+            {
+                indices_offsets = (size_t*)my_calloc (current_mesh->primitives_count, sizeof (size_t));
+            }
+            else
+            {
+                indices_offsets = (size_t*)my_realloc (indices_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+            }
+
+            if (ref_cgltf_primitives == NULL)
+            {
+                ref_cgltf_primitives = (cgltf_primitive**)my_calloc (current_mesh->primitives_count, sizeof (cgltf_primitive*));
+            }
+            else
+            {
+                ref_cgltf_primitives = (cgltf_primitive**)my_realloc (ref_cgltf_primitives, sizeof (cgltf_primitive*) * (num_primitives_data + current_mesh->primitives_count));
+            }
 
             for (size_t p = 0; p < current_mesh->primitives_count; ++p)
             {
                 cgltf_primitive* current_primitive = current_mesh->primitives + p;
+
+                for (size_t a = 0; a < current_primitive->attributes_count; ++a)
+                {
+                    cgltf_attribute* current_attribute = current_primitive->attributes + a;
+                    cgltf_accessor* accessor = current_attribute->data;
+                    cgltf_buffer_view* buffer_view = accessor->buffer_view;
+
+                    if (current_attribute->type == cgltf_attribute_type_position)
+                    {
+                        positions[current_primitive_index] = (unsigned char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+                        positions_sizes[current_primitive_index] = buffer_view->size;
+                        positions_offsets[current_primitive_index] = current_primitive_data_offset;
+
+                        current_primitive_data_offset += buffer_view->size;
+                    }
+                    else if (current_attribute->type == cgltf_attribute_type_normal)
+                    {
+                        normals[current_primitive_index] = (unsigned char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+                        normals_sizes[current_primitive_index] = buffer_view->size;
+                        normals_offsets[current_primitive_index] = current_primitive_data_offset;
+
+                        current_primitive_data_offset += buffer_view->size;
+                    }
+                    else if (current_attribute->type == cgltf_attribute_type_texcoord)
+                    {
+                        if (strcmp (current_attribute->name, "TEXCOORD_0") == 0)
+                        {
+                            uv0s[current_primitive_index] = (unsigned char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+                            uv0s_sizes[current_primitive_index] = buffer_view->size;
+                            uv0s_offsets[current_primitive_index] = current_primitive_data_offset;
+                            
+                            current_primitive_data_offset += buffer_view->size;
+                        }
+                        else if (strcmp (current_attribute->name, "TEXCOORD_1") == 0)
+                        {
+                            uv1s[current_primitive_index] = (unsigned char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+                            uv1s_sizes[current_primitive_index] = buffer_view->size;
+                            uv1s_offsets[current_primitive_index] = current_primitive_data_offset;
+
+                            current_primitive_data_offset += buffer_view->size;
+                        }
+                    }
+                    else if (current_attribute->type == cgltf_attribute_type_joints)
+                    {
+                        joints[current_primitive_index] = (unsigned char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+                        joints_sizes[current_primitive_index] = buffer_view->size;
+                        joints_offsets[current_primitive_index] = current_primitive_data_offset;
+
+                        current_primitive_data_offset += buffer_view->size;
+                    }
+                    else if (current_attribute->type == cgltf_attribute_type_weights)
+                    {
+                        weights[current_primitive_index] = (unsigned char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+                        weights_sizes[current_primitive_index] = buffer_view->size;
+                        weights_offsets[current_primitive_index] = current_primitive_data_offset;
+
+                        current_primitive_data_offset += buffer_view->size;
+                    }
+                }
+
+                cgltf_accessor* accessor = current_primitive->indices;
+                cgltf_buffer_view* buffer_view = accessor->buffer_view;
+                indices[current_primitive_index] = (unsigned char*)buffer_view->buffer->data + accessor->offset + buffer_view->offset;
+                indices_sizes[current_primitive_index] = buffer_view->size;
+                indices_offsets[current_primitive_index] = current_primitive_data_offset;
+                
+                current_primitive_data_offset += buffer_view->size;
+
+               // ref_cgltf_primitives[current_primitive_index] = current_primitive;
+                ++current_primitive_index;
             }
 
+            num_primitives_data += current_mesh->primitives_count;
             ++out_data->skeletal_mesh_count;
         }
     }
 
+    my_free (positions);
+    my_free (positions_sizes);
+    my_free (positions_offsets);
+    my_free (normals);
+    my_free (normals_sizes);
+    my_free (normals_offsets);
+    my_free (uv0s);
+    my_free (uv0s_sizes);
+    my_free (uv0s_offsets);
+    my_free (uv1s);
+    my_free (uv1s_sizes);
+    my_free (uv1s_offsets);
+    my_free (joints);
+    my_free (joints_sizes);
+    my_free (joints_offsets);
+    my_free (weights);
+    my_free (weights_sizes);
+    my_free (weights_offsets);
+    my_free (indices);
+    my_free (indices_sizes);
+    my_free (indices_offsets);
+    my_free (ref_cgltf_primitives);
     my_free (ref_cgltf_materials_for_graphics_primitives);
 
     return 0;
@@ -410,10 +705,10 @@ int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t 
     AGAINSTRESULT result;
     
     CHECK_AGAINST_RESULT (import_images (full_folder_path, datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (import_materials (datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (import_animations (datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (import_skins (datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (import_graphics_meshes (datas, num_datas, out_data), result);
+    //CHECK_AGAINST_RESULT (import_materials (datas, num_datas, out_data), result);
+    //CHECK_AGAINST_RESULT (import_animations (datas, num_datas, out_data), result);
+    //CHECK_AGAINST_RESULT (import_skins (datas, num_datas, out_data), result);
+    //CHECK_AGAINST_RESULT (import_graphics_meshes (datas, num_datas, out_data), result);
 
     return 0;
 }

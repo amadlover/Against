@@ -63,8 +63,6 @@ typedef struct
 
 typedef struct
 {
-    VkIndexType index_type;
-
     VkBuffer* vb_ib;
     VkDeviceMemory* vb_ib_memory;
 
@@ -77,6 +75,8 @@ typedef struct
     size_t indices_offset;
 
     size_t indices_count;
+
+    VkIndexType index_type;
 
     vk_material* material;
 } vk_skeletal_graphics_primitive;
