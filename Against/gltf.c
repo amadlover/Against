@@ -306,8 +306,63 @@ int import_skins (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_dat
     return 0;
 }
 
+int import_primitive_attributes (cgltf_data* data, size_t mesh_index, cgltf_primitive* primitive, size_t primitive_index, gltf_asset_data* out_data)
+{
+    for (size_t a = 0; a < primitive->attributes_count; ++a)
+    {
+        cgltf_attribute* current_attribute = primitive->attributes + a;
+        
+        if (current_attribute->type == cgltf_attribute_type_position)
+        {
+
+        }
+        else if (current_attribute->type == cgltf_attribute_type_texcoord)
+        {
+
+        }
+        else if (current_attribute->type == cgltf_attribute_type_normal)
+        {
+
+        }
+        else if (current_attribute->type == cgltf_attribute_type_joints)
+        { 
+
+        }
+        else if (current_attribute->type == cgltf_attribute_type_weights)
+        {
+
+        }
+    }
+
+    return 0;
+}
+
+int import_primitive_material (cgltf_data* data, size_t mesh_index, cgltf_primitive* primitive, size_t primitive_index, gltf_asset_data* out_data)
+{
+    return 0;
+}
+
+int import_primitive_indices (cgltf_data* data, size_t mesh_index, cgltf_primitive* primitive, size_t primitive_index, gltf_asset_data* out_data)
+{
+    return 0;
+}
+
 int import_graphics_meshes (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
 {
+    unsigned char** positions = NULL;
+    unsigned char** normals = NULL;
+    unsigned char** uv0s = NULL;
+    unsigned char** joints = NULL;
+    unsigned char** weights = NULL;
+    unsigned char** indices = NULL;
+
+    size_t* positions_sizes, positions_offsets;
+    size_t* normals_sizes, normals_offsets;
+    size_t* uv0s_sizes, uv0s_offsets;
+    size_t* joints_sizes, joints_offsets;
+    size_t* weights_sizes, weights_offsets;
+    size_t* indices_sizes, indices_offsets;
+
     for (size_t d = 0; d < num_datas; ++d)
     {
         cgltf_data* current_data = datas[d];
