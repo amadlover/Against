@@ -24,6 +24,8 @@ size_t num_ref_cgltf_anims_for_meshes = 0;
 
 int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
 {
+    OutputDebugString (L"import_images\n");
+
     size_t total_image_size = 0;
 
     size_t* img_offsets = NULL;
@@ -118,7 +120,7 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
             img_pixels[current_index] = stbi_load (full_texture_path, img_widths + current_index, img_heights + current_index, &bpp, 4);
 
             VkExtent3D image_extent = { img_widths[current_index], img_heights[current_index], 1 };
-            CHECK_AGAINST_RESULT (graphics_utils_create_image (graphics_device, graphics_queue_family_index, image_extent, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE, &out_data->images[current_index]), result);
+            CHECK_AGAINST_RESULT (graphics_utils_create_image (graphics_device, graphics_queue_family_index, image_extent, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, &out_data->images[current_index]), result);
             img_sizes[current_index] = img_widths[current_index] * img_heights[current_index] * 4;
             total_image_size += img_sizes[current_index];
             img_offsets[current_index] = current_index > 0 ? total_image_size - img_sizes[current_index] : 0;
@@ -137,7 +139,6 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
     for (size_t i = 0; i < num_ref_cgltf_images_for_materials; ++i)
     {
         CHECK_AGAINST_RESULT (graphics_utils_map_data_to_device_memory (graphics_device, staging_memory, img_offsets[i], img_sizes[i], img_pixels[i]), result);
-        CHECK_AGAINST_RESULT (graphics_utils_change_image_layout (graphics_device, graphics_queue, command_pool, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT), result);
     }
 
     CHECK_AGAINST_RESULT (graphics_utils_allocate_bind_image_memory (graphics_device, out_data->images, num_ref_cgltf_images_for_materials, physical_device_memory_properties, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &out_data->images_memory), result);
@@ -145,6 +146,7 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
     for (size_t i = 0; i < num_ref_cgltf_images_for_materials; ++i)
     {
         VkExtent3D img_extent = { img_widths[i], img_heights[i], 1 };
+        CHECK_AGAINST_RESULT (graphics_utils_change_image_layout (graphics_device, graphics_queue, command_pool, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT), result);
         CHECK_AGAINST_RESULT (graphics_utils_copy_buffer_to_image (graphics_device, command_pool, graphics_queue, img_offsets[i], staging_buffer, &out_data->images[i], img_extent, 1), result);
         CHECK_AGAINST_RESULT (graphics_utils_change_image_layout (graphics_device, graphics_queue, command_pool, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT), result);
         CHECK_AGAINST_RESULT (graphics_utils_create_image_view (graphics_device, out_data->images[i], &out_data->image_views[i]), result);
@@ -167,6 +169,7 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
 
 int import_materials (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
 {
+    OutputDebugString (L"import_materials\n");
     for (size_t d = 0; d < num_datas; ++d)
     {
         if (out_data->materials == NULL)
@@ -267,11 +270,13 @@ int import_materials (cgltf_data** datas, size_t num_datas, gltf_asset_data* out
 
 int import_animations (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
 {
+    OutputDebugString (L"import_animations\n");
     return 0;
 }
 
 int import_skins (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
 {
+    OutputDebugString (L"import_skins\n");
     for (size_t d = 0; d < num_datas; ++d)
     {
         if (out_data->skins == NULL)
@@ -308,6 +313,7 @@ int import_skins (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_dat
 
 int import_primitive_attributes (cgltf_data* data, size_t mesh_index, cgltf_primitive* primitive, size_t primitive_index, gltf_asset_data* out_data)
 {
+    OutputDebugString (L"import_primitive_attributes\n");
     for (size_t a = 0; a < primitive->attributes_count; ++a)
     {
         cgltf_attribute* current_attribute = primitive->attributes + a;
@@ -339,16 +345,19 @@ int import_primitive_attributes (cgltf_data* data, size_t mesh_index, cgltf_prim
 
 int import_primitive_material (cgltf_data* data, size_t mesh_index, cgltf_primitive* primitive, size_t primitive_index, gltf_asset_data* out_data)
 {
+    OutputDebugString (L"import)primitive_material\n");
     return 0;
 }
 
 int import_primitive_indices (cgltf_data* data, size_t mesh_index, cgltf_primitive* primitive, size_t primitive_index, gltf_asset_data* out_data)
 {
+    OutputDebugString (L"import_primitive_indices\n");
     return 0;
 }
 
 int import_graphics_meshes (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
 {
+    OutputDebugString (L"import_graphics_meshes\n");
     unsigned char** positions = NULL;
     unsigned char** normals = NULL;
     unsigned char** uv0s = NULL;
@@ -702,6 +711,7 @@ int import_graphics_meshes (cgltf_data** datas, size_t num_datas, gltf_asset_dat
 
 int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
 {
+    OutputDebugString (L"import_gltf_datas\n");
     AGAINSTRESULT result;
     
     CHECK_AGAINST_RESULT (import_images (full_folder_path, datas, num_datas, out_data), result);
@@ -715,6 +725,7 @@ int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t 
 
 int gather_gltf_datas (const char* full_file_path, cgltf_data** datas, size_t current_data_index)
 {
+    OutputDebugString (L"gather_gltf_datas\n");
     cgltf_options options = { 0 };
     cgltf_data* data = NULL;
 
@@ -739,6 +750,7 @@ int gather_gltf_datas (const char* full_file_path, cgltf_data** datas, size_t cu
 
 int import_gltf_files_from_folder (const char* partial_folder_path, gltf_asset_data** out_gltf_data)
 {
+    OutputDebugString (L"import_gltf_files_from_folder\n");
     file_path* file_paths;
     size_t num_files = 0;
     get_files_in_folder (partial_folder_path, &file_paths, &num_files);
@@ -775,6 +787,7 @@ int import_gltf_files_from_folder (const char* partial_folder_path, gltf_asset_d
 
 void cleanup_gltf_data (gltf_asset_data* gltf_data)
 {
+    OutputDebugString (L"cleanup_gltf_data\n");
     if (gltf_data)
     {
         if (gltf_data->images)

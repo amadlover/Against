@@ -36,6 +36,7 @@ int graphics_utils_create_image (
     VkFormat format, 
     VkImageLayout initial_layout, 
     VkSharingMode sharing_mode, 
+    VkImageUsageFlags usage,
     VkImage* out_image
 );
 

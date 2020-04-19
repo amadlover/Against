@@ -163,6 +163,7 @@ int graphics_utils_create_image (
 	VkFormat format,
 	VkImageLayout initial_layout,
 	VkSharingMode sharing_mode,
+	VkImageUsageFlags usage,
 	VkImage* out_image
 )
 {
@@ -178,6 +179,8 @@ int graphics_utils_create_image (
 	create_info.sharingMode = sharing_mode;
 	create_info.queueFamilyIndexCount = 1;
 	create_info.pQueueFamilyIndices = &graphics_queue_family_index;
+	create_info.usage = usage;
+	create_info.imageType = VK_IMAGE_TYPE_2D;
 
 	if (vkCreateImage (graphics_device, &create_info, NULL, out_image) != VK_SUCCESS)
 	{
