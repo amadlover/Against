@@ -1,10 +1,12 @@
 #include <Windows.h>
 
-#include <stdio.h>
+#include <stdlib.h>
 
 #include "game.h"
 #include "log.h"
 #include "utils.h"
+
+#include "gltf.h"
 
 LRESULT CALLBACK WindowProc 
 (
@@ -154,6 +156,8 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 
 	game_exit ();
 	DestroyWindow (hWnd);
+	
+	//import_gltf_file ("C:\\Users\\Nihal Kenkre\\Documents\\Visual Studio 2019\\Against\\build32\\cmake\\Against\\Debug\\sander.gltf");
 
 	return 0;
 }

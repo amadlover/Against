@@ -530,5 +530,5 @@ void common_graphics_exit ()
 		vkDestroyInstance (instance, NULL);
 	}
 
-	OutputDebugString (L"Finished graphics_exit\n");
+	OutputDebugString (L"common_graphics_exit\n");
 }

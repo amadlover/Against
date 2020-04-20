@@ -673,7 +673,7 @@ int import_graphics_meshes (cgltf_data** datas, size_t num_datas, gltf_asset_dat
                 
                 current_primitive_data_offset += buffer_view->size;
 
-               // ref_cgltf_primitives[current_primitive_index] = current_primitive;
+                ref_cgltf_primitives[current_primitive_index] = current_primitive;
                 ++current_primitive_index;
             }
 
@@ -751,7 +751,7 @@ int import_gltf_files_from_folder (const char* partial_folder_path, gltf_asset_d
 {
     OutputDebugString (L"import_gltf_files_from_folder\n");
     
-    file_path* file_paths;
+    file_path* file_paths = NULL;
     size_t num_files = 0;
     get_files_in_folder (partial_folder_path, &file_paths, &num_files);
 
@@ -772,6 +772,7 @@ int import_gltf_files_from_folder (const char* partial_folder_path, gltf_asset_d
     }
 
     my_free (file_paths);
+    file_paths = NULL;
 
     CHECK_AGAINST_RESULT (import_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, *out_gltf_data), result);
 
@@ -781,6 +782,7 @@ int import_gltf_files_from_folder (const char* partial_folder_path, gltf_asset_d
     }
 
     my_free (gltf_datas);
+    gltf_datas = NULL;
     num_gltf_datas = 0;
 
     my_free (ref_cgltf_images_for_materials);
@@ -818,6 +820,7 @@ void cleanup_gltf_data (gltf_asset_data* gltf_data)
                 }
             }
             my_free (gltf_data->images);
+            my_free (gltf_data->image_views);
         }
 
         graphics_utils_destroy_buffer_and_buffer_memory (graphics_device, gltf_data->vb_ib, gltf_data->vb_ib_memory);
@@ -840,4 +843,29 @@ void cleanup_gltf_data (gltf_asset_data* gltf_data)
 
         my_free (gltf_data);
     }
+}
+
+int import_gltf_file (const char* file_path)
+{
+    cgltf_options options = { 0 };
+    cgltf_data* data = NULL;
+
+    if (cgltf_parse_file (&options, file_path, &data) != cgltf_result_success)
+    {
+        return AGAINST_ERROR_GLTF_IMPORT;
+    }
+
+    if (cgltf_load_buffers (&options, data, file_path) != cgltf_result_success)
+    {
+        return AGAINST_ERROR_GLTF_IMPORT;
+    }
+
+    if (cgltf_validate (data) != cgltf_result_success)
+    {
+        return AGAINST_ERROR_GLTF_IMPORT;
+    }
+
+    cgltf_free (data);
+
+    return 0;
 }
