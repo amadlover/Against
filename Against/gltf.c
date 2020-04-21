@@ -405,7 +405,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             }
             else
             {
-                uv1s = (unsigned char**)my_realloc (uv1s, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
+                uv1s = (unsigned char**)my_realloc_zero (uv1s, sizeof (unsigned char*) * num_primitives_data , sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
             }
 
             if (uv1s_sizes == NULL)
@@ -414,7 +414,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             }
             else
             {
-                uv1s_sizes = (size_t*)my_realloc (uv1s_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+                uv1s_sizes = (size_t*)my_realloc_zero (uv1s_sizes, sizeof (size_t) * num_primitives_data, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
             }
 
             if (uv1s_offsets == NULL)
@@ -423,7 +423,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             }
             else
             {
-                uv1s_offsets = (size_t*)my_realloc (uv1s_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+                uv1s_offsets = (size_t*)my_realloc_zero (uv1s_offsets, sizeof (size_t) * num_primitives_data, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
             }
 
             if (joints == NULL)
@@ -432,7 +432,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             }
             else
             {
-                joints = (unsigned char**)my_realloc (joints, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
+                joints = (unsigned char**)my_realloc_zero (joints, sizeof (unsigned char*) * num_primitives_data, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
             }
 
             if (joints_sizes == NULL)
@@ -441,7 +441,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             }
             else
             {
-                joints_sizes = (size_t*)my_realloc (joints_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+                joints_sizes = (size_t*)my_realloc_zero (joints_sizes, sizeof (size_t) * num_primitives_data, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
             }
 
             if (joints_offsets == NULL)
@@ -450,7 +450,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             }
             else
             {
-                joints_offsets = (size_t*)my_realloc (joints_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+                joints_offsets = (size_t*)my_realloc_zero (joints_offsets, sizeof (size_t) * num_primitives_data, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
             }
 
             if (weights == NULL)
@@ -459,7 +459,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             }
             else
             {
-                weights = (unsigned char**)my_realloc (weights, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
+                weights = (unsigned char**)my_realloc_zero (weights,  sizeof (unsigned char*) * num_primitives_data, sizeof (unsigned char*) * (num_primitives_data + current_mesh->primitives_count));
             }
 
             if (weights_sizes == NULL)
@@ -468,7 +468,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             }
             else
             {
-                weights_sizes = (size_t*)my_realloc (weights_sizes, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+                weights_sizes = (size_t*)my_realloc_zero (weights_sizes, sizeof (size_t) * num_primitives_data, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
             }
 
             if (weights_offsets == NULL)
@@ -477,7 +477,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             }
             else
             {
-                weights_offsets = (size_t*)my_realloc (weights_offsets, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
+                weights_offsets = (size_t*)my_realloc_zero (weights_offsets, sizeof (size_t) * num_primitives_data, sizeof (size_t) * (num_primitives_data + current_mesh->primitives_count));
             }
 
             if (indices == NULL)
@@ -613,6 +613,142 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
             num_ref_cgltf_primitives_for_meshes += current_mesh->primitives_count;
         }
     }
+    
+    AGAINSTRESULT result;
+    
+    VkBuffer staging_buffer;
+    VkDeviceMemory staging_buffer_memory;
+   
+    CHECK_AGAINST_RESULT (graphics_utils_create_buffer (
+        graphics_device, 
+        current_primitive_data_offset, 
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+        VK_SHARING_MODE_EXCLUSIVE, 
+        graphics_queue_family_index, 
+        &staging_buffer), 
+        result);
+
+    CHECK_AGAINST_RESULT (graphics_utils_allocate_bind_buffer_memory (
+        graphics_device,
+        &staging_buffer,
+        1,
+        physical_device_memory_properties,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+        &staging_buffer_memory),
+        result);
+
+    for (size_t p = 0; p < num_primitives_data; ++p)
+    {
+        if (positions_sizes[p] > 0)
+        {
+            CHECK_AGAINST_RESULT (graphics_utils_map_data_to_device_memory (
+                graphics_device,
+                staging_buffer_memory,
+                positions_offsets[p],
+                positions_sizes[p],
+                positions[p]),
+                result);
+        }
+        if (normals_sizes[p] > 0)
+        {
+            CHECK_AGAINST_RESULT (graphics_utils_map_data_to_device_memory (
+                graphics_device,
+                staging_buffer_memory,
+                normals_offsets[p],
+                normals_sizes[p],
+                normals[p]),
+                result);
+        }
+
+        if (uv0s_sizes[p] > 0)
+        {
+            CHECK_AGAINST_RESULT (graphics_utils_map_data_to_device_memory (
+                graphics_device,
+                staging_buffer_memory,
+                uv0s_offsets[p],
+                uv0s_sizes[p],
+                uv0s[p]),
+                result);
+        }
+
+        if (uv1s_sizes[p] > 0)
+        {
+            CHECK_AGAINST_RESULT (graphics_utils_map_data_to_device_memory (
+                graphics_device,
+                staging_buffer_memory,
+                uv1s_offsets[p],
+                uv1s_sizes[p],
+                uv1s[p]),
+                result);
+        }
+
+        if (joints_sizes[p] > 0)
+        {
+            CHECK_AGAINST_RESULT (graphics_utils_map_data_to_device_memory (
+                graphics_device,
+                staging_buffer_memory,
+                joints_offsets[p],
+                joints_sizes[p],
+                joints[p]),
+                result);
+        }
+
+        if (weights_sizes[p] > 0)
+        {
+            CHECK_AGAINST_RESULT (graphics_utils_map_data_to_device_memory (
+                graphics_device,
+                staging_buffer_memory,
+                weights_offsets[p],
+                weights_sizes[p],
+                weights[p]),
+                result);
+        }
+
+        if (indices_sizes[p] > 0)
+        {
+            CHECK_AGAINST_RESULT (graphics_utils_map_data_to_device_memory (
+                graphics_device,
+                staging_buffer_memory,
+                indices_offsets[p],
+                indices_sizes[p],
+                indices[p]),
+                result);
+        }
+    }
+
+    CHECK_AGAINST_RESULT (
+        graphics_utils_create_buffer (
+        graphics_device,
+        current_primitive_data_offset,
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+        VK_SHARING_MODE_EXCLUSIVE,
+        graphics_queue_family_index,
+        &out_data->vb_ib),
+    result);
+
+    CHECK_AGAINST_RESULT (
+        graphics_utils_allocate_bind_buffer_memory (
+            graphics_device,
+            &out_data->vb_ib,
+            1,
+            physical_device_memory_properties,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            &out_data->vb_ib_memory
+        ),
+    result);
+
+    CHECK_AGAINST_RESULT (
+        graphics_utils_copy_buffer_to_buffer (
+            graphics_device,
+            command_pool,
+            graphics_queue,
+            staging_buffer,
+            out_data->vb_ib,
+            current_primitive_data_offset
+        ),
+        result);
+
+    graphics_utils_destroy_buffer_and_buffer_memory (graphics_device, staging_buffer, staging_buffer_memory);
 
     my_free (positions);
     my_free (positions_sizes);
@@ -674,7 +810,7 @@ int import_skins (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_dat
                 
                 wchar_t ski_joints[2048];
                 swprintf (ski_joints, 2048, L"Skin: %hs -> Joint: %hs -> Parent: %hs\n", current_skin->name, current_joint->name, current_joint->parent == NULL ? "" : current_joint->parent->name);
-             //   OutputDebugString (ski_joints);
+                OutputDebugString (ski_joints);
             }
         }
     }

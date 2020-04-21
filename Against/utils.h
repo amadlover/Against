@@ -20,5 +20,6 @@ void read_image_from_uri (const char* file_path, const char* uri, int* width, in
 void* my_malloc (size_t size);
 void* my_calloc (size_t count, size_t size);
 void* my_realloc (void* ptr, size_t size);
+void* my_realloc_zero (void*ptr, size_t old_size, size_t new_size);
 void my_free (void* ptr);
 void free_image_data (uint8_t* pixels);

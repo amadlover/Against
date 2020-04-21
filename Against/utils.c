@@ -120,6 +120,13 @@ void* my_realloc (void* ptr, size_t size)
 	return realloc (ptr, size);
 }
 
+void* my_realloc_zero (void* ptr, size_t old_size, size_t new_size)
+{
+	void *new_ptr = realloc (ptr, new_size);
+	memset ((char*)new_ptr + old_size, 0, new_size - old_size);
+	return new_ptr;
+}
+
 void my_free (void* ptr)
 {
 	if (ptr != NULL)
