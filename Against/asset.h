@@ -12,30 +12,6 @@ typedef struct
     VkImageView* image_view;
 } vk_image;
 
-typedef enum 
-{
-    opaque,
-    mask,
-    blend
-} vk_material_alpha_mode;
-
-typedef struct
-{
-    char name[1024];
-
-    vk_image base_texture;
-    vk_image metalness_roughness_texture;
-    vk_image normal_texture;
-    vk_image occlusion_texture;
-    vk_image emissive_texture;
-
-    float base_color_factor[4];
-    float metalness_factor;
-    float roughness_factor;
-    float emissive_factor[3];
-
-    vk_material_alpha_mode alpha_mode;
-} vk_material;
 
 typedef struct
 {
@@ -61,6 +37,31 @@ typedef struct
     size_t num_weights;
 } vk_skin;
 
+typedef enum 
+{
+    opaque,
+    mask,
+    blend
+} vk_material_alpha_mode;
+
+typedef struct
+{
+    char name[1024];
+
+    vk_image base_texture;
+    vk_image metalness_roughness_texture;
+    vk_image normal_texture;
+    vk_image occlusion_texture;
+    vk_image emissive_texture;
+
+    float base_color_factor[4];
+    float metalness_factor;
+    float roughness_factor;
+    float emissive_factor[3];
+
+    vk_material_alpha_mode alpha_mode;
+} vk_skeletal_material;
+
 typedef struct
 {
     VkBuffer* vb_ib;
@@ -78,18 +79,13 @@ typedef struct
 
     VkIndexType index_type;
 
-    vk_material* material;
+    vk_skeletal_material* material;
 } vk_skeletal_graphics_primitive;
 
 typedef struct
 {
     char name[1024];
-} vk_static_mesh;
-
-typedef struct
-{
-    char name[1024];
     
-    vk_skeletal_graphics_primitive* skeletal_graphics_primitives;
-    size_t num_skeletal_graphics_primitives;
+    vk_skeletal_graphics_primitive** graphics_primitives;
+    size_t graphics_primtives_count;
 } vk_skeletal_mesh;
