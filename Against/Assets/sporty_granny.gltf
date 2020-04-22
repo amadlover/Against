@@ -4534,7 +4534,7 @@
                 0,
                 0
             ],
-            "name" : "Grandma_MAT",
+            "name" : "opaque_Grandma_MAT",
             "normalTexture" : {
                 "index" : 0,
                 "texCoord" : 0
@@ -4556,7 +4556,7 @@
                 0,
                 0
             ],
-            "name" : "Lens_MAT",
+            "name" : "blend_Lens_MAT",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
                     0,
@@ -4577,7 +4577,7 @@
                 0,
                 0
             ],
-            "name" : "FitGrandma_Brows_MAT1",
+            "name" : "alpha_FitGrandma_Brows_MAT1",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 2,
@@ -4596,7 +4596,7 @@
                 0,
                 0
             ],
-            "name" : "FitGrandma_Eyes_MAT1",
+            "name" : "alpha_FitGrandma_Eyes_MAT1",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 3,
@@ -4614,7 +4614,7 @@
                 0,
                 0
             ],
-            "name" : "FitGrandma_Mouth_MAT1",
+            "name" : "alpha_FitGrandma_Mouth_MAT1",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 4,

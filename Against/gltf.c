@@ -40,83 +40,85 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
     AGAINSTRESULT result;
     for (size_t d = 0; d < num_datas; ++d)
     {
+        cgltf_data* current_data = datas[d];
+
         if (out_data->images == NULL)
         {
-            out_data->images = (VkImage*)my_calloc (datas[d]->images_count, sizeof (VkImage));
+            out_data->images = (VkImage*)my_calloc (current_data->images_count, sizeof (VkImage));
         }
         else
         {
-            out_data->images = (VkImage*)my_realloc (out_data->images, sizeof (VkImage) * (num_ref_cgltf_images_for_materials + datas[d]->images_count));
+            out_data->images = (VkImage*)my_realloc_zero (out_data->images, sizeof (VkImage) * out_data->images_count, sizeof (VkImage) * (out_data->images_count + current_data->images_count));
         }
 
         if (out_data->image_views == NULL)
         {
-            out_data->image_views = (VkImageView*)my_calloc (datas[d]->images_count, sizeof (VkImageView));
+            out_data->image_views = (VkImageView*)my_calloc (current_data->images_count, sizeof (VkImageView));
         }
         else
         {
-            out_data->image_views = (VkImageView*)my_realloc (out_data->image_views, sizeof (VkImageView) * (num_ref_cgltf_images_for_materials + datas[d]->images_count));
+            out_data->image_views = (VkImageView*)my_realloc_zero (out_data->image_views, sizeof (VkImageView) * out_data->images_count, sizeof (VkImageView) * (out_data->images_count + current_data->images_count));
         }
 
         if (img_offsets == NULL)
         {
-            img_offsets = (size_t*)my_calloc (datas[d]->images_count, sizeof (size_t));
+            img_offsets = (size_t*)my_calloc (current_data->images_count, sizeof (size_t));
         }
         else
         {
-            img_offsets = (size_t*)my_realloc (img_offsets, sizeof (size_t) * (num_ref_cgltf_images_for_materials + datas[d]->images_count));
+            img_offsets = (size_t*)my_realloc_zero (img_offsets, sizeof (size_t) * out_data->images_count, sizeof (size_t) * (out_data->images_count + current_data->images_count));
         }
 
         if (img_sizes == NULL)
         {
-            img_sizes = (size_t*)my_calloc (datas[d]->images_count, sizeof (size_t));
+            img_sizes = (size_t*)my_calloc (current_data->images_count, sizeof (size_t));
         }
         else
         {
-            img_sizes = (size_t*)my_realloc (img_sizes, sizeof (size_t) * (num_ref_cgltf_images_for_materials + datas[d]->images_count));
+            img_sizes = (size_t*)my_realloc_zero (img_sizes, sizeof (size_t) * out_data->images_count, sizeof (size_t) * (out_data->images_count + current_data->images_count));
         }
 
         if (img_widths == NULL)
         {
-            img_widths = (size_t*)my_calloc (datas[d]->images_count, sizeof (size_t));
+            img_widths = (size_t*)my_calloc (current_data->images_count, sizeof (size_t));
         }
         else
         {
-            img_widths = (size_t*)my_realloc (img_widths, sizeof (size_t) * (num_ref_cgltf_images_for_materials + datas[d]->images_count));
+            img_widths = (size_t*)my_realloc_zero (img_widths, sizeof (size_t) * out_data->images_count, sizeof (size_t) * (out_data->images_count + current_data->images_count));
         }
 
         if (img_heights == NULL)
         {
-            img_heights = (size_t*)my_calloc (datas[d]->images_count, sizeof (size_t));
+            img_heights = (size_t*)my_calloc (current_data->images_count, sizeof (size_t));
         }
         else
         {
-            img_heights = (size_t*)my_realloc (img_heights, sizeof (size_t) * (num_ref_cgltf_images_for_materials + datas[d]->images_count));
+            img_heights = (size_t*)my_realloc_zero (img_heights, sizeof (size_t) * out_data->images_count, sizeof (size_t) * (out_data->images_count + current_data->images_count));
         }
 
         if (img_pixels == NULL)
         {
-            img_pixels = (uint8_t**)my_calloc (datas[d]->images_count, sizeof (uint8_t*));
+            img_pixels = (uint8_t**)my_calloc (current_data->images_count, sizeof (uint8_t*));
         }
         else
         {
-            img_pixels = (uint8_t**)my_realloc (img_pixels, sizeof (uint8_t*) * (num_ref_cgltf_images_for_materials + datas[d]->images_count));
+            img_pixels = (uint8_t**)my_realloc_zero (img_pixels, sizeof (uint8_t*) * out_data->images_count, sizeof (uint8_t*) * (out_data->images_count + current_data->images_count));
         }
 
         if (ref_cgltf_images_for_materials == NULL)
         {
-            ref_cgltf_images_for_materials = (cgltf_image**)my_calloc (datas[d]->images_count, sizeof (cgltf_image*));
+            ref_cgltf_images_for_materials = (cgltf_image**)my_calloc (current_data->images_count, sizeof (cgltf_image*));
         }
         else
         {
-            ref_cgltf_images_for_materials = (cgltf_image**)my_realloc (ref_cgltf_images_for_materials, sizeof (cgltf_image*) * (datas[d]->images_count + num_ref_cgltf_images_for_materials));
+            ref_cgltf_images_for_materials = (cgltf_image**)my_realloc_zero (ref_cgltf_images_for_materials, sizeof (cgltf_image*) * out_data->images_count , sizeof (cgltf_image*) * (out_data->images_count + current_data->images_count));
         }
 
-        for (size_t i = 0; i < datas[d]->images_count; ++i)
+        for (size_t i = 0; i < current_data->images_count; ++i)
         {
             size_t current_index = num_ref_cgltf_images_for_materials + i;
 
-            cgltf_image* image = datas[d]->images + i;
+            cgltf_image* image = current_data->images + i;
             char full_texture_path[MAX_PATH];
             get_full_texture_path_from_uri (full_folder_path, image->uri, full_texture_path);
             int bpp;
@@ -131,8 +133,8 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
             ref_cgltf_images_for_materials[current_index] = image;
         }
 
-        num_ref_cgltf_images_for_materials += datas[d]->images_count;
-        out_data->images_count += datas[d]->images_count;
+        num_ref_cgltf_images_for_materials += current_data->images_count;
+        out_data->images_count += current_data->images_count;
     }
 
     VkBuffer staging_buffer; VkDeviceMemory staging_memory;
@@ -178,28 +180,30 @@ int import_materials (cgltf_data** datas, size_t num_datas, scene_asset_data* ou
     OutputDebugString (L"import_materials\n");
     for (size_t d = 0; d < num_datas; ++d)
     {
+        cgltf_data* current_data = datas[d];
+
         if (out_data->materials == NULL)
         {
-            out_data->materials = (vk_skeletal_material*)my_calloc (datas[d]->materials_count, sizeof (vk_skeletal_material));
+            out_data->materials = (vk_skeletal_material*)my_calloc (current_data->materials_count, sizeof (vk_skeletal_material));
         }
         else
         {
-            out_data->materials = (vk_skeletal_material*)my_realloc_zero (out_data->materials, sizeof (vk_skeletal_material) * datas[d]->materials_count, sizeof (vk_skeletal_material) * (datas[d]->materials_count + out_data->materials_count));
+            out_data->materials = (vk_skeletal_material*)my_realloc_zero (out_data->materials, sizeof (vk_skeletal_material) * out_data->materials_count, sizeof (vk_skeletal_material) * (current_data->materials_count + out_data->materials_count));
         }
 
         if (ref_cgltf_materials_for_linking_graphics_primitives == NULL)
         {
-            ref_cgltf_materials_for_linking_graphics_primitives = (cgltf_material**)my_calloc (datas[d]->materials_count, sizeof (cgltf_material*));
+            ref_cgltf_materials_for_linking_graphics_primitives = (cgltf_material**)my_calloc (current_data->materials_count, sizeof (cgltf_material*));
         }
         else
         {
-            ref_cgltf_materials_for_linking_graphics_primitives = (cgltf_material**)my_realloc (ref_cgltf_materials_for_linking_graphics_primitives, sizeof (cgltf_material*) * (out_data->materials_count + datas[d]->materials_count));
+            ref_cgltf_materials_for_linking_graphics_primitives = (cgltf_material**)my_realloc_zero (ref_cgltf_materials_for_linking_graphics_primitives, sizeof (cgltf_material*) * out_data->materials_count, sizeof (cgltf_material*) * (out_data->materials_count + current_data->materials_count));
         }
 
-        for (size_t m = 0; m < datas[d]->materials_count; ++m)
+        for (size_t m = 0; m < current_data->materials_count; ++m)
         {
             size_t current_index = out_data->materials_count + m;
-            cgltf_material* material = datas[d]->materials + m;
+            cgltf_material* material = current_data->materials + m;
 
             strcpy (out_data->materials[current_index].name, material->name);
 
@@ -265,8 +269,8 @@ int import_materials (cgltf_data** datas, size_t num_datas, scene_asset_data* ou
             ref_cgltf_materials_for_linking_graphics_primitives[current_index] = material;
         }
 
-        out_data->materials_count += datas[d]->materials_count;
-        num_ref_cgltf_materials_for_linking_graphics_primitives += datas[d]->materials_count;
+        out_data->materials_count += current_data->materials_count;
+        num_ref_cgltf_materials_for_linking_graphics_primitives += current_data->materials_count;
     }
 
     return 0;
@@ -773,11 +777,13 @@ int link_graphics_primitives_to_materials (scene_asset_data* out_data)
 
     for (size_t m = 0; m < num_ref_cgltf_materials_for_linking_graphics_primitives; ++m)
     {
-        cgltf_material* current_material = ref_cgltf_materials_for_linking_graphics_primitives[m];
+        cgltf_material* ref_material = ref_cgltf_materials_for_linking_graphics_primitives[m];
 
         for (size_t gp = 0; gp < num_ref_cgltf_graphics_primitives_for_linking_materials; ++gp) 
         {
-            if (ref_cgltf_graphics_primitives_for_linking_materials[gp]->material == current_material)
+            cgltf_material* primitive_material = ref_cgltf_graphics_primitives_for_linking_materials[gp]->material;
+            
+            if (primitive_material == ref_material)
             {
                 vk_skeletal_material* material = out_data->materials + m;
 

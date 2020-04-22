@@ -639,7 +639,7 @@
                 0,
                 0
             ],
-            "name" : "PBR_Mat_Scharnhorst_MainTurret.001",
+            "name" : "opaque_Mat_Scharnhorst_MainTurret.001",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 22,
@@ -658,7 +658,7 @@
                 0,
                 0
             ],
-            "name" : "PBR_Mat_Scharnhorst_Secondary_1.001",
+            "name" : "opaque_Mat_Scharnhorst_Secondary_1.001",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 24,
@@ -677,7 +677,7 @@
                 0,
                 0
             ],
-            "name" : "PBR_Mat_Scharnhorst_TorpedoTube.001",
+            "name" : "opaque_Mat_Scharnhorst_TorpedoTube.001",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 26,
