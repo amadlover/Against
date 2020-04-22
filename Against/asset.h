@@ -37,6 +37,24 @@ typedef struct
     size_t num_weights;
 } vk_skin;
 
+typedef struct
+{
+    VkBuffer* vb_ib;
+    VkDeviceMemory* vb_ib_memory;
+
+    size_t positions_offset;
+    size_t normals_offset;
+    size_t uv0s_offset;
+    size_t uv1s_offset;
+    size_t weights_offset;
+    size_t joints_offset;
+    size_t indices_offset;
+
+    size_t indices_count;
+
+    VkIndexType index_type;
+} vk_skeletal_graphics_primitive;
+
 typedef enum 
 {
     opaque,
@@ -60,34 +78,14 @@ typedef struct
     float emissive_factor[3];
 
     vk_material_alpha_mode alpha_mode;
+
+    vk_skeletal_graphics_primitive** graphics_primitives;
+    size_t graphics_primitives_count;
 } vk_skeletal_material;
 
 typedef struct
 {
-    VkBuffer* vb_ib;
-    VkDeviceMemory* vb_ib_memory;
-
-    size_t positions_offset;
-    size_t normals_offset;
-    size_t uv0s_offset;
-    size_t uv1s_offset;
-    size_t weights_offset;
-    size_t joints_offset;
-    size_t indices_offset;
-
-    size_t indices_count;
-
-    VkIndexType index_type;
-
-    vk_skeletal_material* material;
-} vk_skeletal_graphics_primitive;
-
-typedef struct
-{
     char name[1024];
-    
-    vk_skeletal_graphics_primitive** graphics_primitives;
-    size_t graphics_primtives_count;
 } vk_skeletal_mesh;
 
 typedef struct
