@@ -910,6 +910,8 @@ int import_gltf_files_from_folder (const char* partial_folder_path, scene_asset_
     my_free (file_paths);
     file_paths = NULL;
 
+    *out_gltf_data = (scene_asset_data*)my_calloc (1, sizeof (scene_asset_data));
+
     CHECK_AGAINST_RESULT (import_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, *out_gltf_data), result);
 
     for (size_t d = 0; d < num_gltf_datas; ++d)

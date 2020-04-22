@@ -16,11 +16,8 @@ int test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
     
     AGAINSTRESULT result;
 
-    asset_data = (scene_asset_data*)my_calloc (1, sizeof (scene_asset_data));
     CHECK_AGAINST_RESULT (import_gltf_files_from_folder ("", &asset_data), result);
-    
-    skeletal_opaque_graphics_pipeline = (vk_skeletal_opaque_graphics_pipeline*)my_calloc (1, sizeof (vk_skeletal_opaque_graphics_pipeline));
-    CHECK_AGAINST_RESULT (create_opaque_graphics_pipeline (asset_data, skeletal_opaque_graphics_pipeline), result);
+    CHECK_AGAINST_RESULT (create_opaque_graphics_pipeline (asset_data, &skeletal_opaque_graphics_pipeline), result);
 
     return 0;
 }
@@ -54,5 +51,5 @@ void test_scene_exit ()
     OutputDebugString (L"test_scene_exit\n");
 
     cleanup_gltf_data (asset_data);
-    my_free (skeletal_opaque_graphics_pipeline);
+    destroy_opaque_graphics_pipeline (skeletal_opaque_graphics_pipeline);
 }
