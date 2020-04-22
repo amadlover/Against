@@ -25,7 +25,7 @@ cgltf_primitive** ref_cgltf_primitives_for_meshes = NULL;
 size_t num_ref_cgltf_primitives_for_meshes = 0;
 
 
-int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
+int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_images\n");
 
@@ -173,7 +173,7 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
 }
 
 
-int import_materials (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
+int import_materials (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_materials\n");
     for (size_t d = 0; d < num_datas; ++d)
@@ -272,7 +272,7 @@ int import_materials (cgltf_data** datas, size_t num_datas, gltf_asset_data* out
     return 0;
 }
 
-int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
+int import_graphics_primitives (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_graphics_primitives\n");
     unsigned char** positions = NULL;
@@ -775,13 +775,13 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, gltf_asset
     return 0;
 }
 
-int import_animations (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
+int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_animations\n");
     return 0;
 }
 
-int import_skins (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
+int import_skins (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_skins\n");
     for (size_t d = 0; d < num_datas; ++d)
@@ -818,7 +818,7 @@ int import_skins (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_dat
     return 0;
 }
 
-int import_meshes (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
+int import_meshes (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     for (size_t d = 0; d < num_datas; ++d)
     {
@@ -867,7 +867,7 @@ int import_meshes (cgltf_data** datas, size_t num_datas, gltf_asset_data* out_da
     return 0;
 }
 
-int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t num_datas, gltf_asset_data* out_data)
+int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_gltf_datas\n");
     AGAINSTRESULT result;
@@ -907,7 +907,7 @@ int gather_gltf_datas (const char* full_file_path, cgltf_data** datas, size_t cu
     return 0;
 }
 
-int import_gltf_files_from_folder (const char* partial_folder_path, gltf_asset_data** out_gltf_data)
+int import_gltf_files_from_folder (const char* partial_folder_path, scene_asset_data** out_gltf_data)
 {
     OutputDebugString (L"import_gltf_files_from_folder\n");
     
@@ -964,7 +964,7 @@ int import_gltf_files_from_folder (const char* partial_folder_path, gltf_asset_d
     return 0;
 }
 
-void cleanup_gltf_data (gltf_asset_data* gltf_data)
+void cleanup_gltf_data (scene_asset_data* gltf_data)
 {
     OutputDebugString (L"cleanup_gltf_data\n");
 
