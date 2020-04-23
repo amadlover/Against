@@ -65,12 +65,12 @@ int submit_one_time_cmd (VkQueue graphics_queue, VkCommandBuffer command_buffer)
 	return 0;
 }
 
-int get_one_time_command_buffer (VkDevice graphics_device, VkCommandPool command_pool, VkCommandBuffer* out_buffer)
+int get_one_time_command_buffer (VkDevice graphics_device, VkCommandPool common_command_pool, VkCommandBuffer* out_buffer)
 {
 	VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
 
 	command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	command_buffer_allocate_info.commandPool = command_pool;
+	command_buffer_allocate_info.commandPool = common_command_pool;
 	command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	command_buffer_allocate_info.commandBufferCount = 1;
 
@@ -286,7 +286,7 @@ errno_t ReadShaderFile (char* full_file_path, char** file_contents)
 int graphics_utils_change_image_layout (
 	VkDevice graphics_device,
 	VkQueue graphics_queue,
-	VkCommandPool command_pool,
+	VkCommandPool common_command_pool,
 	uint32_t graphics_queue_family_index,
 	VkImage image,
 	uint32_t layer_count,
@@ -301,7 +301,7 @@ int graphics_utils_change_image_layout (
 
 	VkCommandBufferAllocateInfo allocate_info = { 0 };
 	allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocate_info.commandPool = command_pool;
+	allocate_info.commandPool = common_command_pool;
 	allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocate_info.commandBufferCount = 1;
 
@@ -345,14 +345,14 @@ int graphics_utils_change_image_layout (
 		return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
 	}
 	CHECK_AGAINST_RESULT (submit_one_time_cmd (graphics_queue, command_buffer), result);
-	vkFreeCommandBuffers (graphics_device, command_pool, 1, &command_buffer);
+	vkFreeCommandBuffers (graphics_device, common_command_pool, 1, &command_buffer);
 
 	return 0;
 }
 
 int graphics_utils_copy_buffer_to_buffer (
 	VkDevice graphics_device,
-	VkCommandPool command_pool,
+	VkCommandPool common_command_pool,
 	VkQueue graphics_queue,
 	VkBuffer src_buffer,
 	VkBuffer dst_buffer,
@@ -363,7 +363,7 @@ int graphics_utils_copy_buffer_to_buffer (
 	VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
 
 	command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	command_buffer_allocate_info.commandPool = command_pool;
+	command_buffer_allocate_info.commandPool = common_command_pool;
 	command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	command_buffer_allocate_info.commandBufferCount = 1;
 
@@ -392,14 +392,14 @@ int graphics_utils_copy_buffer_to_buffer (
 		return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
 	}
 	CHECK_AGAINST_RESULT (submit_one_time_cmd (graphics_queue, command_buffer), result);
-	vkFreeCommandBuffers (graphics_device, command_pool, 1, &command_buffer);
+	vkFreeCommandBuffers (graphics_device, common_command_pool, 1, &command_buffer);
 
 	return 0;
 }
 
 int graphics_utils_copy_buffer_to_image (
 	VkDevice graphics_device,
-	VkCommandPool command_pool,
+	VkCommandPool common_command_pool,
 	VkQueue graphics_queue,
 	VkDeviceSize offset,
 	VkBuffer buffer,
@@ -409,7 +409,7 @@ int graphics_utils_copy_buffer_to_image (
 {
 	AGAINSTRESULT result;
 	VkCommandBuffer command_buffer;
-	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, command_pool, &command_buffer), result);
+	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, common_command_pool, &command_buffer), result);
 
 	VkImageSubresourceLayers subresource_layers = { 0 };
 	subresource_layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -427,7 +427,7 @@ int graphics_utils_copy_buffer_to_image (
 	}
 
 	CHECK_AGAINST_RESULT (submit_one_time_cmd (graphics_queue, command_buffer), result);
-	vkFreeCommandBuffers (graphics_device, command_pool, 1, &command_buffer);
+	vkFreeCommandBuffers (graphics_device, common_command_pool, 1, &command_buffer);
 
 	return 0;
 }
@@ -463,13 +463,12 @@ int graphics_utils_create_shader (const char* full_file_path,
 	shader_module_create_info.pCode = (uint32_t*)file_contents;
 	shader_module_create_info.codeSize = file_size;
 
+	utils_my_free (file_contents);
+	
 	if (vkCreateShaderModule (graphics_device, &shader_module_create_info, NULL, shader_module) != VK_SUCCESS)
 	{
-		utils_my_free (file_contents);
 		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
 	}
-
-	utils_my_free (file_contents);
 
 	VkPipelineShaderStageCreateInfo shader_stage_c_i = { 0 };
 
@@ -488,6 +487,105 @@ int graphics_utils_create_shader (const char* full_file_path,
 	}
 
 	return 0;
+}
+
+int graphics_utils_create_descriptor_pool (
+	VkDevice graphics_device,
+	VkDescriptorType* types,
+	size_t* type_counts,
+	size_t num_types,
+	size_t max_sets,
+	VkDescriptorPool* out_descriptor_pool)
+{
+	VkDescriptorPoolSize* pool_sizes = (VkDescriptorPoolSize*) utils_my_calloc (num_types, sizeof (VkDescriptorPoolSize));
+
+	for (size_t ps = 0; ps < num_types; ++ps)
+	{
+		pool_sizes[ps].type = types[ps];
+		pool_sizes[ps].descriptorCount = type_counts[ps];
+	}
+
+	VkDescriptorPoolCreateInfo create_info = { 0 };
+	create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	create_info.maxSets = max_sets;
+	create_info.poolSizeCount = num_types;
+	create_info.pPoolSizes = pool_sizes;
+
+	if (vkCreateDescriptorPool (graphics_device, &create_info, NULL, out_descriptor_pool) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_POOL;
+	}
+
+	return 0;
+}
+
+int graphics_utils_create_descriptor_set_layout_bindings (
+	VkDevice graphics_device,
+	VkDescriptorType* descriptor_types,
+	size_t* descriptor_count_per_type,
+	size_t* bindings,
+	size_t num_descriptor_types,
+	VkShaderStageFlags* stage_flags,
+	VkDescriptorSetLayoutBinding* out_descriptor_set_layout_bindings)
+{
+	for (size_t d = 0; d < num_descriptor_types; ++d)
+	{
+		out_descriptor_set_layout_bindings[d].binding = bindings[d];
+		out_descriptor_set_layout_bindings[d].descriptorType = descriptor_types[d];
+		out_descriptor_set_layout_bindings[d].descriptorCount = descriptor_count_per_type[d];
+		out_descriptor_set_layout_bindings[d].stageFlags = stage_flags[d];
+	}
+
+	return 0;
+}
+
+int graphics_utils_create_descriptor_set_layout (
+	VkDevice graphics_device,
+	VkDescriptorSetLayoutBinding* bindings,
+	size_t num_bindings,
+	VkDescriptorSetLayout* out_descriptor_set_layout)
+{
+	VkDescriptorSetLayoutCreateInfo create_info = { 0 };
+	create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	create_info.bindingCount = num_bindings;
+	create_info.pBindings = bindings;
+
+	if (vkCreateDescriptorSetLayout (graphics_device, &create_info, NULL, out_descriptor_set_layout) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT;
+	}
+
+	return 0;
+}
+
+int graphics_utils_allocate_descriptor_sets (
+	VkDevice graphics_device,
+	VkDescriptorPool descriptor_pool,
+	VkDescriptorSetLayout* descriptor_set_layouts,
+	size_t num_descriptor_sets,
+	VkDescriptorSet* out_descriptor_sets)
+{
+	VkDescriptorSetAllocateInfo allocate_info = { 0 };
+	allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocate_info.descriptorPool = descriptor_pool;
+	allocate_info.descriptorSetCount = num_descriptor_sets;
+	allocate_info.pSetLayouts = descriptor_set_layouts;
+
+	if (vkAllocateDescriptorSets (graphics_device, &allocate_info, out_descriptor_sets) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SET;
+	}
+
+	return 0;
+}
+
+int graphics_utils_update_descriptor_sets (
+	VkDevice graphics_device,
+	VkDescriptorSet* descriptor_sets,
+)
+{
+
 }
 
 void graphics_utils_destroy_buffer_and_buffer_memory (VkDevice graphics_device,

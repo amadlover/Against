@@ -19,7 +19,6 @@ int test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
 
     CHECK_AGAINST_RESULT (import_gltf_files_from_folder ("", &asset_data), result);
     CHECK_AGAINST_RESULT (create_opaque_graphics_pipeline (asset_data, &skeletal_opaque_graphics_pipeline), result);
-    //CHECK_AGAINST_RESULT (create_alpha_graphics_pipeline (asset_data, &skeletal_alpha_graphics_pipeline), result);
 
     return 0;
 }
@@ -53,6 +52,5 @@ void test_scene_exit ()
     OutputDebugString (L"test_scene_exit\n");
 
     destroy_opaque_graphics_pipeline (skeletal_opaque_graphics_pipeline);
-    //destroy_alpha_graphics_pipeline (skeletal_alpha_graphics_pipeline);
     cleanup_gltf_data (asset_data);
 }

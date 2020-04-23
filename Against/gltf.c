@@ -151,9 +151,9 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
     for (size_t i = 0; i < num_ref_cgltf_images_for_materials; ++i)
     {
         VkExtent3D img_extent = { img_widths[i], img_heights[i], 1 };
-        CHECK_AGAINST_RESULT (graphics_utils_change_image_layout (graphics_device, graphics_queue, command_pool, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT), result);
-        CHECK_AGAINST_RESULT (graphics_utils_copy_buffer_to_image (graphics_device, command_pool, graphics_queue, img_offsets[i], staging_buffer, &out_data->images[i], img_extent, 1), result);
-        CHECK_AGAINST_RESULT (graphics_utils_change_image_layout (graphics_device, graphics_queue, command_pool, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT), result);
+        CHECK_AGAINST_RESULT (graphics_utils_change_image_layout (graphics_device, graphics_queue, common_command_pool, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT), result);
+        CHECK_AGAINST_RESULT (graphics_utils_copy_buffer_to_image (graphics_device, common_command_pool, graphics_queue, img_offsets[i], staging_buffer, &out_data->images[i], img_extent, 1), result);
+        CHECK_AGAINST_RESULT (graphics_utils_change_image_layout (graphics_device, graphics_queue, common_command_pool, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT), result);
         CHECK_AGAINST_RESULT (graphics_utils_create_image_view (graphics_device, out_data->images[i], &out_data->image_views[i]), result);
     }
 
@@ -780,7 +780,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, scene_asse
     CHECK_AGAINST_RESULT (
         graphics_utils_copy_buffer_to_buffer (
             graphics_device,
-            command_pool,
+            common_command_pool,
             graphics_queue,
             staging_buffer,
             out_data->vb_ib,
@@ -887,7 +887,7 @@ int import_skins (cgltf_data** datas, size_t num_datas, scene_asset_data* out_da
                 
                 wchar_t ski_joints[2048];
                 swprintf (ski_joints, 2048, L"Skin: %hs -> Joint: %hs -> Parent: %hs\n", current_skin->name, current_joint->name, current_joint->parent == NULL ? "" : current_joint->parent->name);
-                OutputDebugString (ski_joints);
+                //OutputDebugString (ski_joints);
             }
         }
     }

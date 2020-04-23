@@ -16,7 +16,7 @@ VkImage* swapchain_images;
 VkImageView* swapchain_imageviews;
 uint32_t swapchain_image_count;
 VkQueue graphics_queue;
-VkCommandPool command_pool;
+VkCommandPool common_command_pool;
 
 int common_graphics_init (HINSTANCE HInstance, HWND WindowHandle);
 void common_graphics_exit ();

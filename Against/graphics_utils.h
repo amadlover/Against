@@ -58,7 +58,7 @@ int graphics_utils_allocate_bind_image_memory (
 int graphics_utils_change_image_layout (
     VkDevice graphics_device,
     VkQueue graphics_queue,
-    VkCommandPool command_pool,
+    VkCommandPool common_command_pool,
     uint32_t graphics_queue_family_index,
     VkImage image,
     uint32_t layer_count,
@@ -72,7 +72,7 @@ int graphics_utils_change_image_layout (
 
 int graphics_utils_copy_buffer_to_buffer (
     VkDevice graphics_device, 
-    VkCommandPool command_pool, 
+    VkCommandPool common_command_pool, 
     VkQueue graphics_queue, 
     VkBuffer src_buffer, 
     VkBuffer dst_buffer, 
@@ -81,7 +81,7 @@ int graphics_utils_copy_buffer_to_buffer (
 
 int graphics_utils_copy_buffer_to_image (
     VkDevice graphics_device,
-    VkCommandPool command_pool,
+    VkCommandPool common_command_pool,
     VkQueue graphics_queue,
     VkDeviceSize offset,
     VkBuffer buffer,
@@ -96,6 +96,15 @@ int graphics_utils_create_shader (
     VkShaderStageFlagBits shader_stage, 
     VkShaderModule* shader_module, 
     VkPipelineShaderStageCreateInfo* shader_stage_create_info
+);
+
+int graphics_utils_create_descriptor_pool (
+    VkDevice graphics_device,
+    VkDescriptorType* types,
+    size_t* type_counts,
+    size_t num_types,
+    size_t max_sets,
+    VkDescriptorPool* out_descriptor_pool
 );
 
 void graphics_utils_destroy_buffer_and_buffer_memory (

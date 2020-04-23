@@ -436,7 +436,7 @@ int create_command_pool ()
 	command_pool_create_info.queueFamilyIndex = graphics_queue_family_index;
 	//command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	if (vkCreateCommandPool (graphics_device, &command_pool_create_info, NULL, &command_pool) != VK_SUCCESS)
+	if (vkCreateCommandPool (graphics_device, &command_pool_create_info, NULL, &common_command_pool) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
 	}
@@ -479,9 +479,9 @@ void common_graphics_exit ()
 {
 	OutputDebugString (L"graphics_exit\n");
 
-	if (command_pool != VK_NULL_HANDLE)
+	if (common_command_pool != VK_NULL_HANDLE)
 	{
-		vkDestroyCommandPool (graphics_device, command_pool, NULL);
+		vkDestroyCommandPool (graphics_device, common_command_pool, NULL);
 	}
 
 	if (swapchain != VK_NULL_HANDLE)

@@ -42,13 +42,17 @@ int create_opaque_graphics_pipeline (scene_asset_data* scene_data, vk_skeletal_o
     CHECK_AGAINST_RESULT (gather_materials_for_opaque_pipeline (scene_data, *out_graphics_pipeline), result);
     
     char full_vertex_shader_path[MAX_PATH];
-    utils_get_full_file_path ("pbr_opaque.vert", full_vertex_shader_path);
+    utils_get_full_file_path ("pbr_opaque.vert.spv", full_vertex_shader_path);
     
     char full_fragment_shader_path[MAX_PATH];
-    utils_get_full_file_path ("pbr_opaque.frag", full_fragment_shader_path);
+    utils_get_full_file_path ("pbr_opaque.frag.spv", full_fragment_shader_path);
 
     CHECK_AGAINST_RESULT (graphics_utils_create_shader (full_vertex_shader_path, graphics_device, VK_SHADER_STAGE_VERTEX_BIT, &graphics_pipeline->shader_modules[0], &graphics_pipeline->shader_stage_create_infos[0]), result);
     CHECK_AGAINST_RESULT (graphics_utils_create_shader (full_fragment_shader_path, graphics_device, VK_SHADER_STAGE_FRAGMENT_BIT, &graphics_pipeline->shader_modules[1], &graphics_pipeline->shader_stage_create_infos[1]), result);
+
+    VkPushConstantRange push_constant_range = { 0 };
+    push_constant_range.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    push_constant_range.size = sizeof (int);
 
     return 0;
 }
@@ -97,11 +101,11 @@ void destroy_opaque_graphics_pipeline (vk_skeletal_opaque_graphics_pipeline* gra
 {
     OutputDebugString (L"destroy_opaque_graphics_pipeline\n");
 
-    utils_my_free (graphics_pipeline->materials);
-    utils_my_free (graphics_pipeline);
-
     vkDestroyShaderModule (graphics_device, graphics_pipeline->shader_modules[0], NULL);
     vkDestroyShaderModule (graphics_device, graphics_pipeline->shader_modules[1], NULL);
+
+    utils_my_free (graphics_pipeline->materials);
+    utils_my_free (graphics_pipeline);
 }
 
 void destroy_alpha_graphics_pipeline (vk_skeletal_alpha_graphics_pipeline* graphics_pipeline)
