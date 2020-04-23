@@ -852,12 +852,6 @@ int link_graphics_primitives_to_materials (scene_asset_data* out_data)
     return 0;
 }
 
-int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
-{
-    OutputDebugString (L"import_animations\n");
-    return 0;
-}
-
 int import_skins (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_skins\n");
@@ -895,6 +889,39 @@ int import_skins (cgltf_data** datas, size_t num_datas, scene_asset_data* out_da
     return 0;
 }
 
+int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+{
+    OutputDebugString (L"import_animations\n");
+
+    for (size_t d = 0; d < num_datas; ++d)
+    {
+        cgltf_data* current_data = datas[d];
+
+        for (size_t a = 0; a < current_data->animations_count; ++a)
+        {
+            cgltf_animation* current_animation = current_data->animations + a;
+
+            wchar_t buff[2048];
+            for (size_t c = 0; c < current_animation->channels_count; ++c)
+            {
+                cgltf_animation_channel* current_channel = current_animation->channels + c;
+                swprintf (buff, 2048, L"Name: %hs, Channel Target Node: %hs,", current_animation->name, current_channel->target_node->name);\
+
+                switch (current_channel->target_path)
+                {
+                    case cgltf_animation_path_type_translation:
+                        swprintf (buff, 2048, L" Channel target path: Translation\n");
+                        break;
+                }
+
+                OutputDebugString (buff);
+            }
+        }
+    }
+
+    return 0;
+}
+
 int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_gltf_datas\n");
@@ -904,8 +931,8 @@ int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t 
     CHECK_AGAINST_RESULT (import_materials (datas, num_datas, out_data), result);
     CHECK_AGAINST_RESULT (import_graphics_primitives (datas, num_datas, out_data), result);
     CHECK_AGAINST_RESULT (link_graphics_primitives_to_materials (out_data), result);
-    CHECK_AGAINST_RESULT (import_animations (datas, num_datas, out_data), result);
     CHECK_AGAINST_RESULT (import_skins (datas, num_datas, out_data), result);
+    CHECK_AGAINST_RESULT (import_animations (datas, num_datas, out_data), result);
 
     return 0;
 }
