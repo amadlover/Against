@@ -32,11 +32,11 @@ VkResult create_debug_utils_messenger (VkInstance instance,
 {
 	OutputDebugString (L"create_debug_utils_messenger\n");
 
-	PFN_vkCreateDebugUtilsMessengerEXT Func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr (instance, "vkCreateDebugUtilsMessengerEXT");
+	PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr (instance, "vkCreateDebugUtilsMessengerEXT");
 
-	if (Func)
+	if (func)
 	{
-		return Func (instance, debug_utils_messenger_create_info, allocation_callbacks, debug_utils_messenger);
+		return func (instance, debug_utils_messenger_create_info, allocation_callbacks, debug_utils_messenger);
 	}
 	else
 	{
@@ -50,11 +50,11 @@ void destroy_debug_utils_messenger (VkInstance instance,
 {
 	OutputDebugString (L"destroy_debug_utils_messenger\n");
 
-	PFN_vkDestroyDebugUtilsMessengerEXT Func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr (instance, "vkDestroyDebugUtilsMessengerEXT");
+	PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr (instance, "vkDestroyDebugUtilsMessengerEXT");
 
-	if (Func)
+	if (func)
 	{
-		Func (instance, debug_utils_messenger, allocation_callbacks);
+		func (instance, debug_utils_messenger, allocation_callbacks);
 	}
 	else
 	{

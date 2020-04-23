@@ -517,6 +517,8 @@ int vk_utils_create_descriptor_pool (
 		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_POOL;
 	}
 
+	utils_my_free (pool_sizes);
+
 	return 0;
 }
 
@@ -576,6 +578,35 @@ int vk_utils_allocate_descriptor_sets (
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SET;
 	}
+
+	return 0;
+}
+
+int vk_utils_update_descriptor_sets (
+	VkDevice graphics_device,
+	VkDescriptorSet* descriptor_sets,
+	VkDescriptorType* descriptor_types,
+	size_t* descriptor_counts,
+	size_t* binding_numbers,
+	VkDescriptorBufferInfo* buffer_infos,
+	VkDescriptorImageInfo* image_infos,
+	size_t num_descriptor_sets
+)
+{
+	VkWriteDescriptorSet* descriptor_writes = (VkWriteDescriptorSet*)utils_my_calloc (num_descriptor_sets, sizeof (VkWriteDescriptorSet));
+	for (size_t ds = 0; ds < num_descriptor_sets; ++ds)
+	{
+		descriptor_writes[ds].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptor_writes[ds].descriptorCount = descriptor_counts[ds];
+		descriptor_writes[ds].dstSet = descriptor_sets[ds];
+		descriptor_writes[ds].dstBinding = binding_numbers[ds];
+		descriptor_writes[ds].pBufferInfo = buffer_infos + ds;
+		descriptor_writes[ds].pImageInfo = image_infos + ds;
+	}
+
+	vkUpdateDescriptorSets (graphics_device, num_descriptor_sets, descriptor_writes, 0, NULL);
+
+	utils_my_free (descriptor_writes);
 
 	return 0;
 }

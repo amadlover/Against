@@ -107,6 +107,43 @@ int vk_utils_create_descriptor_pool (
     VkDescriptorPool* out_descriptor_pool
 );
 
+int vk_utils_create_descriptor_set_layout_bindings (
+    VkDevice graphics_device,
+    VkDescriptorType* descriptor_types,
+    size_t* descriptor_count_per_type,
+    size_t* bindings,
+    size_t num_descriptor_types,
+    VkShaderStageFlags* stage_flags,
+    VkDescriptorSetLayoutBinding* out_descriptor_set_layout_bindings
+);
+
+int vk_utils_create_descriptor_set_layout (
+    VkDevice graphics_device,
+    VkDescriptorSetLayoutBinding* bindings,
+    size_t num_bindings,
+    VkDescriptorSetLayout* out_descriptor_set_layout
+);
+
+int vk_utils_allocate_descriptor_sets (
+    VkDevice graphics_device,
+    VkDescriptorPool descriptor_pool,
+    VkDescriptorSetLayout* descriptor_set_layouts,
+    size_t num_descriptor_sets,
+    VkDescriptorSet* out_descriptor_sets
+);
+
+
+int vk_utils_update_descriptor_sets (
+    VkDevice graphics_device,
+    VkDescriptorSet* descriptor_sets,
+    VkDescriptorType* descriptor_types,
+    size_t* descriptor_counts,
+    size_t* binding_numbers,
+    VkDescriptorBufferInfo* buffer_infos,
+    VkDescriptorImageInfo* image_infos,
+    size_t num_descriptor_sets
+);
+
 void vk_utils_destroy_buffer_and_buffer_memory (
     VkDevice graphics_device, 
     VkBuffer buffer, 
