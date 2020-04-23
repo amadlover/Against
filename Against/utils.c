@@ -10,7 +10,7 @@
 
 #include <stb_image.h>
 
-void get_full_texture_path_from_uri (const char* file_path, const char* uri, char* out_full_texture_path)
+void utils_get_full_texture_path_from_uri (const char* file_path, const char* uri, char* out_full_texture_path)
 {
 	wchar_t texture_file[MAX_PATH];
 	mbstowcs (texture_file, file_path, MAX_PATH);
@@ -27,7 +27,7 @@ void get_full_texture_path_from_uri (const char* file_path, const char* uri, cha
 	wcstombs (out_full_texture_path, texture_file, MAX_PATH);
 }
 
-void get_full_file_path (const char* partial_file_path, char* out_file_path)
+void utils_get_full_file_path (const char* partial_file_path, char* out_file_path)
 {
 	char path[MAX_PATH];
 
@@ -42,10 +42,10 @@ void get_full_file_path (const char* partial_file_path, char* out_file_path)
 	strcat (out_file_path, partial_file_path);
 }
 
-void get_files_in_folder (const char* partial_folder_path, file_path** out_file_paths, size_t* out_file_count)
+void utils_get_files_in_folder (const char* partial_folder_path, file_path** out_file_paths, size_t* out_file_count)
 {
 	char full_folder_path[MAX_PATH];
-	get_full_file_path (partial_folder_path, full_folder_path);
+	utils_get_full_file_path (partial_folder_path, full_folder_path);
 	strcat (full_folder_path, "*");
 
 	wchar_t folder_path[MAX_PATH];
@@ -73,7 +73,7 @@ void get_files_in_folder (const char* partial_folder_path, file_path** out_file_
 	} while (FindNextFile (find_handle, &ffd) != 0);
 
 	*out_file_count = file_count;
-	*out_file_paths = (file_path*) my_calloc (file_count, sizeof (file_path));
+	*out_file_paths = (file_path*) utils_my_calloc (file_count, sizeof (file_path));
 
 	find_handle = FindFirstFile (folder_path, &ffd);
 	size_t current_file_index = 0;
@@ -98,36 +98,36 @@ void get_files_in_folder (const char* partial_folder_path, file_path** out_file_
 	} while (FindNextFile (find_handle, &ffd) != 0);
 }
 
-void read_image_from_uri (const char* file_path, const char* uri, int* width, int* height, int* bpp, uint8_t* pixels)
+void utils_read_image_from_uri (const char* file_path, const char* uri, int* width, int* height, int* bpp, uint8_t* pixels)
 {
 	char full_path[MAX_PATH];
-	get_full_texture_path_from_uri (file_path, uri, full_path);
+	utils_get_full_texture_path_from_uri (file_path, uri, full_path);
 	pixels = stbi_load (full_path, width, height, bpp, 4);
 }
 
-void* my_malloc (size_t size)
+void* utils_my_malloc (size_t size)
 {
 	return malloc (size);
 }
 
-void* my_calloc (size_t count, size_t size)
+void* utils_my_calloc (size_t count, size_t size)
 {
 	return calloc (count, size);
 }
 
-void* my_realloc (void* ptr, size_t size)
+void* utils_my_realloc (void* ptr, size_t size)
 {
 	return realloc (ptr, size);
 }
 
-void* my_realloc_zero (void* ptr, size_t old_size, size_t new_size)
+void* utils_my_realloc_zero (void* ptr, size_t old_size, size_t new_size)
 {
 	void *new_ptr = realloc (ptr, new_size);
 	memset ((char*)new_ptr + old_size, 0, new_size - old_size);
 	return new_ptr;
 }
 
-void my_free (void* ptr)
+void utils_my_free (void* ptr)
 {
 	if (ptr != NULL)
 	{
@@ -136,7 +136,7 @@ void my_free (void* ptr)
 	}
 }
 
-void free_image_data (uint8_t* pixels)
+void utils_free_image_data (uint8_t* pixels)
 {
 	stbi_image_free (pixels);
 }

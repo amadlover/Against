@@ -106,7 +106,7 @@ int graphics_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 	VkMemoryAllocateInfo memory_allocation = { 0 };
 	memory_allocation.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-	VkDeviceSize* offsets = (VkDeviceSize*)my_calloc (buffer_count, sizeof (VkDeviceSize));
+	VkDeviceSize* offsets = (VkDeviceSize*)utils_my_calloc (buffer_count, sizeof (VkDeviceSize));
 
 	for (uint32_t b = 0; b < buffer_count; b++)
 	{
@@ -132,7 +132,7 @@ int graphics_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 		}
 	}
 
-	my_free (offsets);
+	utils_my_free (offsets);
 
 	return 0;
 }
@@ -231,7 +231,7 @@ int graphics_utils_allocate_bind_image_memory (
 
 	memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-	VkDeviceSize* offsets = (VkDeviceSize*)my_calloc (image_count, sizeof (VkDeviceSize));
+	VkDeviceSize* offsets = (VkDeviceSize*)utils_my_calloc (image_count, sizeof (VkDeviceSize));
 
 	for (uint32_t i = 0; i < image_count; i++)
 	{
@@ -256,7 +256,7 @@ int graphics_utils_allocate_bind_image_memory (
 		}
 	}
 
-	my_free (offsets);
+	utils_my_free (offsets);
 
 	return 0;
 }
@@ -276,7 +276,7 @@ errno_t ReadShaderFile (char* full_file_path, char** file_contents)
 	uint32_t file_size = (uint32_t)ftell (vert_file) / sizeof (uint32_t);
 	rewind (vert_file);
 
-	*file_contents = (char*)my_malloc (sizeof (uint32_t) * file_size);
+	*file_contents = (char*)utils_my_malloc (sizeof (uint32_t) * file_size);
 	fread (*file_contents, sizeof (uint32_t), file_size, vert_file);
 	fclose (vert_file);
 
@@ -445,7 +445,7 @@ int graphics_utils_create_shader (const char* full_file_path,
 
 	if (Err != 0)
 	{
-		return Err;
+		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
 	}
 
 	fseek (vert_file, 0, SEEK_END);
@@ -453,7 +453,7 @@ int graphics_utils_create_shader (const char* full_file_path,
 	uint32_t file_size = (uint32_t)ftell (vert_file);
 	rewind (vert_file);
 
-	file_contents = (char*)my_malloc (file_size);
+	file_contents = (char*)utils_my_malloc (file_size);
 	fread (file_contents, sizeof (uint32_t), file_size, vert_file);
 	fclose (vert_file);
 
@@ -465,11 +465,11 @@ int graphics_utils_create_shader (const char* full_file_path,
 
 	if (vkCreateShaderModule (graphics_device, &shader_module_create_info, NULL, shader_module) != VK_SUCCESS)
 	{
-		my_free (file_contents);
+		utils_my_free (file_contents);
 		return AGAINST_ERROR_GRAPHICS_CREATE_SHADER_MODULE;
 	}
 
-	my_free (file_contents);
+	utils_my_free (file_contents);
 
 	VkPipelineShaderStageCreateInfo shader_stage_c_i = { 0 };
 

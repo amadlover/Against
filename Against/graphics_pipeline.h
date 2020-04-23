@@ -7,6 +7,9 @@ typedef struct
 {
     vk_skeletal_material** materials;
     size_t materials_count;
+
+    VkShaderModule shader_modules[2];
+    VkPipelineShaderStageCreateInfo shader_stage_create_infos[2];
 } vk_skeletal_opaque_graphics_pipeline;
 
 typedef struct
