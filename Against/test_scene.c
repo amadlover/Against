@@ -5,7 +5,7 @@
 #include "common_graphics.h"
 #include "asset.h"
 #include "utils.h"
-#include "graphics_utils.h"
+#include "vk_utils.h"
 
 scene_asset_data* asset_data = NULL;
 vk_skeletal_opaque_graphics_pipeline* skeletal_opaque_graphics_pipeline = NULL;

@@ -1,6 +1,6 @@
 #include "graphics_pipeline.h"
 #include "utils.h"
-#include "graphics_utils.h"
+#include "vk_utils.h"
 #include "common_graphics.h"
 
 int gather_materials_for_opaque_pipeline (scene_asset_data* scene_data, vk_skeletal_opaque_graphics_pipeline* out_graphics_pipeline)
@@ -47,8 +47,8 @@ int create_opaque_graphics_pipeline (scene_asset_data* scene_data, vk_skeletal_o
     char full_fragment_shader_path[MAX_PATH];
     utils_get_full_file_path ("pbr_opaque.frag.spv", full_fragment_shader_path);
 
-    CHECK_AGAINST_RESULT (graphics_utils_create_shader (full_vertex_shader_path, graphics_device, VK_SHADER_STAGE_VERTEX_BIT, &graphics_pipeline->shader_modules[0], &graphics_pipeline->shader_stage_create_infos[0]), result);
-    CHECK_AGAINST_RESULT (graphics_utils_create_shader (full_fragment_shader_path, graphics_device, VK_SHADER_STAGE_FRAGMENT_BIT, &graphics_pipeline->shader_modules[1], &graphics_pipeline->shader_stage_create_infos[1]), result);
+    CHECK_AGAINST_RESULT (vk_utils_create_shader (full_vertex_shader_path, graphics_device, VK_SHADER_STAGE_VERTEX_BIT, &graphics_pipeline->shader_modules[0], &graphics_pipeline->shader_stage_create_infos[0]), result);
+    CHECK_AGAINST_RESULT (vk_utils_create_shader (full_fragment_shader_path, graphics_device, VK_SHADER_STAGE_FRAGMENT_BIT, &graphics_pipeline->shader_modules[1], &graphics_pipeline->shader_stage_create_infos[1]), result);
 
     VkPushConstantRange push_constant_range = { 0 };
     push_constant_range.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
