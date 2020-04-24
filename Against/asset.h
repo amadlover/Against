@@ -26,14 +26,18 @@ typedef struct
     float position[3];
     float rotation[4];
     float scale[3];
+
+    float inverse_bind_matrix[16];
+    float local_matrix[16];
+    float world_matrix[16];
 } vk_joint;
 
 typedef struct
 {
     char name[1024];
 
+    vk_joint* joints;
     size_t num_joints;
-    size_t num_weights;
 } vk_skin;
 
 typedef struct
@@ -108,4 +112,6 @@ typedef struct
 
     vk_animation* animations;
     size_t animations_count;
+
+    VkDescriptorPool descriptor_pool;
 } scene_asset_data;

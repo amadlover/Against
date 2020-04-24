@@ -855,34 +855,43 @@ int link_graphics_primitives_to_materials (scene_asset_data* out_data)
 int import_skins (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_skins\n");
-    for (size_t d = 0; d < num_datas; ++d)
-    {
-        if (out_data->skins == NULL)
-        {
-            out_data->skins = (vk_skin*)utils_my_calloc (datas[d]->skins_count, sizeof (vk_skin));
-        }
-        else
-        {
-            out_data->skins = (vk_skin*)utils_my_realloc (out_data->skins, sizeof (vk_skin) * (datas[d]->skins_count + out_data->skins_count));
-        }
-    }
+
+    size_t current_skin_index = 0;
 
     for (size_t d = 0; d < num_datas; ++d)
     {
         cgltf_data* current_data = datas[d];
 
+        if (out_data->skins == NULL)
+        {
+            out_data->skins = (vk_skin*)utils_my_calloc (current_data->skins_count, sizeof (vk_skin));
+        }
+        else
+        {
+            out_data->skins = (vk_skin*)utils_my_realloc_zero (out_data->skins, sizeof (vk_skin) * out_data->skins_count , sizeof (vk_skin) * (current_data->skins_count + out_data->skins_count));
+        }
+
         for (size_t s = 0; s < current_data->skins_count; ++s)
         {
             cgltf_skin* current_skin = current_data->skins + s;
+            strcpy (out_data->skins[current_skin_index].name, current_skin->name);
+
+            cgltf_buffer_view* inverse_bind_matrices_buffer_view = current_skin->inverse_bind_matrices->buffer_view;
+
+            out_data->skins[current_skin_index].joints = (vk_joint*)utils_my_calloc (current_skin->joints_count, sizeof (vk_joint));
+            out_data->skins[current_skin_index].num_joints = current_skin->joints_count;
 
             for (size_t j = 0; j < current_skin->joints_count; ++j)
             {
                 cgltf_node* current_joint = current_skin->joints[j];
-                
-                wchar_t ski_joints[2048];
-                swprintf (ski_joints, 2048, L"Skin: %hs -> Joint: %hs -> Parent: %hs\n", current_skin->name, current_joint->name, current_joint->parent == NULL ? "" : current_joint->parent->name);
-                //OutputDebugString (ski_joints);
+                strcpy (out_data->skins[current_skin_index].joints[j].name, current_joint->name);
+                cgltf_node_transform_local (current_joint, out_data->skins[current_skin_index].joints[j].local_matrix);
+                cgltf_node_transform_world (current_joint, out_data->skins[current_skin_index].joints[j].world_matrix);
+                memcpy (out_data->skins[current_skin_index].joints[j].inverse_bind_matrix, (unsigned char*)inverse_bind_matrices_buffer_view->buffer->data + current_skin->inverse_bind_matrices->offset + inverse_bind_matrices_buffer_view->offset + j * sizeof (float) * 16, sizeof (float) * 16);
             }
+
+            ++current_skin_index;
+            out_data->skins_count += current_data->skins_count;
         }
     }
 
@@ -901,20 +910,42 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
         {
             cgltf_animation* current_animation = current_data->animations + a;
 
-            wchar_t buff[2048];
             for (size_t c = 0; c < current_animation->channels_count; ++c)
             {
+                char buff[2048];
                 cgltf_animation_channel* current_channel = current_animation->channels + c;
-                swprintf (buff, 2048, L"Name: %hs, Channel Target Node: %hs,", current_animation->name, current_channel->target_node->name);\
+                strcpy (buff, "Name: ");
+                strcat (buff, current_animation->name);
+                strcat (buff, ", Channel Target Node: ");
+                strcat (buff, current_channel->target_node->name);
+                strcat (buff, ", ");
 
                 switch (current_channel->target_path)
                 {
-                    case cgltf_animation_path_type_translation:
-                        swprintf (buff, 2048, L" Channel target path: Translation\n");
-                        break;
+                case cgltf_animation_path_type_translation:
+                    strcat (buff, "Channel target path: Translation");
+                    break;
+
+                case cgltf_animation_path_type_rotation:
+                    strcat (buff, "Channel target path: Rotation");
+                    break;
+
+                case cgltf_animation_path_type_scale:
+                    strcat (buff, "Channel target path: Scale");
+                    break;
+
+                case cgltf_animation_path_type_weights:
+                    strcat (buff, "Channel target path: Weights");
+                    break;
+
+                default:
+                    break;
                 }
 
-                OutputDebugString (buff);
+                strcat (buff, "\n");
+                wchar_t w_buff[2048];
+                mbstowcs (w_buff, buff, 2048);
+//                OutputDebugString (w_buff);
             }
         }
     }
@@ -1052,8 +1083,16 @@ void cleanup_gltf_data (scene_asset_data* gltf_data)
             utils_my_free (gltf_data->materials[m].graphics_primitives);
         }
 
+        vkDestroyDescriptorPool (graphics_device, gltf_data->descriptor_pool, NULL);
+
         utils_my_free (gltf_data->graphics_primitives);
         utils_my_free (gltf_data->materials);
+        
+        for (size_t s = 0; s < gltf_data->skins_count; ++s)
+        {
+            utils_my_free (gltf_data->skins[s].joints);
+        }
+
         utils_my_free (gltf_data->skins);
         utils_my_free (gltf_data->animations);
         utils_my_free (gltf_data->skeletal_meshes);
