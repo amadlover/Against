@@ -1,7 +1,7 @@
 #pragma once
 
 #include "error.h"
-#include "asset.h"
+#include "scene.h"
 
 typedef struct
 {

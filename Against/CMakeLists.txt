@@ -13,8 +13,8 @@ include_directories (${CMAKE_SOURCE_DIR}/External/stb)
 link_directories ($ENV{VULKAN_SDK}/Lib32)
 link_directories ($ENV{VULKAN_SDK}/Lib)
 
-set (H "asset.h" "enums.h" "error.h" "game.h" "common_graphics.h" "vk_utils.h" "log.h" "utils.h" "test_scene.h" "gltf.h" "graphics_pipeline.h")
-set (C "asset.c" "game.c" "common_graphics.c" "vk_utils.c" "log.c" "main.c" "utils.c" "test_scene.c" "gltf.c" "graphics_pipeline.c")
+set (H "asset.h" "enums.h" "error.h" "game.h" "common_graphics.h" "vk_utils.h" "log.h" "utils.h" "test_scene.h" "gltf.h" "graphics_pipeline.h" "scene.h")
+set (C "asset.c" "game.c" "common_graphics.c" "vk_utils.c" "log.c" "main.c" "utils.c" "test_scene.c" "gltf.c" "graphics_pipeline.c" "scene.c")
 
 add_executable (Against WIN32 ${H} ${C})
 add_compile_definitions (Against _CRT_SECURE_NO_WARNINGS UNICODE WIN32_LEAN_AND_MEAN)

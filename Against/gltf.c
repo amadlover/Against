@@ -24,6 +24,9 @@ size_t num_ref_cgltf_anims_for_meshes = 0;
 cgltf_primitive** ref_cgltf_graphics_primitives_for_linking_materials = NULL;
 size_t num_ref_cgltf_graphics_primitives_for_linking_materials = 0;
 
+cgltf_node** ref_cgltf_joints_for_linking_animtions = NULL;
+size_t num_ref_cgltf_joints_for_linking_animtions = 0;
+
 
 int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
@@ -862,37 +865,13 @@ int import_skins (cgltf_data** datas, size_t num_datas, scene_asset_data* out_da
     {
         cgltf_data* current_data = datas[d];
 
-        if (out_data->skins == NULL)
-        {
-            out_data->skins = (vk_skin*)utils_my_calloc (current_data->skins_count, sizeof (vk_skin));
-        }
-        else
-        {
-            out_data->skins = (vk_skin*)utils_my_realloc_zero (out_data->skins, sizeof (vk_skin) * out_data->skins_count , sizeof (vk_skin) * (current_data->skins_count + out_data->skins_count));
-        }
-
         for (size_t s = 0; s < current_data->skins_count; ++s)
         {
             cgltf_skin* current_skin = current_data->skins + s;
-            strcpy (out_data->skins[current_skin_index].name, current_skin->name);
 
-            cgltf_buffer_view* inverse_bind_matrices_buffer_view = current_skin->inverse_bind_matrices->buffer_view;
-
-            out_data->skins[current_skin_index].joints = (vk_joint*)utils_my_calloc (current_skin->joints_count, sizeof (vk_joint));
-            out_data->skins[current_skin_index].num_joints = current_skin->joints_count;
-
-            for (size_t j = 0; j < current_skin->joints_count; ++j)
-            {
-                cgltf_node* current_joint = current_skin->joints[j];
-                strcpy (out_data->skins[current_skin_index].joints[j].name, current_joint->name);
-                cgltf_node_transform_local (current_joint, out_data->skins[current_skin_index].joints[j].local_matrix);
-                cgltf_node_transform_world (current_joint, out_data->skins[current_skin_index].joints[j].world_matrix);
-                memcpy (out_data->skins[current_skin_index].joints[j].inverse_bind_matrix, (unsigned char*)inverse_bind_matrices_buffer_view->buffer->data + current_skin->inverse_bind_matrices->offset + inverse_bind_matrices_buffer_view->offset + j * sizeof (float) * 16, sizeof (float) * 16);
-            }
-
-            ++current_skin_index;
-            out_data->skins_count += current_data->skins_count;
         }
+
+        ++current_skin_index;
     }
 
     return 0;
@@ -905,49 +884,19 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
     for (size_t d = 0; d < num_datas; ++d)
     {
         cgltf_data* current_data = datas[d];
+    }
 
-        for (size_t a = 0; a < current_data->animations_count; ++a)
-        {
-            cgltf_animation* current_animation = current_data->animations + a;
+    return 0;
+}
 
-            for (size_t c = 0; c < current_animation->channels_count; ++c)
-            {
-                char buff[2048];
-                cgltf_animation_channel* current_channel = current_animation->channels + c;
-                strcpy (buff, "Name: ");
-                strcat (buff, current_animation->name);
-                strcat (buff, ", Channel Target Node: ");
-                strcat (buff, current_channel->target_node->name);
-                strcat (buff, ", ");
+int import_meshes (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+{
+    OutputDebugString (L"import_meshes\n");
 
-                switch (current_channel->target_path)
-                {
-                case cgltf_animation_path_type_translation:
-                    strcat (buff, "Channel target path: Translation");
-                    break;
-
-                case cgltf_animation_path_type_rotation:
-                    strcat (buff, "Channel target path: Rotation");
-                    break;
-
-                case cgltf_animation_path_type_scale:
-                    strcat (buff, "Channel target path: Scale");
-                    break;
-
-                case cgltf_animation_path_type_weights:
-                    strcat (buff, "Channel target path: Weights");
-                    break;
-
-                default:
-                    break;
-                }
-
-                strcat (buff, "\n");
-                wchar_t w_buff[2048];
-                mbstowcs (w_buff, buff, 2048);
-//                OutputDebugString (w_buff);
-            }
-        }
+    for (size_t d = 0; d < num_datas; ++d)
+    {
+        cgltf_data* current_data = datas[d];
+        
     }
 
     return 0;
@@ -964,6 +913,7 @@ int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t 
     CHECK_AGAINST_RESULT (link_graphics_primitives_to_materials (out_data), result);
     CHECK_AGAINST_RESULT (import_skins (datas, num_datas, out_data), result);
     CHECK_AGAINST_RESULT (import_animations (datas, num_datas, out_data), result);
+    CHECK_AGAINST_RESULT (import_meshes (datas, num_datas, out_data), result);
 
     return 0;
 }
@@ -1049,55 +999,11 @@ int import_gltf_files_from_folder (const char* partial_folder_path, scene_asset_
     ref_cgltf_graphics_primitives_for_linking_materials = NULL;
     num_ref_cgltf_graphics_primitives_for_linking_materials = 0;
 
+    utils_my_free (ref_cgltf_joints_for_linking_animtions);
+    ref_cgltf_joints_for_linking_animtions = NULL;
+    num_ref_cgltf_joints_for_linking_animtions = 0;
+
     return 0;
-}
-
-void cleanup_gltf_data (scene_asset_data* gltf_data)
-{
-    OutputDebugString (L"cleanup_gltf_data\n");
-
-    if (gltf_data)
-    {
-        if (gltf_data->images)
-        {
-            for (size_t i = 0; i < gltf_data->images_count; ++i)
-            {
-                if (gltf_data->images[i] != VK_NULL_HANDLE)
-                {
-                    vkDestroyImage (graphics_device, gltf_data->images[i], NULL);
-                }
-                if (gltf_data->image_views[i] != VK_NULL_HANDLE)
-                {
-                    vkDestroyImageView (graphics_device, gltf_data->image_views[i], NULL);
-                }
-            }
-            utils_my_free (gltf_data->images);
-            utils_my_free (gltf_data->image_views);
-        }
-
-        vk_utils_destroy_buffer_and_buffer_memory (graphics_device, gltf_data->vb_ib, gltf_data->vb_ib_memory);
-        vkFreeMemory (graphics_device, gltf_data->images_memory, NULL);
-
-        for (size_t m = 0; m < gltf_data->materials_count; ++m)
-        {
-            utils_my_free (gltf_data->materials[m].graphics_primitives);
-        }
-
-        vkDestroyDescriptorPool (graphics_device, gltf_data->descriptor_pool, NULL);
-
-        utils_my_free (gltf_data->graphics_primitives);
-        utils_my_free (gltf_data->materials);
-        
-        for (size_t s = 0; s < gltf_data->skins_count; ++s)
-        {
-            utils_my_free (gltf_data->skins[s].joints);
-        }
-
-        utils_my_free (gltf_data->skins);
-        utils_my_free (gltf_data->animations);
-        utils_my_free (gltf_data->skeletal_meshes);
-        utils_my_free (gltf_data);
-    }
 }
 
 int import_gltf_file (const char* file_path)

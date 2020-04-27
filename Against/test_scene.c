@@ -5,6 +5,7 @@
 #include "common_graphics.h"
 #include "asset.h"
 #include "utils.h"
+#include "scene.h"
 #include "vk_utils.h"
 
 scene_asset_data* asset_data = NULL;
@@ -52,5 +53,5 @@ void test_scene_exit ()
     OutputDebugString (L"test_scene_exit\n");
 
     destroy_opaque_graphics_pipeline (skeletal_opaque_graphics_pipeline);
-    cleanup_gltf_data (asset_data);
+    cleanup_scene_data (asset_data);
 }

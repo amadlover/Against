@@ -16,28 +16,19 @@ typedef struct
 {
     char name[1024];
 
+    size_t frames_count;
+
+    VkDeviceSize frame_data_offset;
 } vk_animation;
 
 typedef struct
 {
     char name[1024];
-    struct vk_joint* parent;
 
-    float position[3];
-    float rotation[4];
-    float scale[3];
-
-    float inverse_bind_matrix[16];
-    float local_matrix[16];
-    float world_matrix[16];
-} vk_joint;
-
-typedef struct
-{
-    char name[1024];
-
-    vk_joint* joints;
-    size_t num_joints;
+    VkDeviceSize bind_pose_offset;
+    
+    vk_animation** animations;
+    size_t animations_count;
 } vk_skin;
 
 typedef struct
@@ -81,37 +72,11 @@ typedef struct
 
     vk_skeletal_graphics_primitive** graphics_primitives;
     size_t graphics_primitives_count;
+
+    vk_skin* skin;
 } vk_skeletal_material;
 
 typedef struct
 {
     char name[1024];
 } vk_skeletal_mesh;
-
-typedef struct
-{
-    VkBuffer vb_ib;
-    VkDeviceMemory vb_ib_memory;
-
-    VkImage* images;
-    VkImageView* image_views;
-    size_t images_count;
-    VkDeviceMemory images_memory;
-
-    vk_skeletal_mesh* skeletal_meshes;
-    size_t skeletal_meshes_count;
-
-    vk_skeletal_graphics_primitive* graphics_primitives;
-    size_t graphics_primitives_count;
-
-    vk_skeletal_material* materials;
-    size_t materials_count;
-
-    vk_skin* skins;
-    size_t skins_count;
-
-    vk_animation* animations;
-    size_t animations_count;
-
-    VkDescriptorPool descriptor_pool;
-} scene_asset_data;
