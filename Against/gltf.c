@@ -43,6 +43,9 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
     uint8_t** img_pixels = NULL;
 
     AGAINSTRESULT result;
+
+    size_t current_index = 0;
+
     for (size_t d = 0; d < num_datas; ++d)
     {
         cgltf_data* current_data = datas[d];
@@ -121,8 +124,6 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
 
         for (size_t i = 0; i < current_data->images_count; ++i)
         {
-            size_t current_index = ref_cgltf_images_count + i;
-
             cgltf_image* image = current_data->images + i;
             char full_texture_path[MAX_PATH];
             utils_get_full_texture_path_from_uri (full_folder_path, image->uri, full_texture_path);
@@ -136,6 +137,7 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
             img_offsets[current_index] = current_index > 0 ? total_image_size - img_sizes[current_index] : 0;
 
             ref_cgltf_images[current_index] = image;
+            ++current_index;
         }
 
         ref_cgltf_images_count += current_data->images_count;
@@ -182,6 +184,9 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
 int import_materials (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_materials\n");
+
+    size_t current_index = 0;
+
     for (size_t d = 0; d < num_datas; ++d)
     {
         cgltf_data* current_data = datas[d];
@@ -206,7 +211,6 @@ int import_materials (cgltf_data** datas, size_t num_datas, scene_asset_data* ou
 
         for (size_t m = 0; m < current_data->materials_count; ++m)
         {
-            size_t current_index = out_data->materials_count + m;
             cgltf_material* material = current_data->materials + m;
 
             strcpy (out_data->materials[current_index].name, material->name);
@@ -271,6 +275,7 @@ int import_materials (cgltf_data** datas, size_t num_datas, scene_asset_data* ou
             memcpy (out_data->materials[current_index].base_color_factor, material->pbr_metallic_roughness.base_color_factor, sizeof (float) * 4);
 
             ref_cgltf_materials[current_index] = material;
+            ++current_index;
         }
 
         out_data->materials_count += current_data->materials_count;
@@ -882,20 +887,60 @@ int import_skins (cgltf_data** datas, size_t num_datas, scene_asset_data* out_da
 {
     OutputDebugString (L"import_skins\n");
 
+    float** skin_joints_matrices = NULL;
+    size_t* skin_joints_matrices_count_per_skin = NULL;
+
     size_t current_skin_index = 0;
 
     for (size_t d = 0; d < num_datas; ++d)
     {
         cgltf_data* current_data = datas[d];
 
+        if (skin_joints_matrices == NULL)
+        {
+            skin_joints_matrices = (float**)utils_my_calloc (current_data->skins_count, sizeof (float*));
+        }
+        else
+        {
+            skin_joints_matrices = (float**)utils_my_realloc_zero (skin_joints_matrices, sizeof (float*) * out_data->skins_count, sizeof (float*) * (out_data->skins_count + current_data->skins_count));
+        }
+
+        if (skin_joints_matrices_count_per_skin == NULL)
+        {
+            skin_joints_matrices_count_per_skin = (size_t*)utils_my_calloc (current_data->skins_count, sizeof (size_t));
+        }
+        else
+        {
+            skin_joints_matrices_count_per_skin = (size_t*)utils_my_realloc_zero (skin_joints_matrices_count_per_skin, sizeof (size_t) * out_data->skins_count, sizeof (size_t) * (out_data->skins_count + current_data->skins_count));
+        }
+
         for (size_t s = 0; s < current_data->skins_count; ++s)
         {
             cgltf_skin* current_skin = current_data->skins + s;
+            
+            skin_joints_matrices[current_skin_index] = (float*)utils_my_calloc (current_skin->joints_count, sizeof (float) * 16);
+            skin_joints_matrices_count_per_skin[current_skin_index] = current_skin->joints_count;
 
+            for (size_t j = 0; j < current_skin->joints_count; ++j)
+            {
+                float world_matrix[16];
+                cgltf_node_transform_world (current_skin->joints[j], world_matrix);
+                memcpy (skin_joints_matrices[current_skin_index] + (j * sizeof (float) * 16), world_matrix, sizeof (float) * 16);
+            }
+
+            ++current_skin_index;
         }
 
-        ++current_skin_index;
+        out_data->skins_count += current_data->skins_count;
     }
+
+    for (size_t jm = 0; jm < current_skin_index; ++jm)
+    {
+        utils_my_free (skin_joints_matrices[jm]);
+    }
+
+    utils_my_free (skin_joints_matrices);
+    utils_my_free (skin_joints_matrices_count_per_skin);
 
     return 0;
 }
