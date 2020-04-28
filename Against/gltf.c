@@ -925,7 +925,7 @@ int import_skins (cgltf_data** datas, size_t num_datas, scene_asset_data* out_da
             {
                 float world_matrix[16];
                 cgltf_node_transform_world (current_skin->joints[j], world_matrix);
-                memcpy (skin_joints_matrices[current_skin_index] + (j * sizeof (float) * 16), world_matrix, sizeof (float) * 16);
+                memcpy (skin_joints_matrices[current_skin_index] + (j * 16), world_matrix, sizeof (float) * 16);
             }
 
             ++current_skin_index;
