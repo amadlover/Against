@@ -31,22 +31,7 @@ typedef struct
     size_t animations_count;
 } vk_skin;
 
-typedef struct
-{
-    size_t positions_offset;
-    size_t normals_offset;
-    size_t uv0s_offset;
-    size_t uv1s_offset;
-    size_t weights_offset;
-    size_t joints_offset;
-    size_t indices_offset;
-
-    size_t indices_count;
-
-    VkIndexType index_type;
-} vk_skeletal_graphics_primitive;
-
-typedef enum 
+typedef enum
 {
     opaque,
     mask,
@@ -69,14 +54,39 @@ typedef struct
     float emissive_factor[3];
 
     vk_material_alpha_mode alpha_mode;
-
-    vk_skeletal_graphics_primitive** graphics_primitives;
-    size_t graphics_primitives_count;
-
-    vk_skin* skin;
 } vk_skeletal_material;
+
+
+typedef struct
+{
+    size_t positions_offset;
+    size_t normals_offset;
+    size_t uv0s_offset;
+    size_t uv1s_offset;
+    size_t weights_offset;
+    size_t joints_offset;
+    size_t indices_offset;
+
+    size_t indices_count;
+
+    VkIndexType index_type;
+    
+    vk_skeletal_material* material;
+} vk_skeletal_graphics_primitive;
 
 typedef struct
 {
     char name[1024];
+
+    vk_skin** skins;
+    size_t skins_count;
+
+    vk_skeletal_graphics_primitive** opaque_graphics_primitives;
+    size_t opaque_graphics_primitives_count;
+
+    vk_skeletal_graphics_primitive** alpha_graphics_primitives;
+    size_t alpha_graphics_primitives_count;
+
+    vk_skeletal_graphics_primitive** blend_graphics_primitives;
+    size_t blend_graphics_primitives_count;
 } vk_skeletal_mesh;
