@@ -999,7 +999,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 
 int import_skin_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
-    OutputDebugString (L"import_animations\n");
+    OutputDebugString (L"import_skin_animations\n");
 
     size_t total_data_size = 0;
     size_t current_animation_index = 0;
@@ -1018,9 +1018,30 @@ int import_skin_animations (cgltf_data** datas, size_t num_datas, scene_asset_da
         
                 if (strstr (current_anim->name, current_skin->name) != NULL)
                 {
-                    for (size_t c = 0; c < current_anim->channels_count; ++c)
+                    for (size_t j = 0; j < current_skin->joints_count; ++j)
                     {
-                        cgltf_animation_channel* current_channel = current_anim->channels + c;
+                        cgltf_node* current_joint = current_skin->joints + j;
+
+                        for (size_t c = 0; c < current_anim->channels_count; ++c)
+                        {
+                            cgltf_animation_channel* current_channel = current_anim->channels + c;
+
+                            if (current_channel->target_node == current_joint)
+                            {
+                                if (current_channel->target_path == cgltf_animation_path_type_translation)
+                                {
+
+                                }
+                                else if (current_channel->target_path == cgltf_animation_path_type_rotation)
+                                {
+                                    
+                                }
+                                else if (current_channel->target_path == cgltf_animation_path_type_scale)
+                                {
+
+                                }
+                            }
+                        }
                     }
 
                     ++out_data->skins[s].animations_count;
