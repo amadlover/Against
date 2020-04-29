@@ -18,6 +18,12 @@
     "nodes" : [
         {
             "name" : "Outer_Disk",
+            "rotation" : [
+                0,
+                0,
+                0.866025447845459,
+                0.4999999701976776
+            ],
             "translation" : [
                 0.002605356276035309,
                 0.14220593869686127,
@@ -188,7 +194,7 @@
                 19,
                 9
             ],
-            "name" : "Armature"
+            "name" : "sander_armature"
         },
         {
             "mesh" : 10,
@@ -437,7 +443,7 @@
                     }
                 }
             ],
-            "name" : "Explode",
+            "name" : "sander_armature_Explode",
             "samplers" : [
                 {
                     "input" : 78,
@@ -804,7 +810,7 @@
                     }
                 }
             ],
-            "name" : "Idle",
+            "name" : "sander_armature_Idle",
             "samplers" : [
                 {
                     "input" : 78,
@@ -1171,7 +1177,7 @@
                     }
                 }
             ],
-            "name" : "Implode",
+            "name" : "sander_armature_Implode",
             "samplers" : [
                 {
                     "input" : 78,
@@ -1538,7 +1544,7 @@
                     }
                 }
             ],
-            "name" : "Working",
+            "name" : "sander_armature_Working",
             "samplers" : [
                 {
                     "input" : 169,
@@ -2189,7 +2195,7 @@
                 7,
                 8
             ],
-            "name" : "Armature"
+            "name" : "sander_armature"
         }
     ],
     "accessors" : [

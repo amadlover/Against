@@ -17,7 +17,6 @@ typedef struct
     char name[1024];
 
     size_t frames_count;
-
     VkDeviceSize frame_data_offset;
 } vk_animation;
 

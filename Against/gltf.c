@@ -1002,10 +1002,29 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
     OutputDebugString (L"import_animations\n");
 
     size_t total_data_size = 0;
+    size_t current_animation_index = 0;
 
     for (size_t d = 0; d < num_datas; ++d)
     {
         cgltf_data* current_data = datas[d];
+
+        if (ref_cgltf_anims == NULL)
+        {
+            ref_cgltf_anims = (cgltf_animation**)utils_my_calloc (current_data->animations_count, sizeof (cgltf_animation*));
+        }
+        else
+        {
+            ref_cgltf_anims = (cgltf_animation**)utils_my_realloc_zero (ref_cgltf_anims, sizeof (cgltf_animation*) * out_data->animations_count, sizeof (cgltf_animation*) * (out_data->animations_count + current_data->animations_count));
+        }
+
+        if (out_data->animations == NULL)
+        {
+            out_data->animations = (vk_animation*)utils_my_calloc (current_data->animations_count, sizeof (vk_animation));
+        }
+        else
+        {
+            out_data->animations = (vk_animation*)utils_my_realloc_zero (out_data->animations, sizeof (vk_animation) * out_data->animations_count, sizeof (vk_animation) * (out_data->animations_count + current_data->animations_count));
+        }
 
         for (size_t a = 0; a < current_data->animations_count; ++a)
         {
@@ -1015,7 +1034,15 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
             {
                 cgltf_animation_sampler* current_sampler = current_anim->samplers + s;
             }
+
+            strcpy (out_data->animations[current_animation_index].name, current_anim->name);
+
+            ref_cgltf_anims[current_animation_index] = current_anim;
+            ++current_animation_index;
         }
+
+        ref_cgltf_anims_count += current_data->animations_count;
+        out_data->animations_count += current_data->animations_count;
     }
 
     return 0;
@@ -1024,6 +1051,30 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
 int link_animations_to_skins (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_animations_to_skins\n");
+
+    for (size_t s = 0; s < out_data->skins_count; ++s)
+    {
+        vk_skin* current_skin = out_data->skins + s;
+        for (size_t a = 0; a < out_data->animations_count; ++a)
+        {
+            vk_animation* current_anim = out_data->animations + a;
+
+            if (strstr (current_anim->name, current_skin->name) != NULL)
+            {
+                if (current_skin->animations == NULL)
+                {
+                    current_skin->animations = (vk_animation**)utils_my_calloc (1, sizeof (vk_animation*));
+                }
+                else
+                {
+                    current_skin->animations = (vk_animation**)utils_my_realloc_zero (current_skin->animations, sizeof (vk_animation*) * current_skin->animations_count, sizeof (vk_animation*) * (current_skin->animations_count + 1));
+                }
+
+                current_skin->animations[current_skin->animations_count] = current_anim;
+                ++current_skin->animations_count;
+            }
+        }
+    }
 
     return 0;
 }

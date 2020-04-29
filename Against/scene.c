@@ -35,6 +35,12 @@ void cleanup_scene_data (scene_asset_data* scene_data)
 
         utils_my_free (scene_data->graphics_primitives);
         utils_my_free (scene_data->materials);
+
+        for (size_t s = 0; s < scene_data->skins_count; ++s)
+        {
+            utils_my_free (scene_data->skins[s].animations);
+        }
+
         utils_my_free (scene_data->skins);
         utils_my_free (scene_data->animations);
 

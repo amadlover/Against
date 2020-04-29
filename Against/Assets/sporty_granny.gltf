@@ -1307,22 +1307,22 @@
         },
         {
             "mesh" : 0,
-            "name" : "Fitness_Grandma_BodyGeo",
+            "name" : "sporty_granny_BodyGeo",
             "skin" : 0
         },
         {
             "mesh" : 1,
-            "name" : "Fitness_Grandma_BrowsAnimGeo",
+            "name" : "sporty_granny_BrowsAnimGeo",
             "skin" : 0
         },
         {
             "mesh" : 2,
-            "name" : "Fitness_Grandma_EyesAnimGeo",
+            "name" : "sporty_granny_EyesAnimGeo",
             "skin" : 0
         },
         {
             "mesh" : 3,
-            "name" : "Fitness_Grandma_MouthAnimGeo",
+            "name" : "sporty_granny_MouthAnimGeo",
             "skin" : 0
         },
         {
@@ -1333,7 +1333,7 @@
                 91,
                 87
             ],
-            "name" : "Armature",
+            "name" : "sporty_granny_armature",
             "rotation" : [
                 0.7071068286895752,
                 0,
@@ -3199,7 +3199,7 @@
                     }
                 }
             ],
-            "name" : "Idle",
+            "name" : "sporty_granny_armature_Idle",
             "samplers" : [
                 {
                     "input" : 38,
@@ -4836,7 +4836,7 @@
                 84,
                 86
             ],
-            "name" : "Armature"
+            "name" : "sporty_granny_armature"
         }
     ],
     "accessors" : [
