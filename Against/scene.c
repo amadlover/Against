@@ -39,18 +39,13 @@ void cleanup_scene_data (scene_asset_data* scene_data)
         for (size_t s = 0; s < scene_data->skins_count; ++s)
         {
             utils_my_free (scene_data->skins[s].animations);
+            utils_my_free (scene_data->skins[s].opaque_graphics_primitives);
+            utils_my_free (scene_data->skins[s].alpha_graphics_primitives);
+            utils_my_free (scene_data->skins[s].blend_graphics_primitives);
         }
 
         utils_my_free (scene_data->skins);
         utils_my_free (scene_data->animations);
-
-        for (size_t m = 0; m < scene_data->skeletal_meshes_count; ++m)
-        {
-            utils_my_free (scene_data->skeletal_meshes[m].opaque_graphics_primitives);
-            utils_my_free (scene_data->skeletal_meshes[m].alpha_graphics_primitives);
-            utils_my_free (scene_data->skeletal_meshes[m].blend_graphics_primitives);
-        }
-
         utils_my_free (scene_data->skeletal_meshes);
         utils_my_free (scene_data);
     }
