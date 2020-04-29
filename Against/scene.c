@@ -5,7 +5,7 @@
 
 void cleanup_scene_data (scene_asset_data* scene_data)
 {
-    OutputDebugString (L"cleanup_gltf_data\n");
+    OutputDebugString (L"cleanup_scene_data\n");
 
     if (scene_data)
     {
@@ -28,11 +28,10 @@ void cleanup_scene_data (scene_asset_data* scene_data)
         }
 
         vk_utils_destroy_buffer_and_buffer_memory (graphics_device, scene_data->vb_ib, scene_data->vb_ib_memory);
+        vk_utils_destroy_buffer_and_buffer_memory (graphics_device, scene_data->bone_buffer, scene_data->bone_buffer_memory);
         vkFreeMemory (graphics_device, scene_data->images_memory, NULL);
 
         vkDestroyDescriptorPool (graphics_device, scene_data->descriptor_pool, NULL);
-
-        vk_utils_destroy_buffer_and_buffer_memory (graphics_device, scene_data->bone_buffer, scene_data->bone_buffer_memory);
 
         utils_my_free (scene_data->graphics_primitives);
         utils_my_free (scene_data->materials);
