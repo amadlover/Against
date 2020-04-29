@@ -8,6 +8,7 @@
 typedef struct
 {
     char name[1024];
+
     VkImage* image;
     VkImageView* image_view;
 } vk_image;
@@ -16,8 +17,8 @@ typedef struct
 {
     char name[1024];
 
+    VkDeviceSize* frame_data_offsets;
     size_t frames_count;
-    VkDeviceSize frame_data_offset;
 } vk_animation;
 
 typedef enum
@@ -68,7 +69,7 @@ typedef struct
 
     VkDeviceSize bind_pose_offset;
     
-    vk_animation** animations;
+    vk_animation* animations;
     size_t animations_count;
 
     vk_skeletal_graphics_primitive** opaque_graphics_primitives;

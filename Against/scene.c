@@ -45,7 +45,6 @@ void cleanup_scene_data (scene_asset_data* scene_data)
         }
 
         utils_my_free (scene_data->skins);
-        utils_my_free (scene_data->animations);
         utils_my_free (scene_data->skeletal_meshes);
         utils_my_free (scene_data);
     }
