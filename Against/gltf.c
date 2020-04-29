@@ -1301,49 +1301,57 @@ int link_mesh_node_graphics_primitives_to_skins (scene_asset_data* out_data)
                 {
                     cgltf_primitive* current_primitive = current_node->mesh->primitives + gp;
 
-                    if (strstr (current_primitive->material->name, "opaque") != NULL)
+                    for (size_t rgp = 0; rgp < ref_cgltf_graphics_primitives_count; ++rgp)
                     {
-                        if (out_data->skins[s].opaque_graphics_primitives == NULL)
+                        cgltf_primitive* current_rgp = ref_cgltf_graphics_primitives[rgp];
+                        
+                        if (current_rgp == current_primitive)
                         {
-                            out_data->skins[s].opaque_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_calloc (1, sizeof (vk_skeletal_graphics_primitive*));
-                        }
-                        else
-                        {
-                            out_data->skins[s].opaque_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_realloc_zero (out_data->skins[s].opaque_graphics_primitives, sizeof (vk_skeletal_graphics_primitive*) * out_data->skins[s].opaque_graphics_primitives_count, sizeof (vk_skeletal_graphics_primitive*) * (out_data->skins[s].opaque_graphics_primitives_count + 1));
-                        }
+                            if (strstr (current_primitive->material->name, "opaque") != NULL)
+                            {
+                                if (out_data->skins[s].opaque_graphics_primitives == NULL)
+                                {
+                                    out_data->skins[s].opaque_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_calloc (1, sizeof (vk_skeletal_graphics_primitive*));
+                                }
+                                else
+                                {
+                                    out_data->skins[s].opaque_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_realloc_zero (out_data->skins[s].opaque_graphics_primitives, sizeof (vk_skeletal_graphics_primitive*) * out_data->skins[s].opaque_graphics_primitives_count, sizeof (vk_skeletal_graphics_primitive*) * (out_data->skins[s].opaque_graphics_primitives_count + 1));
+                                }
 
-                        out_data->skins[s].opaque_graphics_primitives[out_data->skins[s].opaque_graphics_primitives_count] = out_data->graphics_primitives + gp;
-                        ++out_data->skins[s].opaque_graphics_primitives_count;
-                    }
+                                out_data->skins[s].opaque_graphics_primitives[out_data->skins[s].opaque_graphics_primitives_count] = out_data->graphics_primitives + rgp;
+                                ++out_data->skins[s].opaque_graphics_primitives_count;
+                            }
 
-                    if (strstr (current_primitive->material->name, "alpha") != NULL)
-                    {
-                        if (out_data->skins[s].alpha_graphics_primitives == NULL)
-                        {
-                            out_data->skins[s].alpha_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_calloc (1, sizeof (vk_skeletal_graphics_primitive*));
-                        }
-                        else
-                        {
-                            out_data->skins[s].alpha_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_realloc_zero (out_data->skins[s].alpha_graphics_primitives, sizeof (vk_skeletal_graphics_primitive*) * out_data->skins[s].alpha_graphics_primitives_count, sizeof (vk_skeletal_graphics_primitive*) * (out_data->skins[s].alpha_graphics_primitives_count + 1));
-                        }
+                            if (strstr (current_primitive->material->name, "alpha") != NULL)
+                            {
+                                if (out_data->skins[s].alpha_graphics_primitives == NULL)
+                                {
+                                    out_data->skins[s].alpha_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_calloc (1, sizeof (vk_skeletal_graphics_primitive*));
+                                }
+                                else
+                                {
+                                    out_data->skins[s].alpha_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_realloc_zero (out_data->skins[s].alpha_graphics_primitives, sizeof (vk_skeletal_graphics_primitive*) * out_data->skins[s].alpha_graphics_primitives_count, sizeof (vk_skeletal_graphics_primitive*) * (out_data->skins[s].alpha_graphics_primitives_count + 1));
+                                }
 
-                        out_data->skins[s].alpha_graphics_primitives[out_data->skins[s].alpha_graphics_primitives_count] = out_data->graphics_primitives + gp;
-                        ++out_data->skins[s].alpha_graphics_primitives_count;
-                    }
+                                out_data->skins[s].alpha_graphics_primitives[out_data->skins[s].alpha_graphics_primitives_count] = out_data->graphics_primitives + rgp;
+                                ++out_data->skins[s].alpha_graphics_primitives_count;
+                            }
 
-                    if (strstr (current_primitive->material->name, "blend") != NULL)
-                    {
-                        if (out_data->skins[s].blend_graphics_primitives == NULL)
-                        {
-                            out_data->skins[s].blend_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_calloc (1, sizeof (vk_skeletal_graphics_primitive*));
-                        }
-                        else
-                        {
-                            out_data->skins[s].blend_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_realloc_zero (out_data->skins[s].blend_graphics_primitives, sizeof (vk_skeletal_graphics_primitive*) * out_data->skins[s].blend_graphics_primitives_count, sizeof (vk_skeletal_graphics_primitive*) * (out_data->skins[s].blend_graphics_primitives_count + 1));
-                        }
+                            if (strstr (current_primitive->material->name, "blend") != NULL)
+                            {
+                                if (out_data->skins[s].blend_graphics_primitives == NULL)
+                                {
+                                    out_data->skins[s].blend_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_calloc (1, sizeof (vk_skeletal_graphics_primitive*));
+                                }
+                                else
+                                {
+                                    out_data->skins[s].blend_graphics_primitives = (vk_skeletal_graphics_primitive**) utils_my_realloc_zero (out_data->skins[s].blend_graphics_primitives, sizeof (vk_skeletal_graphics_primitive*) * out_data->skins[s].blend_graphics_primitives_count, sizeof (vk_skeletal_graphics_primitive*) * (out_data->skins[s].blend_graphics_primitives_count + 1));
+                                }
 
-                        out_data->skins[s].blend_graphics_primitives[out_data->skins[s].blend_graphics_primitives_count] = out_data->graphics_primitives + gp;
-                        ++out_data->skins[s].blend_graphics_primitives_count;
+                                out_data->skins[s].blend_graphics_primitives[out_data->skins[s].blend_graphics_primitives_count] = out_data->graphics_primitives + rgp;
+                                ++out_data->skins[s].blend_graphics_primitives_count;
+                            }
+                        }
                     }
                 }
             }
