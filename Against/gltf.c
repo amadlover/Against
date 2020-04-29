@@ -959,6 +959,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
             ++current_skin_index;
         }
 
+        ref_cgltf_skins_count += current_data->skins_count;
         out_data->skins_count += current_data->skins_count;
     }
 
@@ -1000,9 +1001,21 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
 {
     OutputDebugString (L"import_animations\n");
 
+    size_t total_data_size = 0;
+
     for (size_t d = 0; d < num_datas; ++d)
     {
         cgltf_data* current_data = datas[d];
+
+        for (size_t a = 0; a < current_data->animations_count; ++a)
+        {
+            cgltf_animation* current_anim = current_data->animations + a;
+    
+            for (size_t s = 0; s < current_anim->samplers_count; ++s)
+            {
+                cgltf_animation_sampler* current_sampler = current_anim->samplers + s;
+            }
+        }
     }
 
     return 0;
@@ -1218,6 +1231,17 @@ int link_graphics_primitives_to_meshes (scene_asset_data* out_data)
 int link_skins_to_meshes (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_skins_to_meshes\n");
+
+    for (size_t n = 0; n < ref_cgltf_mesh_nodes_count; ++n)
+    {
+        for (size_t s = 0; s < ref_cgltf_skins_count; ++s)
+        {
+            if (ref_cgltf_mesh_nodes[n]->skin == ref_cgltf_skins[s])
+            {
+                out_data->skeletal_meshes[n].skin = out_data->skins + s;
+            }
+        }
+    }
 
     return 0;
 }

@@ -78,8 +78,7 @@ typedef struct
 {
     char name[1024];
 
-    vk_skin** skins;
-    size_t skins_count;
+    vk_skin* skin;
 
     vk_skeletal_graphics_primitive** opaque_graphics_primitives;
     size_t opaque_graphics_primitives_count;
