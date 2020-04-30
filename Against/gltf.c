@@ -9,6 +9,8 @@
 
 #include <stb_image.h>
 
+#include "math.hpp"
+
 cgltf_data** gltf_datas = NULL;
 size_t gltf_datas_count = 0;
 
@@ -1020,7 +1022,7 @@ int import_skin_animations (cgltf_data** datas, size_t num_datas, scene_asset_da
                 {
                     for (size_t j = 0; j < current_skin->joints_count; ++j)
                     {
-                        cgltf_node* current_joint = current_skin->joints + j;
+                        cgltf_node* current_joint = current_skin->joints[j];
 
                         for (size_t c = 0; c < current_anim->channels_count; ++c)
                         {

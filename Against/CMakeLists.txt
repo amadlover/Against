@@ -3,6 +3,10 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
+add_compile_options ($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+add_compile_options ($<$<CXX_COMPILER_ID:MSVC>:/GR->)
+add_compile_options ($<$<CXX_COMPILER_ID:MSVC>:/EHs-c->)
+
 include_directories (${CMAKE_SOURCE_DIR})
 include_directories ($ENV{VULKAN_SDK}/Include)
 include_directories (${CMAKE_SOURCE_DIR}/External/glm)
@@ -13,8 +17,8 @@ include_directories (${CMAKE_SOURCE_DIR}/External/stb)
 link_directories ($ENV{VULKAN_SDK}/Lib32)
 link_directories ($ENV{VULKAN_SDK}/Lib)
 
-set (H "asset.h" "enums.h" "error.h" "game.h" "common_graphics.h" "vk_utils.h" "log.h" "utils.h" "test_scene.h" "gltf.h" "graphics_pipeline.h" "scene.h")
-set (C "asset.c" "game.c" "common_graphics.c" "vk_utils.c" "log.c" "main.c" "utils.c" "test_scene.c" "gltf.c" "graphics_pipeline.c" "scene.c")
+set (H "asset.h" "enums.h" "error.h" "game.h" "common_graphics.h" "vk_utils.h" "log.h" "utils.h" "test_scene.h" "gltf.h" "graphics_pipeline.h" "scene.h" "math.cpp")
+set (C "asset.c" "game.c" "common_graphics.c" "vk_utils.c" "log.c" "main.c" "utils.c" "test_scene.c" "gltf.c" "graphics_pipeline.c" "scene.c" "math.hpp")
 
 add_executable (Against WIN32 ${H} ${C})
 add_compile_definitions (Against _CRT_SECURE_NO_WARNINGS UNICODE WIN32_LEAN_AND_MEAN)
