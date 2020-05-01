@@ -23,8 +23,8 @@ void cleanup_scene_data (scene_asset_data* scene_data)
                 }
             }
 
-            utils_my_free (scene_data->images);
-            utils_my_free (scene_data->image_views);
+            utils_free (scene_data->images);
+            utils_free (scene_data->image_views);
         }
 
         vk_utils_destroy_buffer_and_buffer_memory (graphics_device, scene_data->vb_ib, scene_data->vb_ib_memory);
@@ -33,19 +33,19 @@ void cleanup_scene_data (scene_asset_data* scene_data)
 
         vkDestroyDescriptorPool (graphics_device, scene_data->descriptor_pool, NULL);
 
-        utils_my_free (scene_data->graphics_primitives);
-        utils_my_free (scene_data->materials);
+        utils_free (scene_data->graphics_primitives);
+        utils_free (scene_data->materials);
 
         for (size_t s = 0; s < scene_data->skins_count; ++s)
         {
-            utils_my_free (scene_data->skins[s].animations);
-            utils_my_free (scene_data->skins[s].opaque_graphics_primitives);
-            utils_my_free (scene_data->skins[s].alpha_graphics_primitives);
-            utils_my_free (scene_data->skins[s].blend_graphics_primitives);
+            utils_free (scene_data->skins[s].animations);
+            utils_free (scene_data->skins[s].opaque_graphics_primitives);
+            utils_free (scene_data->skins[s].alpha_graphics_primitives);
+            utils_free (scene_data->skins[s].blend_graphics_primitives);
         }
 
-        utils_my_free (scene_data->skins);
-        utils_my_free (scene_data->skeletal_meshes);
-        utils_my_free (scene_data);
+        utils_free (scene_data->skins);
+        utils_free (scene_data->skeletal_meshes);
+        utils_free (scene_data);
     }
 }

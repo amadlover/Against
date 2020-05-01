@@ -106,7 +106,7 @@ int vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 	VkMemoryAllocateInfo memory_allocation = { 0 };
 	memory_allocation.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-	VkDeviceSize* offsets = (VkDeviceSize*)utils_my_calloc (buffer_count, sizeof (VkDeviceSize));
+	VkDeviceSize* offsets = (VkDeviceSize*)utils_calloc (buffer_count, sizeof (VkDeviceSize));
 
 	for (uint32_t b = 0; b < buffer_count; b++)
 	{
@@ -132,7 +132,7 @@ int vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 		}
 	}
 
-	utils_my_free (offsets);
+	utils_free (offsets);
 
 	return 0;
 }
@@ -231,7 +231,7 @@ int vk_utils_allocate_bind_image_memory (
 
 	memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-	VkDeviceSize* offsets = (VkDeviceSize*)utils_my_calloc (image_count, sizeof (VkDeviceSize));
+	VkDeviceSize* offsets = (VkDeviceSize*)utils_calloc (image_count, sizeof (VkDeviceSize));
 
 	for (uint32_t i = 0; i < image_count; i++)
 	{
@@ -256,7 +256,7 @@ int vk_utils_allocate_bind_image_memory (
 		}
 	}
 
-	utils_my_free (offsets);
+	utils_free (offsets);
 
 	return 0;
 }
@@ -276,7 +276,7 @@ errno_t ReadShaderFile (char* full_file_path, char** file_contents)
 	uint32_t file_size = (uint32_t)ftell (vert_file) / sizeof (uint32_t);
 	rewind (vert_file);
 
-	*file_contents = (char*)utils_my_malloc (sizeof (uint32_t) * file_size);
+	*file_contents = (char*)utils_malloc (sizeof (uint32_t) * file_size);
 	fread (*file_contents, sizeof (uint32_t), file_size, vert_file);
 	fclose (vert_file);
 
@@ -453,7 +453,7 @@ int vk_utils_create_shader (const char* full_file_path,
 	uint32_t file_size = (uint32_t)ftell (vert_file);
 	rewind (vert_file);
 
-	file_contents = (char*)utils_my_malloc (file_size);
+	file_contents = (char*)utils_malloc (file_size);
 	fread (file_contents, sizeof (uint32_t), file_size, vert_file);
 	fclose (vert_file);
 
@@ -463,7 +463,7 @@ int vk_utils_create_shader (const char* full_file_path,
 	shader_module_create_info.pCode = (uint32_t*)file_contents;
 	shader_module_create_info.codeSize = file_size;
 
-	utils_my_free (file_contents);
+	utils_free (file_contents);
 	
 	if (vkCreateShaderModule (graphics_device, &shader_module_create_info, NULL, shader_module) != VK_SUCCESS)
 	{
@@ -497,7 +497,7 @@ int vk_utils_create_descriptor_pool (
 	size_t max_sets,
 	VkDescriptorPool* out_descriptor_pool)
 {
-	VkDescriptorPoolSize* pool_sizes = (VkDescriptorPoolSize*) utils_my_calloc (num_types, sizeof (VkDescriptorPoolSize));
+	VkDescriptorPoolSize* pool_sizes = (VkDescriptorPoolSize*) utils_calloc (num_types, sizeof (VkDescriptorPoolSize));
 
 	for (size_t ps = 0; ps < num_types; ++ps)
 	{
@@ -517,7 +517,7 @@ int vk_utils_create_descriptor_pool (
 		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_POOL;
 	}
 
-	utils_my_free (pool_sizes);
+	utils_free (pool_sizes);
 
 	return 0;
 }
@@ -593,7 +593,7 @@ int vk_utils_update_descriptor_sets (
 	size_t num_descriptor_sets
 )
 {
-	VkWriteDescriptorSet* descriptor_writes = (VkWriteDescriptorSet*)utils_my_calloc (num_descriptor_sets, sizeof (VkWriteDescriptorSet));
+	VkWriteDescriptorSet* descriptor_writes = (VkWriteDescriptorSet*)utils_calloc (num_descriptor_sets, sizeof (VkWriteDescriptorSet));
 	for (size_t ds = 0; ds < num_descriptor_sets; ++ds)
 	{
 		descriptor_writes[ds].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -606,7 +606,7 @@ int vk_utils_update_descriptor_sets (
 
 	vkUpdateDescriptorSets (graphics_device, num_descriptor_sets, descriptor_writes, 0, NULL);
 
-	utils_my_free (descriptor_writes);
+	utils_free (descriptor_writes);
 
 	return 0;
 }

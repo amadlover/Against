@@ -15,11 +15,11 @@ int gather_materials_for_opaque_pipeline (scene_asset_data* scene_data, vk_skele
         {
             if (out_graphics_pipeline->materials == NULL)
             {
-                out_graphics_pipeline->materials = (vk_skeletal_material**)utils_my_calloc (1, sizeof (vk_skeletal_material*));
+                out_graphics_pipeline->materials = (vk_skeletal_material**)utils_calloc (1, sizeof (vk_skeletal_material*));
             }
             else
             {
-                out_graphics_pipeline->materials = (vk_skeletal_material**)utils_my_realloc_zero (out_graphics_pipeline->materials, sizeof (vk_skeletal_material*) * out_graphics_pipeline->materials_count, sizeof (vk_skeletal_material*) * (out_graphics_pipeline->materials_count + 1));
+                out_graphics_pipeline->materials = (vk_skeletal_material**)utils_realloc_zero (out_graphics_pipeline->materials, sizeof (vk_skeletal_material*) * out_graphics_pipeline->materials_count, sizeof (vk_skeletal_material*) * (out_graphics_pipeline->materials_count + 1));
             }
 
             out_graphics_pipeline->materials[out_graphics_pipeline->materials_count] = material;
@@ -41,7 +41,7 @@ int create_opaque_graphics_pipeline (scene_asset_data* scene_data, vk_skeletal_o
 {
     OutputDebugString (L"create_opaque_graphics_pipeline\n");
 
-    *out_graphics_pipeline = (vk_skeletal_opaque_graphics_pipeline*)utils_my_calloc (1, sizeof (vk_skeletal_opaque_graphics_pipeline));
+    *out_graphics_pipeline = (vk_skeletal_opaque_graphics_pipeline*)utils_calloc (1, sizeof (vk_skeletal_opaque_graphics_pipeline));
     vk_skeletal_opaque_graphics_pipeline* graphics_pipeline = *out_graphics_pipeline;
 
     AGAINSTRESULT result;
@@ -80,6 +80,6 @@ void destroy_opaque_graphics_pipeline (vk_skeletal_opaque_graphics_pipeline* gra
     vkDestroyShaderModule (graphics_device, graphics_pipeline->shader_modules[0], NULL);
     vkDestroyShaderModule (graphics_device, graphics_pipeline->shader_modules[1], NULL);
 
-    utils_my_free (graphics_pipeline->materials);
-    utils_my_free (graphics_pipeline);
+    utils_free (graphics_pipeline->materials);
+    utils_free (graphics_pipeline);
 }

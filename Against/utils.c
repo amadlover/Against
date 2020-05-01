@@ -73,7 +73,7 @@ void utils_get_files_in_folder (const char* partial_folder_path, file_path** out
 	} while (FindNextFile (find_handle, &ffd) != 0);
 
 	*out_file_count = file_count;
-	*out_file_paths = (file_path*) utils_my_calloc (file_count, sizeof (file_path));
+	*out_file_paths = (file_path*) utils_calloc (file_count, sizeof (file_path));
 
 	find_handle = FindFirstFile (folder_path, &ffd);
 	size_t current_file_index = 0;
@@ -105,33 +105,56 @@ void utils_read_image_from_uri (const char* file_path, const char* uri, int* wid
 	pixels = stbi_load (full_path, width, height, bpp, 4);
 }
 
-void* utils_my_malloc (size_t size)
+void* utils_malloc (size_t size)
 {
 	return malloc (size);
 }
 
-void* utils_my_calloc (size_t count, size_t size)
+void* utils_aligned_malloc (size_t size, size_t alignment)
+{
+	return _aligned_malloc (size, alignment);
+}
+
+void* utils_calloc (size_t count, size_t size)
 {
 	return calloc (count, size);
 }
 
-void* utils_my_realloc (void* ptr, size_t size)
+void* utils_aligned_calloc (size_t count, size_t size, size_t alignment)
 {
-	return realloc (ptr, size);
+	void* ptr = _aligned_malloc (size * count, alignment);
+	memset (ptr, 0, size * count);
+	return ptr;
 }
 
-void* utils_my_realloc_zero (void* ptr, size_t old_size, size_t new_size)
+void* utils_realloc_zero (void* ptr, size_t old_size, size_t new_size)
 {
 	void *new_ptr = realloc (ptr, new_size);
 	memset ((char*)new_ptr + old_size, 0, new_size - old_size);
 	return new_ptr;
 }
 
-void utils_my_free (void* ptr)
+void* utils_aligned_realloc_zero (void* ptr, size_t old_size, size_t new_size, size_t alignment)
+{
+	void* new_ptr = _aligned_realloc (ptr, new_size, alignment);
+	memset ((char*)new_ptr + old_size, 0, new_size - old_size);
+	return new_ptr;
+}
+
+void utils_free (void* ptr)
 {
 	if (ptr != NULL)
 	{
 		free (ptr);
+		ptr = NULL;
+	}
+}
+
+void utils_aligned_free (void* ptr)
+{
+	if (ptr != NULL)
+	{
+		_aligned_free (ptr);
 		ptr = NULL;
 	}
 }

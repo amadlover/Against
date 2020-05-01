@@ -17,9 +17,12 @@ void utils_get_files_in_folder (const char* partial_folder_path, file_path** out
 
 void utils_read_image_from_uri (const char* file_path, const char* uri, int* width, int* height, int* bpp, uint8_t* pixels);
 
-void* utils_my_malloc (size_t size);
-void* utils_my_calloc (size_t count, size_t size);
-void* utils_my_realloc (void* ptr, size_t size);
-void* utils_my_realloc_zero (void*ptr, size_t old_size, size_t new_size);
-void utils_my_free (void* ptr);
+void* utils_malloc (size_t size);
+void* utils_aligned_malloc (size_t size, size_t alignment);
+void* utils_calloc (size_t count, size_t size);
+void* utils_aligned_calloc (size_t count, size_t size, size_t alignment);
+void* utils_realloc_zero (void*ptr, size_t old_size, size_t new_size);
+void* utils_aligned_realloc_zero (void* ptr, size_t old_size, size_t new_size, size_t alignment);
+void utils_free (void* ptr);
+void utils_aligned_free (void* ptr);
 void utils_free_image_data (uint8_t* pixels);
