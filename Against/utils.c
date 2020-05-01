@@ -110,9 +110,24 @@ void* utils_malloc (size_t size)
 	return malloc (size);
 }
 
+void* utils_malloc_zero (size_t size)
+{
+	void* ptr = malloc (size);
+	memset (ptr, 0, size);
+	return ptr;
+}
+
 void* utils_aligned_malloc (size_t size, size_t alignment)
 {
 	return _aligned_malloc (size, alignment);
+}
+
+void* utils_aligned_malloc_zero (size_t size, size_t alignment)
+{
+	void* ptr = _aligned_malloc (size, alignment);
+	memset (ptr, 0, size);
+
+	return ptr;
 }
 
 void* utils_calloc (size_t count, size_t size)

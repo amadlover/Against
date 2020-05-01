@@ -5,6 +5,8 @@
 
 #include <vulkan/vulkan.h>
 
+#define MAX_JOINTS 100
+
 typedef struct
 {
     char name[1024];

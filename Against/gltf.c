@@ -892,34 +892,12 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 {
     OutputDebugString (L"import_skins\n");
 
-    float** skin_joints_matrices = NULL;
-    size_t* skin_joints_matrices_size_per_skin = NULL;
-
+    size_t skins_count = 0;
     size_t current_skin_index = 0;
-
-    size_t total_data_size = 0;
 
     for (size_t d = 0; d < datas_count; ++d)
     {
         cgltf_data* current_data = datas[d];
-
-        if (skin_joints_matrices == NULL)
-        {
-            skin_joints_matrices = (float**)utils_calloc (current_data->skins_count, sizeof (float*));
-        }
-        else
-        {
-            skin_joints_matrices = (float**)utils_realloc_zero (skin_joints_matrices, sizeof (float*) * out_data->skins_count, sizeof (float*) * (out_data->skins_count + current_data->skins_count));
-        }
-
-        if (skin_joints_matrices_size_per_skin == NULL)
-        {
-            skin_joints_matrices_size_per_skin = (size_t*)utils_calloc (current_data->skins_count, sizeof (size_t));
-        }
-        else
-        {
-            skin_joints_matrices_size_per_skin = (size_t*)utils_realloc_zero (skin_joints_matrices_size_per_skin, sizeof (size_t) * out_data->skins_count, sizeof (size_t) * (out_data->skins_count + current_data->skins_count));
-        }
 
         if (ref_cgltf_skins == NULL)
         {
@@ -941,34 +919,38 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 
         for (size_t s = 0; s < current_data->skins_count; ++s)
         {
-            cgltf_skin* current_skin = current_data->skins + s;
-
-            size_t skin_data_size = 0;
-            
-            skin_joints_matrices[current_skin_index] = (float*)utils_calloc (current_skin->joints_count, sizeof (float) * 16);
-            skin_joints_matrices_size_per_skin[current_skin_index] = current_skin->joints_count * sizeof (float) * 16;
-
-            for (size_t j = 0; j < current_skin->joints_count; ++j)
-            {
-                float world_matrix[16];
-                cgltf_node_transform_world (current_skin->joints[j], world_matrix);
-                memcpy (skin_joints_matrices[current_skin_index] + (j * 16), world_matrix, sizeof (float) * 16);
-
-                skin_data_size += sizeof (float) * 16;
-                total_data_size += sizeof (float) * 16;
-            }
-
-            strcpy (out_data->skins[current_skin_index].name, current_skin->name);
-            ref_cgltf_skins[current_skin_index] = current_skin;
-
+            ref_cgltf_skins[current_skin_index] = current_data->skins + s;
             ++current_skin_index;
         }
 
         ref_cgltf_skins_count += current_data->skins_count;
         out_data->skins_count += current_data->skins_count;
+        skins_count += current_data->skins_count;
     }
 
-    size_t skins_count = current_skin_index;
+    size_t skin_joints_size = MAX_JOINTS * sizeof (float) * 17;
+    size_t min_ubo_alignment = (size_t)physical_device_limits.minUniformBufferOffsetAlignment;
+    skin_joints_size = skin_joints_size % min_ubo_alignment > 0 ? ((skin_joints_size / min_ubo_alignment) + 1) * min_ubo_alignment : skin_joints_size;
+    
+    size_t total_data_size = skin_joints_size * skins_count;
+
+    float* skin_joints_matrices = (float*)utils_aligned_malloc_zero (total_data_size, min_ubo_alignment);
+
+    for (size_t s = 0; s < ref_cgltf_skins_count; ++s)
+    {
+        cgltf_skin* current_skin = ref_cgltf_skins[s];
+
+        for (size_t j = 0; j < current_skin->joints_count; ++j)
+        {
+            cgltf_node* current_joint = current_skin->joints[j];
+
+            float matrix[16];
+            cgltf_node_transform_world (current_joint, matrix);
+            memcpy ((unsigned char*)skin_joints_matrices + (skin_joints_size * s) + (sizeof (float) * 16 * j), matrix, sizeof (float) * 16);
+        }
+
+        out_data->skins[s].bind_pose_offset = (VkDeviceSize)skin_joints_size * (VkDeviceSize)s;
+    }
 
     AGAINSTRESULT result;
 
@@ -976,14 +958,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
     CHECK_AGAINST_RESULT (vk_utils_create_buffer (graphics_device, total_data_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, graphics_queue_family_index, &staging_buffer), result);
     CHECK_AGAINST_RESULT (vk_utils_allocate_bind_buffer_memory (graphics_device, &staging_buffer, 1, physical_device_memory_properties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &staging_buffer_memory), result);
 
-    size_t current_data_offset = 0;
-
-    for (size_t s = 0; s < skins_count; ++s)
-    {
-        CHECK_AGAINST_RESULT (vk_utils_map_data_to_device_memory (graphics_device, staging_buffer_memory, current_data_offset, skin_joints_matrices_size_per_skin[s], skin_joints_matrices[s]), result);
-        out_data->skins[s].bind_pose_offset = current_data_offset;
-        current_data_offset += skin_joints_matrices_size_per_skin[s];
-    }
+    CHECK_AGAINST_RESULT (vk_utils_map_data_to_device_memory (graphics_device, staging_buffer_memory, 0, total_data_size, skin_joints_matrices), result);
 
     CHECK_AGAINST_RESULT (vk_utils_create_buffer (graphics_device, total_data_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, graphics_queue_family_index, &out_data->bone_buffer), result);
     CHECK_AGAINST_RESULT (vk_utils_allocate_bind_buffer_memory (graphics_device, &out_data->bone_buffer, 1, physical_device_memory_properties, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &out_data->bone_buffer_memory), result);
@@ -991,13 +966,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 
     vk_utils_destroy_buffer_and_buffer_memory (graphics_device, staging_buffer, staging_buffer_memory);
 
-    for (size_t jm = 0; jm < skins_count; ++jm)
-    {
-        utils_free (skin_joints_matrices[jm]);
-    }
-
-    utils_free (skin_joints_matrices);
-    utils_free (skin_joints_matrices_size_per_skin);
+    utils_aligned_free (skin_joints_matrices);
 
     return 0;
 }
