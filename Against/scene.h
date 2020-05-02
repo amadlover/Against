@@ -30,6 +30,9 @@ typedef struct
     vk_skin* skins;
     size_t skins_count;
 
+    vk_animation* animations;
+    size_t animations_count;
+
     VkDescriptorPool descriptor_pool;
 } scene_asset_data;
 

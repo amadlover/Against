@@ -62,6 +62,8 @@ void cleanup_scene_data (scene_asset_data* scene_data)
             scene_data->skins[s].blend_graphics_primitives = 0;
         }
 
+        utils_free (scene_data->animations);
+        scene_data->animations_count = 0;
         utils_free (scene_data->skins);
         scene_data->skins_count = 0;
         utils_free (scene_data->skeletal_meshes);
