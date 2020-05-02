@@ -1,6 +1,5 @@
 #include "test_scene.h"
 #include "game.h"
-#include "gltf.h"
 #include "graphics_pipeline.h"
 #include "common_graphics.h"
 #include "asset.h"
@@ -18,7 +17,7 @@ int test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
     
     AGAINSTRESULT result;
 
-    CHECK_AGAINST_RESULT (import_gltf_files_from_folder ("", &asset_data), result);
+    CHECK_AGAINST_RESULT (import_scene_data ("", &asset_data), result);
     //CHECK_AGAINST_RESULT (create_opaque_graphics_pipeline (asset_data, &skeletal_opaque_graphics_pipeline), result);
 
     return 0;

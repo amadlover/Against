@@ -102,7 +102,7 @@ int log_error (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW:
-		OutputDebugString (L"Graphics Error: Create Image_Orig View\n");
+		OutputDebugString (L"Graphics Error: Create Image View\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_BUFFER:
@@ -110,7 +110,7 @@ int log_error (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY:
-		OutputDebugString (L"Graphics Error: Allocate buffer Memory\n");
+		OutputDebugString (L"Graphics Error: Allocate Memory\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_BIND_BUFFER_MEMORY:
@@ -118,15 +118,15 @@ int log_error (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_IMAGE:
-		OutputDebugString (L"Graphics Error: Create Image_Orig\n");
+		OutputDebugString (L"Graphics Error: Create Image\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_BIND_IMAGE_MEMORY:
-		OutputDebugString (L"Graphics Error: Bind Image_Orig Memory\n");
+		OutputDebugString (L"Graphics Error: Bind Image Memory\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_MAP_MEMORY:
-		OutputDebugString (L"Graphics Error: Map Image_Orig Memory\n");
+		OutputDebugString (L"Graphics Error: Map Image Memory\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT:
@@ -182,7 +182,7 @@ int log_error (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE:
-		OutputDebugString (L"Graphics Error: Acquire Next Image_Orig\n");
+		OutputDebugString (L"Graphics Error: Acquire Next Image\n");
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_WAIT_FOR_FENCES:
@@ -210,7 +210,7 @@ int log_error (AGAINSTRESULT Result)
 		break;
 
 	case AGAINST_ERROR_GRAPHICS_CREATE_SAMPLER:
-		OutputDebugString (L"Graphics Error: Create Texture_Orig SplashScreenSampler\n");
+		OutputDebugString (L"Graphics Error: Create Sampler\n");
 		break;
 
 	case AGAINST_ERROR_GLTF_IMPORT:

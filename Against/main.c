@@ -4,7 +4,6 @@
 
 #include "game.h"
 #include "log.h"
-#include "utils.h"
 
 LRESULT CALLBACK WindowProc 
 (

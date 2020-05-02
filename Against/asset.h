@@ -71,7 +71,7 @@ typedef struct
 
     VkDeviceSize bind_pose_offset;
     
-    vk_animation* animations;
+    vk_animation** animations;
     size_t animations_count;
 
     vk_skeletal_graphics_primitive** opaque_graphics_primitives;

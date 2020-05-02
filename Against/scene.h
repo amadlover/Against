@@ -15,6 +15,9 @@ typedef struct
     VkBuffer bone_buffer;
     VkDeviceMemory bone_buffer_memory;
 
+    VkBuffer anim_buffer;
+    VkDeviceMemory anim_buffer_memory;
+
     vk_skeletal_mesh* skeletal_meshes;
     size_t skeletal_meshes_count;
 
@@ -30,4 +33,5 @@ typedef struct
     VkDescriptorPool descriptor_pool;
 } scene_asset_data;
 
-void cleanup_scene_data (scene_asset_data* gltf_data);
+int import_scene_data (const char* partial_folder_path, scene_asset_data** scene_data);
+void cleanup_scene_data (scene_asset_data* scene_data);
