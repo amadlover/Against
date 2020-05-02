@@ -976,7 +976,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
     return 0;
 }
 
-/*int import_skin_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+int import_skins_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_skin_animations\n");
 
@@ -997,60 +997,60 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 
                 if (strstr (current_anim->name, current_skin->name) != NULL)
                 {
-                    size_t num_frames = 0;
-                    unsigned char* all_frames_data = NULL;
-                    size_t per_frame_data_size = 0;
-
                     for (size_t j = 0; j < current_skin->joints_count; ++j)
                     {
                         cgltf_node* current_joint = current_skin->joints[j];
+
+                        float* joint_translations = NULL;
+                        size_t num_frames_translation = 0;
+                        float* joint_rotations = NULL;
+                        size_t num_frames_rotation = 0;
 
                         for (size_t c = 0; c < current_anim->channels_count; ++c)
                         {
                             cgltf_animation_channel* current_channel = current_anim->channels + c;
 
-                            num_frames = current_channel->sampler->input->count;
-                            per_frame_data_size = MAX_JOINTS * 16 * sizeof (float);
-
                             if (strcmp (current_channel->target_node->name, current_joint->name) == 0)
                             {
                                 if (current_channel->target_path == cgltf_animation_path_type_translation)
                                 {
-                                    float* key_frame_values = (float*)utils_calloc (current_channel->sampler->output->count * 3, sizeof (float));
-
-                                    unsigned char* key_frames_src = (unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset;
-                                    memcpy (key_frame_values, key_frames_src, current_channel->sampler->output->buffer_view->size);
-
-                                    for (size_t k = 0; k < current_channel->sampler->input->count; ++k)
-                                    {
-                                        wchar_t key_value[2048];
-                                        swprintf (key_value, 2048, L"%hs - %hs - %hs: Values: %f %f %f\n", current_skin->name, current_anim->name, current_joint->name, key_frame_values[k * 3], key_frame_values[k * 3 + 1], key_frame_values[k * 3 + 2]);
-                                        OutputDebugString (key_value);
-                                    }
-
-                                    utils_free (key_frame_values);
+                                    unsigned char* data_ptr = (unsigned char*) current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset; 
+                                    joint_translations = (float*) utils_malloc_zero (current_channel->sampler->output->buffer_view->size);
+                                    memcpy (joint_translations, data_ptr, current_channel->sampler->output->buffer_view->size);
+                                    num_frames_translation = current_channel->sampler->output->count;
                                 }
                                 else if (current_channel->target_path == cgltf_animation_path_type_rotation)
                                 {
-                                    float* key_frame_values = (float*)utils_calloc (current_channel->sampler->output->count * 4, sizeof (float));
-
-                                    unsigned char* key_frames_src = (unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset;
-                                    memcpy (key_frame_values, key_frames_src, current_channel->sampler->output->buffer_view->size);
-
-                                    for (size_t k = 0; k < current_channel->sampler->input->count; ++k)
-                                    {
-                                        wchar_t key_value[2048];
-                                        swprintf (key_value, 2048, L"%hs - %hs - %hs: Values: %f %f %f %f\n", current_skin->name, current_anim->name, current_joint->name, key_frame_values[k * 4], key_frame_values[k * 4 + 1], key_frame_values[k * 4 + 2], key_frame_values[k * 4 + 3]);
-                                        OutputDebugString (key_value);
-                                    }
-
-                                    utils_free (key_frame_values);
-                                }
-                                else if (current_channel->target_path == cgltf_animation_path_type_scale)
-                                {
+                                    unsigned char* data_ptr = (unsigned char*) current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset; 
+                                    joint_rotations = (float*) utils_malloc_zero (current_channel->sampler->output->buffer_view->size);
+                                    memcpy (joint_rotations, data_ptr, current_channel->sampler->output->buffer_view->size);
+                                    num_frames_rotation = current_channel->sampler->output->count;
                                 }
                             }
                         }
+
+                        size_t max_frames = num_frames_translation > num_frames_rotation ? num_frames_translation : num_frames_rotation;
+                        
+                        float* joint_matrices = (float*) utils_calloc (max_frames * 16, sizeof(float));
+                        float joint_matrix[16];
+                        
+                        for (size_t f = 0; f < max_frames; ++f)
+                        {
+                            math_create_identity_matrix(joint_matrix);
+                            if (f < num_frames_translation)
+                            {
+                                math_translate_matrix (joint_matrix, joint_translations + (f * 3), joint_matrix);
+                            }
+                            if (f < num_frames_rotation)
+                            {
+                                math_rotate_matrix (joint_matrix, joint_rotations + (f * 4), joint_matrix);
+                            }
+                            memcpy (joint_matrices + (f * 16), joint_matrix, sizeof (float) * 16);
+                        }
+
+                        utils_free (joint_matrices);
+                        utils_free (joint_translations);
+                        utils_free (joint_rotations);
                     }
 
                     ++out_data->skins[s].animations_count;
@@ -1060,9 +1060,9 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
     }
 
     return 0;
-}*/
+}
 
-int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+/*int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_animations\n");
 
@@ -1111,7 +1111,7 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
     }
 
     return 0;
-}
+}*/
 
 int import_meshes (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
@@ -1455,8 +1455,7 @@ int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t 
     CHECK_AGAINST_RESULT (import_graphics_primitives (datas, num_datas, out_data), result);
     CHECK_AGAINST_RESULT (link_materials_to_graphics_primitives(out_data), result);
     CHECK_AGAINST_RESULT (import_skins (datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (import_animations (datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (link_animations_to_skins (out_data), result);
+    CHECK_AGAINST_RESULT (import_skins_animations (datas, num_datas, out_data), result);
     CHECK_AGAINST_RESULT (import_meshes (datas, num_datas, out_data), result);
     CHECK_AGAINST_RESULT (link_skins_to_meshes (out_data), result);
     CHECK_AGAINST_RESULT (link_mesh_node_graphics_primitives_to_skins (out_data), result);
