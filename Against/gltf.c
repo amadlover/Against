@@ -3,13 +3,12 @@
 #include "error.h"
 #include "common_graphics.h"
 #include "vk_utils.h"
+#include "math.hpp"
 
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
 #include <stb_image.h>
-
-#include "math.hpp"
 
 cgltf_data** gltf_datas = NULL;
 size_t gltf_datas_count = 0;
@@ -34,6 +33,27 @@ size_t ref_cgltf_skins_count = 0;
 
 cgltf_node** ref_cgltf_mesh_nodes = NULL;
 size_t ref_cgltf_mesh_nodes_count = 0;
+
+typedef struct joint_anim
+{
+    float* translations;
+    size_t translations_count;
+
+    float* rotations;
+    size_t rotations_count;
+} joint_anim;
+
+typedef struct anim_anim
+{
+    joint_anim* joint_anims;
+    size_t joint_anims_count;
+} anim_anim;
+
+typedef struct skin_anim
+{
+    anim_anim* anim_anims;
+    size_t anim_anims_count;
+}skin_anim;
 
 int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
 {
@@ -928,7 +948,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
         skins_count += current_data->skins_count;
     }
 
-    size_t skin_joints_size = MAX_JOINTS * sizeof (float) * 17;
+    size_t skin_joints_size = MAX_JOINTS * sizeof (float) * 16;
     size_t min_ubo_alignment = (size_t)physical_device_limits.minUniformBufferOffsetAlignment;
     skin_joints_size = skin_joints_size % min_ubo_alignment > 0 ? ((skin_joints_size / min_ubo_alignment) + 1) * min_ubo_alignment : skin_joints_size;
     
@@ -1062,9 +1082,9 @@ int import_skins_animations (cgltf_data** datas, size_t num_datas, scene_asset_d
     return 0;
 }
 
-/*int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+int gather_animations (cgltf_data** datas, size_t num_datas)
 {
-    OutputDebugString (L"import_animations\n");
+    OutputDebugString (L"gather_animations\n");
 
     size_t current_anim_index = 0;
 
@@ -1077,38 +1097,105 @@ int import_skins_animations (cgltf_data** datas, size_t num_datas, scene_asset_d
         }
         else
         {
-            ref_cgltf_anims = (cgltf_animation**)utils_realloc_zero (ref_cgltf_anims, sizeof (cgltf_animation*) * out_data->animations_count, sizeof (cgltf_animation*) * (out_data->animations_count + current_data->animations_count));
-        }
-
-        if (out_data->animations == NULL)
-        {
-            out_data->animations = (vk_animation*)utils_calloc (current_data->animations_count, sizeof (vk_animation));
-        }
-        else
-        {
-            out_data->animations = (vk_animation*)utils_realloc_zero (out_data->animations, sizeof (vk_animation) * out_data->animations_count, sizeof (vk_animation) * (out_data->animations_count + current_data->animations_count));
+            ref_cgltf_anims = (cgltf_animation**)utils_realloc_zero (ref_cgltf_anims, sizeof (cgltf_animation*) * ref_cgltf_anims_count, sizeof (cgltf_animation*) * (ref_cgltf_anims_count + current_data->animations_count));
         }
 
         for (size_t a = 0; a < current_data->animations_count; ++a)
         {
             cgltf_animation* current_animation = current_data->animations + a;
-            strcpy (out_data->animations[current_anim_index].name, current_animation->name);
-
-            for (size_t c = 0; c < current_animation->channels_count; ++c)
-            {
-                cgltf_animation_channel* current_channel = current_animation->channels + c;
-                wchar_t buff[256];
-                swprintf (buff, 256, L"%hs\n", current_channel->target_node->name);
-                //OutputDebugString (buff);
-            }
-
             ref_cgltf_anims[current_anim_index] = current_animation;
             ++current_anim_index;
         }
 
-        out_data->animations_count += current_data->animations_count;
         ref_cgltf_anims_count += current_data->animations_count;
     }
+
+    return 0;
+}
+
+int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+{
+    OutputDebugString (L"import_animations\n");
+
+    skin_anim* skin_anims = (skin_anim*)utils_calloc (ref_cgltf_skins_count, sizeof (skin_anim));
+
+    for (size_t s = 0; s < ref_cgltf_skins_count; ++s)
+    {
+        cgltf_skin* current_skin = ref_cgltf_skins[s];
+
+        for (size_t a = 0; a < ref_cgltf_anims_count; ++a)
+        {
+            cgltf_animation* current_animation = ref_cgltf_anims[a];
+            if (strstr (current_animation->name, current_skin->name) != NULL)
+            {
+                if (skin_anims[s].anim_anims == NULL)
+                {
+                    skin_anims[s].anim_anims = (anim_anim*)utils_calloc (1, sizeof (anim_anim));
+                }
+                else
+                {
+                    skin_anims[s].anim_anims = (anim_anim*)utils_realloc_zero (skin_anims[s].anim_anims, sizeof (anim_anim) * skin_anims[s].anim_anims_count, sizeof (anim_anim) * (skin_anims[s].anim_anims_count + 1));
+                }
+                
+                for (size_t j = 0; j < current_skin->joints_count; ++j)
+                {
+                    cgltf_node* current_joint = current_skin->joints[j];
+
+                    if (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims == NULL)
+                    {
+                        skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_anim*)utils_calloc (1, sizeof (joint_anim));
+                    }
+                    else
+                    {
+                        skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_anim*)utils_realloc_zero (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims, sizeof (joint_anim) * skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count, sizeof (joint_anim) * (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count + 1));
+                    }
+                    
+                    for (size_t c = 0; c < current_animation->channels_count; ++c)
+                    {
+                        cgltf_animation_channel* current_channel = current_animation->channels + c;
+
+                        if (strcmp (current_channel->target_node->name, current_joint->name) == 0)
+                        {
+                            if (current_channel->target_path == cgltf_animation_path_type_translation)
+                            {
+                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims[skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count].translations = (float*)((unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset);
+                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims[skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count].translations_count = current_channel->sampler->output->count;
+                            }
+                            
+                            if (current_channel->target_path == cgltf_animation_path_type_rotation)
+                            {
+                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims[skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count].rotations = (float*)((unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset);
+                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims[skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count].rotations_count = current_channel->sampler->output->count;
+                            }
+
+                        }
+                    }
+                    ++skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count;
+                }
+                ++skin_anims[s].anim_anims_count;
+            }
+        }
+    }
+
+    for (size_t sa = 0; sa < ref_cgltf_skins_count; ++sa)
+    {
+        skin_anim* current_skin_anim = skin_anims + sa;
+        for (size_t aa = 0; aa < skin_anims[sa].anim_anims_count; ++aa)
+        {
+            anim_anim* current_anim_anim = current_skin_anim->anim_anims + aa;
+            for (size_t ja = 0; ja < current_anim_anim->joint_anims_count; ++ja)
+            {
+                joint_anim* current_joint_anim = current_anim_anim->joint_anims + ja;
+
+                utils_free (current_joint_anim->translations);
+                utils_free (current_joint_anim->rotations);
+            }
+            
+            utils_free (current_anim_anim->joint_anims);
+        }
+        utils_free (current_skin_anim->anim_anims);
+    }
+    utils_free (skin_anims);
 
     return 0;
 }*/
@@ -1455,7 +1542,9 @@ int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t 
     CHECK_AGAINST_RESULT (import_graphics_primitives (datas, num_datas, out_data), result);
     CHECK_AGAINST_RESULT (link_materials_to_graphics_primitives(out_data), result);
     CHECK_AGAINST_RESULT (import_skins (datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (import_skins_animations (datas, num_datas, out_data), result);
+    CHECK_AGAINST_RESULT (gather_animations (datas, num_datas), result);
+    CHECK_AGAINST_RESULT (import_animations (datas, num_datas, out_data), result);
+    CHECK_AGAINST_RESULT (link_animations_to_skins (out_data), result);
     CHECK_AGAINST_RESULT (import_meshes (datas, num_datas, out_data), result);
     CHECK_AGAINST_RESULT (link_skins_to_meshes (out_data), result);
     CHECK_AGAINST_RESULT (link_mesh_node_graphics_primitives_to_skins (out_data), result);
