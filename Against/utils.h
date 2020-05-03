@@ -24,7 +24,7 @@ void* utils_aligned_malloc_zero (size_t size, size_t alignment);
 void* utils_calloc (size_t count, size_t size);
 void* utils_aligned_calloc (size_t count, size_t size, size_t alignment);
 void* utils_realloc_zero (void*ptr, size_t old_size, size_t new_size);
-void* utils_aligned_realloc_zero (void* ptr, size_t old_size, size_t new_size, size_t alignment);
+void* utils_aligned_realloc_zero (void* ptr, size_t alignment, size_t old_size, size_t new_size);
 void utils_free (void* ptr);
 void utils_aligned_free (void* ptr);
 void utils_free_image_data (uint8_t* pixels);

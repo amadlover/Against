@@ -948,7 +948,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
         skins_count += current_data->skins_count;
     }
 
-    size_t skin_joints_size = MAX_JOINTS * sizeof (float) * 17;
+    size_t skin_joints_size = MAX_JOINTS * sizeof (float) * 16;
     size_t min_ubo_alignment = (size_t)physical_device_limits.minUniformBufferOffsetAlignment;
     skin_joints_size = skin_joints_size % min_ubo_alignment > 0 ? ((skin_joints_size / min_ubo_alignment) + 1) * min_ubo_alignment : skin_joints_size;
     
@@ -1140,6 +1140,15 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
                 for (size_t j = 0; j < current_skin->joints_count; ++j)
                 {
                     cgltf_node* current_joint = current_skin->joints[j];
+
+                    if (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims == NULL)
+                    {
+                        skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_anim*)utils_calloc (1, sizeof (joint_anim));
+                    }
+                    else
+                    {
+                        skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_anim*)utils_realloc_zero (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims, sizeof (joint_anim) * skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count, sizeof (joint_anim) * (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count + 1));
+                    }
                     
                     for (size_t c = 0; c < current_animation->channels_count; ++c)
                     {
@@ -1147,42 +1156,46 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
 
                         if (strcmp (current_channel->target_node->name, current_joint->name) == 0)
                         {
-                            if (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims == NULL)
+                            if (current_channel->target_path == cgltf_animation_path_type_translation)
                             {
-                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_anim*)utils_calloc (1, sizeof (joint_anim));
-                            }
-                            else
-                            {
-                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_anim*)utils_realloc_zero (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims, sizeof (joint_anim) * skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count, sizeof (joint_anim) * (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count + 1));
-                            }
-
-                            /*if (current_channel->target_path == cgltf_animation_path_type_translation)
-                            {
-                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count]. = (float*)utils_malloc_zero (current_channel->sampler->output->buffer_view->size);
-                                skin_anims[s].anim_anims[].joint_anims_count = current_channel->sampler->output->count;
-
-                                unsigned char* data = (unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset;
-                                memcpy (skin_anims[s].anim_anims[current_joint_index].joint_anims, data, current_channel->sampler->output->buffer_view->size);
+                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims[skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count].translations = (float*)((unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset);
+                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims[skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count].translations_count = current_channel->sampler->output->count;
                             }
                             
                             if (current_channel->target_path == cgltf_animation_path_type_rotation)
                             {
-                                joint_rotations = (float*)utils_malloc_zero (current_channel->sampler->output->buffer_view->size);
-                                num_rotations_frames = current_channel->sampler->output->count;
+                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims[skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count].rotations = (float*)((unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset);
+                                skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims[skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count].rotations_count = current_channel->sampler->output->count;
+                            }
 
-                                unsigned char* data = (unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset;
-                                memcpy (joint_rotations, data, current_channel->sampler->output->buffer_view->size);
-                            }*/
-
-                            ++skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count;
                         }
                     }
+                    ++skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count;
                 }
-
                 ++skin_anims[s].anim_anims_count;
             }
         }
     }
+
+    for (size_t sa = 0; sa < ref_cgltf_skins_count; ++sa)
+    {
+        skin_anim* current_skin_anim = skin_anims + sa;
+        for (size_t aa = 0; aa < skin_anims[sa].anim_anims_count; ++aa)
+        {
+            anim_anim* current_anim_anim = current_skin_anim->anim_anims + aa;
+            for (size_t ja = 0; ja < current_anim_anim->joint_anims_count; ++ja)
+            {
+                joint_anim* current_joint_anim = current_anim_anim->joint_anims + ja;
+
+                utils_free (current_joint_anim->translations);
+                utils_free (current_joint_anim->rotations);
+            }
+            
+            utils_free (current_anim_anim->joint_anims);
+        }
+        utils_free (current_skin_anim->anim_anims);
+    }
+    utils_free (skin_anims);
 
     return 0;
 }

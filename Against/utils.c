@@ -149,7 +149,7 @@ void* utils_realloc_zero (void* ptr, size_t old_size, size_t new_size)
 	return new_ptr;
 }
 
-void* utils_aligned_realloc_zero (void* ptr, size_t old_size, size_t new_size, size_t alignment)
+void* utils_aligned_realloc_zero (void* ptr, size_t alignment, size_t old_size, size_t new_size)
 {
 	void* new_ptr = _aligned_realloc (ptr, new_size, alignment);
 	memset ((char*)new_ptr + old_size, 0, new_size - old_size);
