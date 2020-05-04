@@ -54,13 +54,9 @@ typedef struct anim_joint_data
 {
     joint_data* joint_anims;
     size_t joint_anims_count;
+    
+    char name[2048];
 } anim_joint_data;
-
-typedef struct skin_data
-{
-    anim_joint_data* anim_anims;
-    size_t anim_anims_count;
-}skin_data;
 
 int import_images (const char* full_folder_path, cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
@@ -1211,8 +1207,8 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
 {
     OutputDebugString (L"import_animations\n");
 
-    joint_data* joint_datas = NULL;
-    size_t joint_datas_count = 0;
+    anim_joint_data* anim_joint_datas = NULL;
+    size_t anim_joint_datas_count = 0;
 
     for (size_t d = 0; d < datas_count; ++d)
     {
@@ -1220,37 +1216,49 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
 
         for (size_t a = 0; a < current_data->animations_count; ++a)
         {
+            if (anim_joint_datas == NULL)
+            {
+                anim_joint_datas = (anim_joint_data*)utils_calloc (current_data->animations_count, sizeof (anim_joint_data));
+            }
+            else
+            {
+                anim_joint_datas = (anim_joint_data*)utils_realloc_zero (anim_joint_datas, sizeof (anim_joint_data) * anim_joint_datas_count, sizeof (anim_joint_data) * (anim_joint_datas_count + 1));
+            }
+
             cgltf_animation* current_animation = current_data->animations + a;
+            anim_joint_data* current_ajd = anim_joint_datas + anim_joint_datas_count;
+
+            strcpy (current_ajd->name, current_animation->name);
             
             for (size_t c = 0; c < current_animation->channels_count; ++c)
             {
                 cgltf_animation_channel* current_channel = current_animation->channels + c;
                 size_t joint_data_index = -1;
-                for (size_t jd = 0; jd < joint_datas_count; ++jd)
+                for (size_t ja = 0; ja < current_ajd->joint_anims_count; ++ja)
                 {
-                    if (strcmp (current_channel->target_node->name, joint_datas[jd].joint_name) == 0)
+                    if (strcmp (current_channel->target_node->name, current_ajd->joint_anims[ja].joint_name) == 0)
                     {
-                        joint_data_index = jd;
+                        joint_data_index = ja;
                         break;
                     }
                 }
 
                 if (joint_data_index == -1)
                 {
-                    if (joint_datas == NULL)
+                    if (current_ajd->joint_anims  == NULL)
                     {
-                        joint_datas = (joint_data*)utils_calloc (1, sizeof (joint_data));
+                        current_ajd->joint_anims = (joint_data*)utils_calloc (1, sizeof (joint_data));
                     }
                     else
                     {
-                        joint_datas = (joint_data*)utils_realloc_zero (joint_datas, sizeof (joint_data) * joint_datas_count, sizeof (joint_data) * (joint_datas_count + 1));
+                        current_ajd->joint_anims = (joint_data*)utils_realloc_zero (current_ajd->joint_anims, sizeof (joint_data) * current_ajd->joint_anims_count, sizeof (joint_data) * (current_ajd->joint_anims_count + 1));
                     }
 
-                    joint_data_index = joint_datas_count;
-                    ++joint_datas_count;
+                    joint_data_index = current_ajd->joint_anims_count;
+                    ++current_ajd->joint_anims_count;
                 }
 
-                joint_data* active_jd = joint_datas + joint_data_index;
+                joint_data* active_jd = current_ajd->joint_anims + joint_data_index;
                 
                 strcpy (active_jd->joint_name, current_channel->target_node->name);
                 strcpy (active_jd->anim_name, current_animation->name);
@@ -1267,40 +1275,51 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
                     active_jd->rotations_count = current_channel->sampler->output->count;
                 }
             }
+            
+            ++anim_joint_datas_count;
         }
     }
 
-    for (size_t jd = 0; jd < joint_datas_count; ++jd)
+    for (size_t ajd = 0; ajd < anim_joint_datas_count; ++ajd)
     {
-        joint_data* current_jd = joint_datas + jd;
-        
-        current_jd->matrices_count = current_jd->translations_count >= current_jd->rotations_count ? current_jd->translations_count : current_jd->rotations_count;
-        current_jd->matrices = (float*)utils_calloc (current_jd->matrices_count * 16, sizeof (float));
-
-        float matrix[16];
-        math_create_identity_matrix (matrix);
-
-        for (size_t t = 0; t < current_jd->translations_count; ++t)
+        anim_joint_data* current_ajd = anim_joint_datas + ajd;
+        for (size_t jd = 0; jd < current_ajd->joint_anims_count; ++jd)
         {
-            math_translate_matrix (matrix, current_jd->translations + (t * 3), matrix);
-        }
+            joint_data* current_jd = current_ajd->joint_anims + jd;
 
-        for (size_t r = 0; r < current_jd->rotations_count; ++r)
-        {
-            math_rotate_matrix (matrix, current_jd->rotations + (r * 4), matrix);
+            current_jd->matrices_count = current_jd->translations_count >= current_jd->rotations_count ? current_jd->translations_count : current_jd->rotations_count;
+            current_jd->matrices = (float*)utils_malloc_zero (sizeof (float) * 16 * current_jd->matrices_count);
+
+            float matrix[16];
+
+            for (size_t f = 0; f < current_jd->matrices_count; ++f)
+            {
+                math_create_identity_matrix (matrix);
+                math_translate_matrix (matrix, current_jd->translations + (f * 3), matrix);
+                math_rotate_matrix (matrix, current_jd->rotations + (f * 4), matrix);
+
+                memcpy (current_jd->matrices + (f * 16), matrix, sizeof (float) * 16);
+            }
         }
     }
 
+    out_data->animations_count = anim_joint_datas_count;
+    out_data->animations = (vk_animation*)utils_calloc (out_data->animations_count, sizeof (vk_animation));
 
-
-
-    for (size_t jd = 0; jd < joint_datas_count; ++jd)
+    for (size_t ajd = 0; ajd < anim_joint_datas_count; ++ajd)
     {
-        joint_data* current_jd = joint_datas + jd;
-        utils_free (current_jd->matrices);
+        strcpy ((out_data->animations + ajd)->name, (anim_joint_datas + ajd)->name);
     }
 
-    utils_free (joint_datas);
+    for (size_t ajd = 0; ajd < anim_joint_datas_count; ++ajd)
+    {
+        for (size_t jd = 0; jd < anim_joint_datas[ajd].joint_anims_count; ++jd)
+        {
+            utils_free (anim_joint_datas[ajd].joint_anims[jd].matrices);
+        }
+        utils_free (anim_joint_datas[ajd].joint_anims);
+    }
+    utils_free (anim_joint_datas);
 
     return 0;
 }
