@@ -55,6 +55,8 @@ typedef struct anim_joint_data
     joint_data* joint_anims;
     size_t joint_anims_count;
     
+    size_t frames_count;
+
     char name[2048];
 } anim_joint_data;
 
@@ -1020,7 +1022,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 
                 if (strstr (current_anim->name, current_skin->name) != NULL)
                 {
-                    size_t num_frames = 0;
+                    size_t frames_count = 0;
                     unsigned char* all_frames_data = NULL;
                     size_t per_frame_data_size = 0;
 
@@ -1032,7 +1034,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
                         {
                             cgltf_animation_channel* current_channel = current_anim->channels + c;
 
-                            num_frames = current_channel->sampler->input->count;
+                            frames_count = current_channel->sampler->input->count;
                             per_frame_data_size = MAX_JOINTS * 16 * sizeof (float);
 
                             if (strcmp (current_channel->target_node->name, current_joint->name) == 0)
@@ -1290,6 +1292,8 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
             current_jd->matrices_count = current_jd->translations_count >= current_jd->rotations_count ? current_jd->translations_count : current_jd->rotations_count;
             current_jd->matrices = (float*)utils_malloc_zero (sizeof (float) * 16 * current_jd->matrices_count);
 
+            current_ajd->frames_count = current_jd->matrices_count >= current_ajd->frames_count ? current_jd->matrices_count : current_ajd->frames_count;
+
             float matrix[16];
 
             for (size_t f = 0; f < current_jd->matrices_count; ++f)
@@ -1308,7 +1312,21 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
 
     for (size_t ajd = 0; ajd < anim_joint_datas_count; ++ajd)
     {
-        strcpy ((out_data->animations + ajd)->name, (anim_joint_datas + ajd)->name);
+        anim_joint_data* current_ajd = anim_joint_datas + ajd;
+        vk_animation* current_out_anim = out_data->animations + ajd;
+
+        strcpy (current_out_anim->name, current_ajd->name);
+        current_out_anim->frames_count = current_ajd->frames_count;
+
+        for (size_t f = 0; f < current_ajd->frames_count; ++f)
+        {
+            for (size_t jd = 0; jd < current_ajd->joint_anims_count; ++jd)
+            {
+                joint_data* current_jd = current_ajd->joint_anims + jd;
+
+                float* joint_matrix = current_jd->matrices + (f * 16);
+            }
+        }
     }
 
     for (size_t ajd = 0; ajd < anim_joint_datas_count; ++ajd)
