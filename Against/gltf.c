@@ -34,28 +34,35 @@ size_t ref_cgltf_skins_count = 0;
 cgltf_node** ref_cgltf_mesh_nodes = NULL;
 size_t ref_cgltf_mesh_nodes_count = 0;
 
-typedef struct joint_anim
+typedef struct joint_data
 {
     float* translations;
     size_t translations_count;
 
     float* rotations;
     size_t rotations_count;
-} joint_anim;
 
-typedef struct anim_anim
+    float* matrices;
+    size_t matrices_count;
+    
+    char joint_name[2048];
+    char anim_name[2048];
+    char skin_name[2048];
+} joint_data;
+
+typedef struct anim_joint_data
 {
-    joint_anim* joint_anims;
+    joint_data* joint_anims;
     size_t joint_anims_count;
-} anim_anim;
+} anim_joint_data;
 
-typedef struct skin_anim
+typedef struct skin_data
 {
-    anim_anim* anim_anims;
+    anim_joint_data* anim_anims;
     size_t anim_anims_count;
-}skin_anim;
+}skin_data;
 
-int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+int import_images (const char* full_folder_path, cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_images\n");
 
@@ -71,7 +78,7 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
 
     size_t current_index = 0;
 
-    for (size_t d = 0; d < num_datas; ++d)
+    for (size_t d = 0; d < datas_count; ++d)
     {
         cgltf_data* current_data = datas[d];
 
@@ -206,13 +213,13 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t num_
     return 0;
 }
 
-int import_materials (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+int import_materials (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_materials\n");
 
     size_t current_index = 0;
 
-    for (size_t d = 0; d < num_datas; ++d)
+    for (size_t d = 0; d < datas_count; ++d)
     {
         cgltf_data* current_data = datas[d];
 
@@ -310,7 +317,7 @@ int import_materials (cgltf_data** datas, size_t num_datas, scene_asset_data* ou
     return 0;
 }
 
-int import_graphics_primitives (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+int import_graphics_primitives (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_graphics_primitives\n");
     unsigned char** positions = NULL;
@@ -345,7 +352,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t num_datas, scene_asse
 
     size_t current_primitive_index = 0;
 
-    for (size_t d = 0; d < num_datas; ++d)
+    for (size_t d = 0; d < datas_count; ++d)
     {
         cgltf_data* current_data = datas[d];
 
@@ -996,7 +1003,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
     return 0;
 }
 
-/*int import_skin_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+/*int import_skin_animations (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_skin_animations\n");
 
@@ -1007,7 +1014,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
     {
         cgltf_skin* current_skin = ref_cgltf_skins[s];
 
-        for (size_t d = 0; d < num_datas; ++d)
+        for (size_t d = 0; d < datas_count; ++d)
         {
             cgltf_data* current_data = datas[d];
 
@@ -1082,13 +1089,13 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
     return 0;
 }*/
 
-int gather_animations (cgltf_data** datas, size_t num_datas)
+/*int gather_animations (cgltf_data** datas, size_t datas_count)
 {
     OutputDebugString (L"gather_animations\n");
 
     size_t current_anim_index = 0;
 
-    for (size_t d = 0; d < num_datas; ++d)
+    for (size_t d = 0; d < datas_count; ++d)
     {
         cgltf_data* current_data = datas[d];
         if (ref_cgltf_anims == NULL)
@@ -1111,13 +1118,13 @@ int gather_animations (cgltf_data** datas, size_t num_datas)
     }
 
     return 0;
-}
+}*/
 
-int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+/*int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_animations\n");
 
-    skin_anim* skin_anims = (skin_anim*)utils_calloc (ref_cgltf_skins_count, sizeof (skin_anim));
+    skin_data* skin_anims = (skin_data*)utils_calloc (ref_cgltf_skins_count, sizeof (skin_data));
 
     for (size_t s = 0; s < ref_cgltf_skins_count; ++s)
     {
@@ -1130,11 +1137,11 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
             {
                 if (skin_anims[s].anim_anims == NULL)
                 {
-                    skin_anims[s].anim_anims = (anim_anim*)utils_calloc (1, sizeof (anim_anim));
+                    skin_anims[s].anim_anims = (anim_joint_data*)utils_calloc (1, sizeof (anim_joint_data));
                 }
                 else
                 {
-                    skin_anims[s].anim_anims = (anim_anim*)utils_realloc_zero (skin_anims[s].anim_anims, sizeof (anim_anim) * skin_anims[s].anim_anims_count, sizeof (anim_anim) * (skin_anims[s].anim_anims_count + 1));
+                    skin_anims[s].anim_anims = (anim_joint_data*)utils_realloc_zero (skin_anims[s].anim_anims, sizeof (anim_joint_data) * skin_anims[s].anim_anims_count, sizeof (anim_joint_data) * (skin_anims[s].anim_anims_count + 1));
                 }
                 
                 for (size_t j = 0; j < current_skin->joints_count; ++j)
@@ -1143,11 +1150,11 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
 
                     if (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims == NULL)
                     {
-                        skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_anim*)utils_calloc (1, sizeof (joint_anim));
+                        skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_data*)utils_calloc (1, sizeof (joint_data));
                     }
                     else
                     {
-                        skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_anim*)utils_realloc_zero (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims, sizeof (joint_anim) * skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count, sizeof (joint_anim) * (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count + 1));
+                        skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims = (joint_data*)utils_realloc_zero (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims, sizeof (joint_data) * skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count, sizeof (joint_data) * (skin_anims[s].anim_anims[skin_anims[s].anim_anims_count].joint_anims_count + 1));
                     }
                     
                     for (size_t c = 0; c < current_animation->channels_count; ++c)
@@ -1179,13 +1186,13 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
 
     for (size_t sa = 0; sa < ref_cgltf_skins_count; ++sa)
     {
-        skin_anim* current_skin_anim = skin_anims + sa;
+        skin_data* current_skin_anim = skin_anims + sa;
         for (size_t aa = 0; aa < skin_anims[sa].anim_anims_count; ++aa)
         {
-            anim_anim* current_anim_anim = current_skin_anim->anim_anims + aa;
+            anim_joint_data* current_anim_anim = current_skin_anim->anim_anims + aa;
             for (size_t ja = 0; ja < current_anim_anim->joint_anims_count; ++ja)
             {
-                joint_anim* current_joint_anim = current_anim_anim->joint_anims + ja;
+                joint_data* current_joint_anim = current_anim_anim->joint_anims + ja;
 
                 utils_free (current_joint_anim->translations);
                 utils_free (current_joint_anim->rotations);
@@ -1198,15 +1205,113 @@ int import_animations (cgltf_data** datas, size_t num_datas, scene_asset_data* o
     utils_free (skin_anims);
 
     return 0;
+}*/
+
+int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+{
+    OutputDebugString (L"import_animations\n");
+
+    joint_data* joint_datas = NULL;
+    size_t joint_datas_count = 0;
+
+    for (size_t d = 0; d < datas_count; ++d)
+    {
+        cgltf_data* current_data = datas[d];
+
+        for (size_t a = 0; a < current_data->animations_count; ++a)
+        {
+            cgltf_animation* current_animation = current_data->animations + a;
+            
+            for (size_t c = 0; c < current_animation->channels_count; ++c)
+            {
+                cgltf_animation_channel* current_channel = current_animation->channels + c;
+                size_t joint_data_index = -1;
+                for (size_t jd = 0; jd < joint_datas_count; ++jd)
+                {
+                    if (strcmp (current_channel->target_node->name, joint_datas[jd].joint_name) == 0)
+                    {
+                        joint_data_index = jd;
+                        break;
+                    }
+                }
+
+                if (joint_data_index == -1)
+                {
+                    if (joint_datas == NULL)
+                    {
+                        joint_datas = (joint_data*)utils_calloc (1, sizeof (joint_data));
+                    }
+                    else
+                    {
+                        joint_datas = (joint_data*)utils_realloc_zero (joint_datas, sizeof (joint_data) * joint_datas_count, sizeof (joint_data) * (joint_datas_count + 1));
+                    }
+
+                    joint_data_index = joint_datas_count;
+                    ++joint_datas_count;
+                }
+
+                joint_data* active_jd = joint_datas + joint_data_index;
+                
+                strcpy (active_jd->joint_name, current_channel->target_node->name);
+                strcpy (active_jd->anim_name, current_animation->name);
+
+                if (current_channel->target_path == cgltf_animation_path_type_translation)
+                {
+                    active_jd->translations = (float*)((unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset);
+                    active_jd->translations_count = current_channel->sampler->output->count;
+                }
+
+                if (current_channel->target_path == cgltf_animation_path_type_rotation)
+                {
+                    active_jd->rotations = (float*)((unsigned char*)current_channel->sampler->output->buffer_view->buffer->data + current_channel->sampler->output->offset + current_channel->sampler->output->buffer_view->offset);
+                    active_jd->rotations_count = current_channel->sampler->output->count;
+                }
+            }
+        }
+    }
+
+    for (size_t jd = 0; jd < joint_datas_count; ++jd)
+    {
+        joint_data* current_jd = joint_datas + jd;
+        
+        current_jd->matrices_count = current_jd->translations_count >= current_jd->rotations_count ? current_jd->translations_count : current_jd->rotations_count;
+        current_jd->matrices = (float*)utils_calloc (current_jd->matrices_count * 16, sizeof (float));
+
+        float matrix[16];
+        math_create_identity_matrix (matrix);
+
+        for (size_t t = 0; t < current_jd->translations_count; ++t)
+        {
+            math_translate_matrix (matrix, current_jd->translations + (t * 3), matrix);
+        }
+
+        for (size_t r = 0; r < current_jd->rotations_count; ++r)
+        {
+            math_rotate_matrix (matrix, current_jd->rotations + (r * 4), matrix);
+        }
+    }
+
+
+
+
+    for (size_t jd = 0; jd < joint_datas_count; ++jd)
+    {
+        joint_data* current_jd = joint_datas + jd;
+        utils_free (current_jd->matrices);
+    }
+
+    utils_free (joint_datas);
+
+    return 0;
 }
 
-int import_meshes (cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+int import_meshes (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_meshes\n");
 
     size_t current_mesh_node_index = 0;
 
-    for (size_t d = 0; d < num_datas; ++d)
+    for (size_t d = 0; d < datas_count; ++d)
     {
         cgltf_data* current_data = datas[d];
         
@@ -1531,21 +1636,20 @@ int link_skins_to_meshes (scene_asset_data* out_data)
     return 0;
 }
 
-int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_asset_data* out_data)
+int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_gltf_datas\n");
 
     AGAINSTRESULT result;
     
-    CHECK_AGAINST_RESULT (import_images (full_folder_path, datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (import_materials (datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (import_graphics_primitives (datas, num_datas, out_data), result);
+    CHECK_AGAINST_RESULT (import_images (full_folder_path, datas, datas_count, out_data), result);
+    CHECK_AGAINST_RESULT (import_materials (datas, datas_count, out_data), result);
+    CHECK_AGAINST_RESULT (import_graphics_primitives (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_materials_to_graphics_primitives(out_data), result);
-    CHECK_AGAINST_RESULT (import_skins (datas, num_datas, out_data), result);
-    CHECK_AGAINST_RESULT (gather_animations (datas, num_datas), result);
-    CHECK_AGAINST_RESULT (import_animations (datas, num_datas, out_data), result);
+    CHECK_AGAINST_RESULT (import_skins (datas, datas_count, out_data), result);
+    CHECK_AGAINST_RESULT (import_animations (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_animations_to_skins (out_data), result);
-    CHECK_AGAINST_RESULT (import_meshes (datas, num_datas, out_data), result);
+    CHECK_AGAINST_RESULT (import_meshes (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_skins_to_meshes (out_data), result);
     CHECK_AGAINST_RESULT (link_mesh_node_graphics_primitives_to_skins (out_data), result);
 
