@@ -62,6 +62,10 @@ void cleanup_scene_data (scene_asset_data* scene_data)
             scene_data->skins[s].blend_graphics_primitives = 0;
         }
 
+        for (size_t a = 0; a < scene_data->animations_count; ++a)
+        {
+            utils_free ((scene_data->animations + a)->frame_data_offsets);
+        }
         utils_free (scene_data->animations);
         scene_data->animations_count = 0;
         utils_free (scene_data->skins);

@@ -132,7 +132,6 @@ int vk_utils_allocate_descriptor_sets (
     VkDescriptorSet* out_descriptor_sets
 );
 
-
 int vk_utils_update_descriptor_sets (
     VkDevice graphics_device,
     VkDescriptorSet* descriptor_sets,
@@ -143,6 +142,8 @@ int vk_utils_update_descriptor_sets (
     VkDescriptorImageInfo* image_infos,
     size_t num_descriptor_sets
 );
+
+void vk_utils_get_aligned_size (size_t original_size, size_t alignment, size_t* out_aligned_size);
 
 void vk_utils_destroy_buffer_and_buffer_memory (
     VkDevice graphics_device, 

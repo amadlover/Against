@@ -955,9 +955,10 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 
     size_t skin_joints_size = MAX_JOINTS * sizeof (float) * 16;
     size_t min_ubo_alignment = (size_t)physical_device_limits.minUniformBufferOffsetAlignment;
-    skin_joints_size = skin_joints_size % min_ubo_alignment > 0 ? ((skin_joints_size / min_ubo_alignment) + 1) * min_ubo_alignment : skin_joints_size;
+    size_t aligned_skin_joints_size = 0;
+    vk_utils_get_aligned_size (skin_joints_size, min_ubo_alignment, &aligned_skin_joints_size);
     
-    size_t total_data_size = skin_joints_size * skins_count;
+    size_t total_data_size = aligned_skin_joints_size * skins_count;
 
     float* skin_joints_matrices = (float*)utils_aligned_malloc_zero (total_data_size, min_ubo_alignment);
 
@@ -975,11 +976,11 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 
             float matrix[16];
             cgltf_node_transform_world (current_joint, matrix);
-            memcpy ((unsigned char*)skin_joints_matrices + (skin_joints_size * s) + (sizeof (float) * 16 * j), matrix, sizeof (float) * 16);
+            memcpy ((unsigned char*)skin_joints_matrices + (aligned_skin_joints_size * s) + (sizeof (float) * 16 * j), matrix, sizeof (float) * 16);
         }
 
         strcpy (out_data->skins[s].name, current_skin->name);
-        out_data->skins[s].bind_pose_offset = (VkDeviceSize)skin_joints_size * (VkDeviceSize)s;
+        out_data->skins[s].bind_pose_offset = (VkDeviceSize)aligned_skin_joints_size * (VkDeviceSize)s;
     }
 
     AGAINSTRESULT result;
@@ -1231,7 +1232,7 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
             anim_joint_data* current_ajd = anim_joint_datas + anim_joint_datas_count;
 
             strcpy (current_ajd->name, current_animation->name);
-            
+
             for (size_t c = 0; c < current_animation->channels_count; ++c)
             {
                 cgltf_animation_channel* current_channel = current_animation->channels + c;
@@ -1247,7 +1248,7 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
 
                 if (joint_data_index == -1)
                 {
-                    if (current_ajd->joint_anims  == NULL)
+                    if (current_ajd->joint_anims == NULL)
                     {
                         current_ajd->joint_anims = (joint_data*)utils_calloc (1, sizeof (joint_data));
                     }
@@ -1261,7 +1262,7 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
                 }
 
                 joint_data* active_jd = current_ajd->joint_anims + joint_data_index;
-                
+
                 strcpy (active_jd->joint_name, current_channel->target_node->name);
                 strcpy (active_jd->anim_name, current_animation->name);
 
@@ -1277,7 +1278,7 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
                     active_jd->rotations_count = current_channel->sampler->output->count;
                 }
             }
-            
+
             ++anim_joint_datas_count;
         }
     }
@@ -1310,6 +1311,13 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
     out_data->animations_count = anim_joint_datas_count;
     out_data->animations = (vk_animation*)utils_calloc (out_data->animations_count, sizeof (vk_animation));
 
+    size_t size_of_single_frame = MAX_JOINTS * 16 * sizeof (float);
+    size_t aligned_size_of_single_frame = 0;
+    vk_utils_get_aligned_size (size_of_single_frame, (size_t)physical_device_limits.minUniformBufferOffsetAlignment, &aligned_size_of_single_frame);
+
+    unsigned char* all_animations_aligned_memory = NULL;
+    size_t total_data_allocated = 0;
+
     for (size_t ajd = 0; ajd < anim_joint_datas_count; ++ajd)
     {
         anim_joint_data* current_ajd = anim_joint_datas + ajd;
@@ -1317,17 +1325,45 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
 
         strcpy (current_out_anim->name, current_ajd->name);
         current_out_anim->frames_count = current_ajd->frames_count;
+        current_out_anim->frame_data_offsets = (VkDeviceSize*)utils_calloc (current_out_anim->frames_count, sizeof (VkDeviceSize));
 
+        if (all_animations_aligned_memory == NULL)
+        {
+            all_animations_aligned_memory = (unsigned char*)utils_aligned_malloc_zero (size_of_single_frame * current_out_anim->frames_count, (size_t)physical_device_limits.minUniformBufferOffsetAlignment);
+        }
+        else
+        {
+            all_animations_aligned_memory = (unsigned char*)utils_aligned_realloc_zero (all_animations_aligned_memory, (size_t)physical_device_limits.minUniformBufferOffsetAlignment, total_data_allocated, total_data_allocated + (size_of_single_frame * current_out_anim->frames_count));
+        }
+            
         for (size_t f = 0; f < current_ajd->frames_count; ++f)
         {
             for (size_t jd = 0; jd < current_ajd->joint_anims_count; ++jd)
             {
                 joint_data* current_jd = current_ajd->joint_anims + jd;
-
                 float* joint_matrix = current_jd->matrices + (f * 16);
+
+                memcpy (all_animations_aligned_memory + (ajd * size_of_single_frame) + (jd * sizeof (float) * 16), joint_matrix, sizeof (float) * 16);
             }
+
+            current_out_anim->frame_data_offsets[f] = total_data_allocated;
         }
+
+        total_data_allocated += size_of_single_frame * current_out_anim->frames_count;
     }
+
+    AGAINSTRESULT result;
+
+    VkBuffer staging_buffer;
+    VkDeviceMemory staging_buffer_memory;
+    CHECK_AGAINST_RESULT (vk_utils_create_buffer (graphics_device, total_data_allocated, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, graphics_queue_family_index, &staging_buffer), result);
+    CHECK_AGAINST_RESULT (vk_utils_allocate_bind_buffer_memory (graphics_device, &staging_buffer, 1, physical_device_memory_properties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &staging_buffer_memory), result);
+    CHECK_AGAINST_RESULT (vk_utils_map_data_to_device_memory (graphics_device, staging_buffer_memory, 0, total_data_allocated, all_animations_aligned_memory), result);
+    CHECK_AGAINST_RESULT (vk_utils_create_buffer (graphics_device, total_data_allocated, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, graphics_queue_family_index, &out_data->anim_buffer), result);
+    CHECK_AGAINST_RESULT (vk_utils_allocate_bind_buffer_memory (graphics_device, &out_data->anim_buffer, 1, physical_device_memory_properties, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &out_data->anim_buffer_memory), result);
+    CHECK_AGAINST_RESULT (vk_utils_copy_buffer_to_buffer (graphics_device, common_command_pool, graphics_queue, staging_buffer, out_data->anim_buffer, total_data_allocated), result);
+
+    vk_utils_destroy_buffer_and_buffer_memory (graphics_device, staging_buffer, staging_buffer_memory);
 
     for (size_t ajd = 0; ajd < anim_joint_datas_count; ++ajd)
     {
@@ -1338,6 +1374,8 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
         utils_free (anim_joint_datas[ajd].joint_anims);
     }
     utils_free (anim_joint_datas);
+
+    utils_aligned_free (all_animations_aligned_memory);
 
     return 0;
 }

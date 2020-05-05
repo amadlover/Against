@@ -139,6 +139,7 @@ void* utils_aligned_calloc (size_t count, size_t size, size_t alignment)
 {
 	void* ptr = _aligned_malloc (size * count, alignment);
 	memset (ptr, 0, size * count);
+
 	return ptr;
 }
 

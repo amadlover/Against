@@ -611,6 +611,11 @@ int vk_utils_update_descriptor_sets (
 	return 0;
 }
 
+void vk_utils_get_aligned_size (size_t original_size, size_t alignment, size_t* out_aligned_size)
+{
+	*out_aligned_size = original_size % alignment > 0 ? ((original_size / alignment) + 1) * alignment : original_size;
+}
+
 void vk_utils_destroy_buffer_and_buffer_memory (VkDevice graphics_device,
 	VkBuffer buffer,
 	VkDeviceMemory buffer_memory)
