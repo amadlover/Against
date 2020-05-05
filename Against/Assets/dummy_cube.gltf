@@ -82,7 +82,7 @@
                 0,
                 0
             ],
-            "name" : "Simple",
+            "name" : "opaque_Simple",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 0,
