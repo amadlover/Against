@@ -54,12 +54,8 @@ void cleanup_scene_data (scene_asset_data* scene_data)
         {
             utils_free (scene_data->skins[s].animations);
             scene_data->skins[s].animations_count = 0;
-            utils_free (scene_data->skins[s].opaque_graphics_primitives);
-            scene_data->skins[s].opaque_graphics_primitives_count = 0;
-            utils_free (scene_data->skins[s].alpha_graphics_primitives);
-            scene_data->skins[s].alpha_graphics_primitives_count = 0;
-            utils_free (scene_data->skins[s].blend_graphics_primitives);
-            scene_data->skins[s].blend_graphics_primitives = 0;
+            utils_free (scene_data->skins[s].skeletal_meshes);
+            scene_data->skins[s].skeletal_meshes = 0;
         }
 
         for (size_t a = 0; a < scene_data->animations_count; ++a)
@@ -70,6 +66,17 @@ void cleanup_scene_data (scene_asset_data* scene_data)
         scene_data->animations_count = 0;
         utils_free (scene_data->skins);
         scene_data->skins_count = 0;
+
+        for (size_t m= 0; m < scene_data->skeletal_meshes_count; ++m)
+        { 
+            utils_free (scene_data->skeletal_meshes[m].opaque_graphics_primitives);
+            scene_data->skeletal_meshes[m].opaque_graphics_primitives_count = 0;
+            utils_free (scene_data->skeletal_meshes[m].alpha_graphics_primitives);
+            scene_data->skeletal_meshes[m].alpha_graphics_primitives_count = 0;
+            utils_free (scene_data->skeletal_meshes[m].blend_graphics_primitives);
+            scene_data->skeletal_meshes[m].blend_graphics_primitives_count = 0;
+        }
+
         utils_free (scene_data->skeletal_meshes);
         scene_data->skeletal_meshes_count = 0;
         utils_free (scene_data);

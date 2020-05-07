@@ -2,11 +2,11 @@
 
 #extension GL_ARB_separate_shader_objects : enable
 
-layout (set = 1, binding = 1) uniform sampler2D base_color[32];
-layout (set = 1, binding = 1) uniform sampler2D normal[32];
-layout (set = 1, binding = 1) uniform sampler2D metalness_roughness[32];
-layout (set = 1, binding = 1) uniform sampler2D occlusion[32];
-layout (set = 1, binding = 1) uniform sampler2D emission[32];
+layout (set = 2, binding = 0) uniform sampler2D base_color[32];
+layout (set = 2, binding = 1) uniform sampler2D normal[32];
+layout (set = 2, binding = 2) uniform sampler2D metalness_roughness[32];
+layout (set = 2, binding = 3) uniform sampler2D occlusion[32];
+layout (set = 2, binding = 4) uniform sampler2D emission[32];
 
 layout (push_constant) uniform image_index
 {

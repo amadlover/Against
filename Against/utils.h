@@ -6,7 +6,7 @@
 
 #define CHECK_AGAINST_RESULT(func, result) result = func; if (result != 0) return result;
 
-typedef struct
+typedef struct _file_path
 {
     char path[MAX_PATH];
 } file_path;

@@ -16,19 +16,6 @@ LRESULT CALLBACK WindowProc
 	switch (msg)
 	{
 	case WM_COMMAND:
-		switch (wParam)
-		{
-		case 1:
-			OutputDebugString (L"New Game\n");
-			break;
-
-		case 2:
-			PostQuitMessage (0);
-			break;
-
-		default:
-			break;
-		}
 		break;
 
 	case WM_QUIT:
@@ -70,6 +57,7 @@ LRESULT CALLBACK WindowProc
 		process_mouse_movement (wParam, lParam);
 
 		break;
+
 
 	default:
 		break;

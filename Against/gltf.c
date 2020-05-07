@@ -1380,9 +1380,9 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
     return 0;
 }
 
-int import_meshes (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+int import_skeletal_meshes (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
-    OutputDebugString (L"import_meshes\n");
+    OutputDebugString (L"import_skeletal_meshes\n");
 
     size_t current_mesh_node_index = 0;
 
@@ -1579,7 +1579,7 @@ int import_meshes (cgltf_data** datas, size_t datas_count, scene_asset_data* out
     return 0;
 }*/
 
-int link_mesh_node_graphics_primitives_to_skins (scene_asset_data* out_data)
+/*int link_mesh_node_graphics_primitives_to_skins (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_mesh_node_graphics_primitives_to_skins\n");
     
@@ -1660,7 +1660,7 @@ int link_mesh_node_graphics_primitives_to_skins (scene_asset_data* out_data)
     }
 
     return 0;
-}
+}*/
 
 int link_animations_to_skins (scene_asset_data* out_data)
 {
@@ -1693,7 +1693,7 @@ int link_animations_to_skins (scene_asset_data* out_data)
     return 0;
 }
 
-int link_skins_to_meshes (scene_asset_data* out_data)
+/*int link_skins_to_meshes (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_skins_to_meshes\n");
 
@@ -1704,6 +1704,104 @@ int link_skins_to_meshes (scene_asset_data* out_data)
             if (ref_cgltf_mesh_nodes[n]->skin == ref_cgltf_skins[s])
             {
                 out_data->skeletal_meshes[n].skin = out_data->skins + s;
+            }
+        }
+    }
+
+    return 0;
+}*/
+
+int link_graphics_primitives_to_skeletal_meshes (scene_asset_data* out_data)
+{
+    OutputDebugString (L"link_graphics_primitives_to_skeletal_meshes\n");
+
+    for (size_t m = 0; m < ref_cgltf_mesh_nodes_count; ++m)
+    {
+        cgltf_node* current_node = ref_cgltf_mesh_nodes[m];
+        for (size_t mgp = 0; mgp < current_node->mesh->primitives_count; ++mgp)
+        {
+            cgltf_primitive* current_mgp = current_node->mesh->primitives + mgp;
+            for (size_t gp = 0; gp < ref_cgltf_graphics_primitives_count; ++gp)
+            {
+                cgltf_primitive* current_gp = ref_cgltf_graphics_primitives[gp];
+
+                if (current_mgp == current_gp)
+                {
+                    if (strstr (current_mgp->material->name, "opaque") != NULL)
+                    {
+                        if (out_data->skeletal_meshes[m].opaque_graphics_primitives == NULL)
+                        {
+                            out_data->skeletal_meshes[m].opaque_graphics_primitives = (vk_skeletal_graphics_primitive**)utils_calloc (1, sizeof (vk_skeletal_graphics_primitive*));
+                        }
+                        else
+                        {
+                            out_data->skeletal_meshes[m].opaque_graphics_primitives = (vk_skeletal_graphics_primitive**)utils_realloc_zero (out_data->skeletal_meshes[m].opaque_graphics_primitives, sizeof (vk_skeletal_graphics_primitive*) * out_data->skeletal_meshes[m].opaque_graphics_primitives_count, sizeof (vk_skeletal_graphics_primitive*) * (out_data->skeletal_meshes[m].opaque_graphics_primitives_count + 1));
+                        }
+
+                        out_data->skeletal_meshes[m].opaque_graphics_primitives[out_data->skeletal_meshes[m].opaque_graphics_primitives_count] = out_data->graphics_primitives + gp;
+                        ++out_data->skeletal_meshes[m].opaque_graphics_primitives_count;
+                    }
+                    
+                    if (strstr (current_mgp->material->name, "alpha") != NULL)
+                    {
+                        if (out_data->skeletal_meshes[m].alpha_graphics_primitives == NULL)
+                        {
+                            out_data->skeletal_meshes[m].alpha_graphics_primitives = (vk_skeletal_graphics_primitive**)utils_calloc (1, sizeof (vk_skeletal_graphics_primitive*));
+                        }
+                        else
+                        {
+                            out_data->skeletal_meshes[m].alpha_graphics_primitives = (vk_skeletal_graphics_primitive**)utils_realloc_zero (out_data->skeletal_meshes[m].alpha_graphics_primitives, sizeof (vk_skeletal_graphics_primitive*) * out_data->skeletal_meshes[m].alpha_graphics_primitives_count, sizeof (vk_skeletal_graphics_primitive*) * (out_data->skeletal_meshes[m].alpha_graphics_primitives_count + 1));
+                        }
+
+                        out_data->skeletal_meshes[m].alpha_graphics_primitives[out_data->skeletal_meshes[m].alpha_graphics_primitives_count] = out_data->graphics_primitives + gp;
+                        ++out_data->skeletal_meshes[m].alpha_graphics_primitives_count;
+                    }
+
+                    if (strstr (current_mgp->material->name, "blend") != NULL)
+                    {
+                        if (out_data->skeletal_meshes[m].blend_graphics_primitives == NULL)
+                        {
+                            out_data->skeletal_meshes[m].blend_graphics_primitives = (vk_skeletal_graphics_primitive**)utils_calloc (1, sizeof (vk_skeletal_graphics_primitive*));
+                        }
+                        else
+                        {
+                            out_data->skeletal_meshes[m].blend_graphics_primitives = (vk_skeletal_graphics_primitive**)utils_realloc_zero (out_data->skeletal_meshes[m].blend_graphics_primitives, sizeof (vk_skeletal_graphics_primitive*) * out_data->skeletal_meshes[m].blend_graphics_primitives_count, sizeof (vk_skeletal_graphics_primitive*) * (out_data->skeletal_meshes[m].blend_graphics_primitives_count + 1));
+                        }
+
+                        out_data->skeletal_meshes[m].blend_graphics_primitives[out_data->skeletal_meshes[m].blend_graphics_primitives_count] = out_data->graphics_primitives + gp;
+                        ++out_data->skeletal_meshes[m].blend_graphics_primitives_count;
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+int link_skeletal_meshes_to_skins (scene_asset_data* out_data)
+{
+    OutputDebugString (L"link_skeletal_meshes_to_skins\n");
+
+    for (size_t s = 0; s < ref_cgltf_skins_count; ++s)
+    {
+        cgltf_skin* current_skin = ref_cgltf_skins[s];
+        for (size_t m = 0; m < ref_cgltf_mesh_nodes_count; ++m)
+        {
+            cgltf_node* current_node = ref_cgltf_mesh_nodes[m];
+            if (current_skin == current_node->skin)
+            {
+                if (out_data->skins[s].skeletal_meshes == NULL)
+                {
+                    out_data->skins[s].skeletal_meshes = (vk_skeletal_mesh**)utils_calloc (1, sizeof (vk_skeletal_mesh*));
+                }
+                else
+                {
+                    out_data->skins[s].skeletal_meshes = (vk_skeletal_mesh**)utils_realloc_zero (out_data->skins[s].skeletal_meshes, sizeof (vk_skeletal_mesh*) * out_data->skins[s].skeletal_meshes_count, sizeof (vk_skeletal_mesh*) * (out_data->skins[s].skeletal_meshes_count + 1));
+                }
+
+                out_data->skins[s].skeletal_meshes[out_data->skins[s].skeletal_meshes_count] = out_data->skeletal_meshes + m;
+                ++out_data->skins[s].skeletal_meshes_count;
             }
         }
     }
@@ -1724,9 +1822,9 @@ int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t 
     CHECK_AGAINST_RESULT (import_skins (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (import_animations (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_animations_to_skins (out_data), result);
-    CHECK_AGAINST_RESULT (import_meshes (datas, datas_count, out_data), result);
-    CHECK_AGAINST_RESULT (link_skins_to_meshes (out_data), result);
-    CHECK_AGAINST_RESULT (link_mesh_node_graphics_primitives_to_skins (out_data), result);
+    CHECK_AGAINST_RESULT (import_skeletal_meshes (datas, datas_count, out_data), result);
+    CHECK_AGAINST_RESULT (link_graphics_primitives_to_skeletal_meshes (out_data), result);
+    CHECK_AGAINST_RESULT (link_skeletal_meshes_to_skins (out_data), result);
 
     return 0;
 }
