@@ -1,6 +1,7 @@
 #include "common_graphics.h"
 #include "error.h"
 #include "utils.h"
+#include "vk_utils.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -427,23 +428,6 @@ int create_swapchain_imageviews ()
 	return 0;
 }
 
-int create_command_pool ()
-{
-	OutputDebugString (L"create_command_pool\n");
-
-	VkCommandPoolCreateInfo command_pool_create_info = { 0 };
-	command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	command_pool_create_info.queueFamilyIndex = graphics_queue_family_index;
-	//command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-	if (vkCreateCommandPool (graphics_device, &command_pool_create_info, NULL, &common_command_pool) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
-	}
-
-	return 0;
-}
-
 int common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 {
 	OutputDebugString (L"graphics_init\n");
@@ -470,7 +454,7 @@ int common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 	CHECK_AGAINST_RESULT (create_graphics_device (), result);
 	CHECK_AGAINST_RESULT (create_swapchain (), result);
 	CHECK_AGAINST_RESULT (create_swapchain_imageviews (), result);
-	CHECK_AGAINST_RESULT (create_command_pool (), result);
+	CHECK_AGAINST_RESULT (vk_utils_create_command_pool (graphics_device, graphics_queue_family_index, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, &common_command_pool), result);
 
 	return 0;
 }

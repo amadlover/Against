@@ -2,7 +2,7 @@
 
 #include "asset.h"
 
-typedef struct
+typedef struct _scene_asset_data
 {
     VkBuffer vb_ib;
     VkDeviceMemory vb_ib_memory;

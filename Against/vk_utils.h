@@ -132,7 +132,6 @@ int vk_utils_allocate_descriptor_sets (
     VkDescriptorSet* out_descriptor_sets
 );
 
-
 int vk_utils_update_descriptor_sets (
     VkDevice graphics_device,
     VkDescriptorSet* descriptor_sets,
@@ -143,6 +142,31 @@ int vk_utils_update_descriptor_sets (
     VkDescriptorImageInfo* image_infos,
     size_t num_descriptor_sets
 );
+
+int vk_utils_create_command_pool (
+    VkDevice graphics_device, 
+    size_t graphics_queue_family_index, 
+    VkCommandPoolCreateFlags flags, 
+    VkCommandPool* out_command_pool
+);
+
+int vk_utils_allocate_command_buffers (
+    VkDevice graphics_device,
+    VkCommandPool command_pool,
+    size_t command_buffers_count,
+    VkCommandBufferLevel level,
+    VkCommandBuffer* out_command_buffers
+);
+
+int vk_utils_create_semaphores (
+    VkDevice graphics_device, 
+    size_t semaphores_count, 
+    VkSemaphore* out_semaphores
+);
+
+void vk_utils_get_aligned_size (size_t original_size, 
+    size_t alignment, 
+    size_t* out_aligned_size);
 
 void vk_utils_destroy_buffer_and_buffer_memory (
     VkDevice graphics_device, 
