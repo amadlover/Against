@@ -611,6 +611,53 @@ int vk_utils_update_descriptor_sets (
 	return 0;
 }
 
+int vk_utils_create_command_pool (VkDevice graphics_device, size_t graphics_queue_family_index, VkCommandPoolCreateFlags flags, VkCommandPool* out_command_pool)
+{
+	VkCommandPoolCreateInfo create_info = { 0 };
+	create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	create_info.queueFamilyIndex = graphics_queue_family_index;
+	create_info.flags = flags;
+
+	if (vkCreateCommandPool (graphics_device, &create_info, NULL, out_command_pool) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
+	}
+
+	return 0;
+}
+
+int vk_utils_allocate_command_buffers (VkDevice graphics_device, VkCommandPool command_pool, size_t command_buffers_count, VkCommandBufferLevel level, VkCommandBuffer* out_command_buffers)
+{
+	VkCommandBufferAllocateInfo allocate_info = { 0 };
+	allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocate_info.commandPool = command_pool;
+	allocate_info.commandBufferCount = command_buffers_count;
+	allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+	if (vkAllocateCommandBuffers (graphics_device, &allocate_info, out_command_buffers) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
+	}
+
+	return 0;
+}
+
+int vk_utils_create_semaphores (VkDevice graphics_device, size_t semaphores_count, VkSemaphore* out_semaphores)
+{
+	VkSemaphoreCreateInfo create_info = { 0 };
+	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	for (size_t s = 0; s < semaphores_count; ++s)
+	{
+		if (vkCreateSemaphore (graphics_device, &create_info, NULL, out_semaphores + s) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_CREATE_SEMAPHORE;
+		}
+	}
+
+	return 0;
+}
+
 void vk_utils_get_aligned_size (size_t original_size, size_t alignment, size_t* out_aligned_size)
 {
 	*out_aligned_size = original_size % alignment > 0 ? ((original_size / alignment) + 1) * alignment : original_size;
