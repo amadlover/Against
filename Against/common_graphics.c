@@ -214,7 +214,7 @@ int get_physical_device ()
 
 	for (size_t i = 0; i < queue_family_count; ++i)
 	{
-		if ((queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
+		if (queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 		{
 			graphics_queue_family_index = i;
 			break;
@@ -230,6 +230,18 @@ int get_physical_device ()
 		}
 	}
 
+	if (compute_queue_family_index == -1)
+	{
+		for (size_t i = 0; i < queue_family_count; ++i)
+		{
+			if (queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+			{
+				compute_queue_family_index = i;
+				break;
+			}
+		}	
+	}
+
 	for (size_t i = 0; i < queue_family_count; ++i)
 	{
 		if (queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT && (i != graphics_queue_family_index) && (i != compute_queue_family_index))
@@ -237,6 +249,18 @@ int get_physical_device ()
 			transfer_queue_family_index = i;
 			break;
 		}
+	}
+
+	if (transfer_queue_family_index == -1)
+	{
+		for (size_t i = 0; i < queue_family_count; ++i)
+		{
+			if (queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+			{
+				transfer_queue_family_index = i;
+				break;
+			}
+		}	
 	}
 	
 	vkGetPhysicalDeviceMemoryProperties (physical_device, &physical_device_memory_properties);
@@ -406,7 +430,7 @@ int create_swapchain ()
 	create_info.imageFormat = chosen_surface_format.format;
 	create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	create_info.imageUsage = surface_capabilites.supportedUsageFlags;
-	create_info.minImageCount = surface_capabilites.minImageCount + 1;
+	create_info.minImageCount = 1;//surface_capabilites.minImageCount + 1;
 	create_info.oldSwapchain = VK_NULL_HANDLE;
 	create_info.presentMode = chosen_present_mode;
 	create_info.preTransform = surface_capabilites.currentTransform;
