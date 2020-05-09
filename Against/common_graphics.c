@@ -323,29 +323,40 @@ int create_graphics_device ()
 
 	float priorities = 1.f;
 
-	VkDeviceQueueCreateInfo queue_create_infos[3] = { 0, 0, 0 };
+	VkDeviceQueueCreateInfo queue_create_infos[3] = { 0,0,0 };
+	size_t unique_queue_family_indices[3] = { 0,0,0 };
+	size_t unique_queue_counts[3] = { 1,1,1 };
+	size_t unique_queue_family_indices_count = 0;
 
-	queue_create_infos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queue_create_infos[0].pNext = NULL;
-	queue_create_infos[0].pQueuePriorities = &priorities;
-	queue_create_infos[0].queueCount = 1;
-	queue_create_infos[0].queueFamilyIndex = graphics_queue_family_index;
-	queue_create_infos[0].flags = 0;
+	if (graphics_queue_family_index == compute_queue_family_index)
+	{
+		unique_queue_family_indices[0] = graphics_queue_family_index;
+		++unique_queue_family_indices_count;
+		++unique_queue_counts[0];
+	}
+	else
+	{
+		unique_queue_family_indices[0] = graphics_queue_family_index;
+		unique_queue_family_indices[1] = compute_queue_family_index;
+		unique_queue_family_indices_count += 2;
+	}
 
-	queue_create_infos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queue_create_infos[1].pNext = NULL;
-	queue_create_infos[1].pQueuePriorities = &priorities;
-	queue_create_infos[1].queueCount = 1;
-	queue_create_infos[1].queueFamilyIndex = compute_queue_family_index;
-	queue_create_infos[1].flags = 0;
+	if (graphics_queue_family_index != transfer_queue_family_index)
+	{
+		unique_queue_family_indices[unique_queue_family_indices_count] = transfer_queue_family_index;
+		++unique_queue_family_indices_count;
+	}
 
-	queue_create_infos[2].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queue_create_infos[2].pNext = NULL;
-	queue_create_infos[2].pQueuePriorities = &priorities;
-	queue_create_infos[2].queueCount = 1;
-	queue_create_infos[2].queueFamilyIndex = transfer_queue_family_index;
-	queue_create_infos[2].flags = 0;
-
+	for (size_t ui = 0; ui < unique_queue_family_indices_count; ++ui)
+	{
+		queue_create_infos[ui].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queue_create_infos[ui].pNext = NULL;
+		queue_create_infos[ui].pQueuePriorities = &priorities;
+		queue_create_infos[ui].queueCount = unique_queue_counts[ui];
+		queue_create_infos[ui].queueFamilyIndex = unique_queue_family_indices[ui];
+		queue_create_infos[ui].flags = 0;
+	}
+	
 	VkDeviceCreateInfo create_info = { 0 };
 
 	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -354,7 +365,7 @@ int create_graphics_device ()
 	create_info.ppEnabledExtensionNames = requested_device_extensions;
 	create_info.enabledLayerCount = 0;
 	create_info.ppEnabledLayerNames = NULL;
-	create_info.queueCreateInfoCount = 3;
+	create_info.queueCreateInfoCount = unique_queue_family_indices_count;
 	create_info.pQueueCreateInfos = queue_create_infos;
 	create_info.flags = 0;
 
@@ -363,9 +374,13 @@ int create_graphics_device ()
 		return AGAINST_ERROR_GRAPHICS_CREATE_GRAPHICS_DEVICE;
 	}
 
-	vkGetDeviceQueue (graphics_device, graphics_queue_family_index, 0, &graphics_queue);
-	vkGetDeviceQueue (graphics_device, transfer_queue_family_index, 0, &transfer_queue);
-	vkGetDeviceQueue (graphics_device, compute_queue_family_index, 0, &compute_queue);
+	size_t graphics_queue_index = 0;
+	size_t compute_queue_index = graphics_queue_family_index == compute_queue_family_index ? 1 : 0;
+	size_t transfer_queue_index = transfer_queue_family_index == compute_queue_family_index ? compute_queue_index + 1 : 0;
+
+	vkGetDeviceQueue (graphics_device, graphics_queue_family_index, graphics_queue_index, &graphics_queue);
+	vkGetDeviceQueue (graphics_device, compute_queue_family_index, compute_queue_index, &compute_queue);
+	vkGetDeviceQueue (graphics_device, transfer_queue_family_index, transfer_queue_index, &transfer_queue);
 
 	return 0;
 }

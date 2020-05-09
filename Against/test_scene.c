@@ -18,13 +18,6 @@ VkSemaphore* signal_semaphores = NULL;
 VkSemaphore wait_semaphore = VK_NULL_HANDLE;
 size_t signal_semaphores_count = 0;
 
-int create_command_pool ()
-{
-    OutputDebugString (L"create_command_pool\n");
-
-    return 0;
-}
-
 int test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
 {
     OutputDebugString (L"test_scene_init\n");
@@ -74,15 +67,28 @@ int draw_skybox ()
 int draw_opaque_skeletal_meshes ()
 {
     OutputDebugString (L"draw_opaque_skeletal_meshes\n");
-
     return 0;
 }
 
-int update_command_buffers ()
+int record_command_buffers ()
 {
     OutputDebugString (L"test_scene_update_command_buffers\n");
 
     AGAINSTRESULT result;
+
+    VkCommandBufferBeginInfo cb_begin_info = { 0 };
+    cb_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    cb_begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
+    VkClearValue clear_values[2];
+    VkClearColorValue color_value = { 1,1,1,1 };
+    clear_values[0].color = color_value;
+    VkClearDepthStencilValue depth_value = { 0,1 };
+    clear_values[1].depthStencil = depth_value;
+
+    VkRenderPassBeginInfo rp_begin_info = { 0 };
+    rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+
     CHECK_AGAINST_RESULT (draw_skybox (), result);
     CHECK_AGAINST_RESULT (draw_opaque_skeletal_meshes (), result);
 
