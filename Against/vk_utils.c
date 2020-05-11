@@ -683,6 +683,7 @@ void vk_utils_destroy_command_pools_and_buffers (VkDevice graphics_device, vk_co
 		}
 		utils_free (command_pools->submit_signal_semaphores);
 		vkFreeCommandBuffers (graphics_device, command_pools->command_pool, command_pools->command_buffers_count, command_pools->command_buffers);
+		utils_free (command_pools->command_buffers);
 		vkDestroyCommandPool (graphics_device, command_pools->command_pool, NULL);
 		command_pools->command_pool = VK_NULL_HANDLE;
 	}
@@ -696,6 +697,7 @@ void vk_utils_destroy_command_pools_and_buffers (VkDevice graphics_device, vk_co
 			}
 			utils_free (command_pools[c].submit_signal_semaphores);
 			vkFreeCommandBuffers (graphics_device, command_pools[c].command_pool, command_pools[c].command_buffers_count, command_pools[c].command_buffers);
+			utils_free (command_pools[c].command_buffers);
 			vkDestroyCommandPool (graphics_device, command_pools[c].command_pool, NULL);
 			command_pools[c].command_pool = VK_NULL_HANDLE;
 		}
