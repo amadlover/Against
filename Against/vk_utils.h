@@ -2,6 +2,13 @@
 
 #include <vulkan/vulkan.h>
 
+typedef struct _vk_command_pool
+{
+    VkCommandPool command_pool;
+    VkCommandBuffer* command_buffers;
+    size_t command_buffers_count;
+} vk_command_pool;
+
 int vk_utils_create_buffer (
     VkDevice graphics_device, 
     VkDeviceSize size, 
@@ -30,7 +37,7 @@ int vk_utils_map_data_to_device_memory (
 
 int vk_utils_create_image (
     VkDevice graphics_device, 
-    uint32_t graphics_queue_family_index, 
+    uint32_t transfer_queue_family_index, 
     VkExtent3D extent, 
     uint32_t array_layers, 
     VkFormat format, 
@@ -57,9 +64,9 @@ int vk_utils_allocate_bind_image_memory (
 
 int vk_utils_change_image_layout (
     VkDevice graphics_device,
-    VkQueue graphics_queue,
-    VkCommandPool common_command_pool,
-    uint32_t graphics_queue_family_index,
+    VkQueue transfer_queue,
+    vk_command_pool transfer_command_pool,
+    uint32_t transfer_queue_family_index,
     VkImage image,
     uint32_t layer_count,
     VkImageLayout old_layout,
@@ -72,8 +79,8 @@ int vk_utils_change_image_layout (
 
 int vk_utils_copy_buffer_to_buffer (
     VkDevice graphics_device, 
-    VkCommandPool common_command_pool, 
-    VkQueue graphics_queue, 
+    vk_command_pool transfer_command_pool, 
+    VkQueue transfer_queue, 
     VkBuffer src_buffer, 
     VkBuffer dst_buffer, 
     VkDeviceSize size
@@ -81,8 +88,8 @@ int vk_utils_copy_buffer_to_buffer (
 
 int vk_utils_copy_buffer_to_image (
     VkDevice graphics_device,
-    VkCommandPool common_command_pool,
-    VkQueue graphics_queue,
+    vk_command_pool transfer_command_pool,
+    VkQueue transfer_queue,
     VkDeviceSize offset,
     VkBuffer buffer,
     VkImage* image,
@@ -143,19 +150,19 @@ int vk_utils_update_descriptor_sets (
     size_t num_descriptor_sets
 );
 
-int vk_utils_create_command_pool (
+int vk_utils_create_command_pools (
     VkDevice graphics_device, 
-    size_t graphics_queue_family_index, 
+    size_t queue_family_index, 
+    size_t command_pools_count,
     VkCommandPoolCreateFlags flags, 
-    VkCommandPool* out_command_pool
+    vk_command_pool* out_command_pools
 );
 
 int vk_utils_allocate_command_buffers (
     VkDevice graphics_device,
-    VkCommandPool command_pool,
     size_t command_buffers_count,
     VkCommandBufferLevel level,
-    VkCommandBuffer* out_command_buffers
+    vk_command_pool in_out_command_pool
 );
 
 int vk_utils_create_semaphores (
@@ -172,4 +179,10 @@ void vk_utils_destroy_buffer_and_buffer_memory (
     VkDevice graphics_device, 
     VkBuffer buffer, 
     VkDeviceMemory buffer_memory
+);
+
+void vk_utils_destroy_command_pools_and_buffers (
+    VkDevice graphics_device,
+    vk_command_pool* command_pools,
+    size_t command_pools_count
 );

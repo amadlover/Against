@@ -1,7 +1,8 @@
 #pragma once
 
-#include <Windows.h>
+#include "vk_utils.h"
 
+#include <Windows.h>
 #include <vulkan/vulkan.h>
 
 size_t graphics_queue_family_index;
@@ -17,10 +18,10 @@ VkSwapchainKHR swapchain;
 VkImage* swapchain_images;
 VkImageView* swapchain_imageviews;
 size_t swapchain_image_count;
-VkQueue graphics_queue;
+VkQueue graphics_queues;
 VkQueue transfer_queue;
 VkQueue compute_queue;
-VkCommandPool common_command_pool;
+vk_command_pool transfer_command_pool;
 
 int common_graphics_init (HINSTANCE HInstance, HWND WindowHandle);
 void common_graphics_exit ();

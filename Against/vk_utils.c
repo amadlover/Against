@@ -9,7 +9,7 @@ int vk_utils_create_buffer (VkDevice graphics_device,
 	VkDeviceSize size,
 	VkBufferUsageFlags usage,
 	VkSharingMode sharing_mode,
-	uint32_t graphics_queue_family_index,
+	uint32_t transfer_queue_family_index,
 	VkBuffer* out_buffer)
 {
 	VkBufferCreateInfo create_info = { 0 };
@@ -17,7 +17,7 @@ int vk_utils_create_buffer (VkDevice graphics_device,
 	create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	create_info.size = size;
 	create_info.queueFamilyIndexCount = 1;
-	create_info.pQueueFamilyIndices = &graphics_queue_family_index;
+	create_info.pQueueFamilyIndices = &transfer_queue_family_index;
 	create_info.usage = usage;
 
 	if (vkCreateBuffer (graphics_device, &create_info, NULL, out_buffer) != VK_SUCCESS)
@@ -47,7 +47,7 @@ int get_memory_type_index (
 	return 0;
 }
 
-int submit_one_time_cmd (VkQueue graphics_queue, VkCommandBuffer command_buffer)
+int submit_one_time_cmd (VkQueue transfer_queue, VkCommandBuffer command_buffer)
 {
 	VkSubmitInfo submit_info = { 0 };
 
@@ -55,28 +55,29 @@ int submit_one_time_cmd (VkQueue graphics_queue, VkCommandBuffer command_buffer)
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = &command_buffer;
 
-	if (vkQueueSubmit (graphics_queue, 1, &submit_info, 0) != VK_SUCCESS)
+	if (vkQueueSubmit (transfer_queue, 1, &submit_info, 0) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_QUEUE_SUBMIT;
 	}
 
-	vkQueueWaitIdle (graphics_queue);
+	vkQueueWaitIdle (transfer_queue);
 
 	return 0;
 }
 
-int get_one_time_command_buffer (VkDevice graphics_device, VkCommandPool common_command_pool, VkCommandBuffer* out_buffer)
+int get_one_time_command_buffer (VkDevice graphics_device, vk_command_pool* in_out_transfer_command_pool)
 {
+	in_out_transfer_command_pool->command_buffers_count = 1;
+	in_out_transfer_command_pool->command_buffers = (VkCommandBuffer*)utils_calloc (1, sizeof (VkCommandBuffer));
+
 	VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
 
 	command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	command_buffer_allocate_info.commandPool = common_command_pool;
+	command_buffer_allocate_info.commandPool = in_out_transfer_command_pool->command_pool;
 	command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	command_buffer_allocate_info.commandBufferCount = 1;
 
-	VkCommandBuffer command_buffer;
-
-	if (vkAllocateCommandBuffers (graphics_device, &command_buffer_allocate_info, &command_buffer) != VK_SUCCESS)
+	if (vkAllocateCommandBuffers (graphics_device, &command_buffer_allocate_info, in_out_transfer_command_pool->command_buffers) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
 	}
@@ -85,16 +86,13 @@ int get_one_time_command_buffer (VkDevice graphics_device, VkCommandPool common_
 	command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	if (vkBeginCommandBuffer (command_buffer, &command_buffer_begin_info) != VK_SUCCESS)
+	if (vkBeginCommandBuffer (in_out_transfer_command_pool->command_buffers[0], &command_buffer_begin_info) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
 	}
 
-	*out_buffer = command_buffer;
-
 	return 0;
 }
-
 
 int vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 	VkBuffer* buffers,
@@ -157,7 +155,7 @@ int vk_utils_map_data_to_device_memory (VkDevice graphics_device,
 
 int vk_utils_create_image (
 	VkDevice graphics_device,
-	uint32_t graphics_queue_family_index,
+	uint32_t transfer_queue_family_index,
 	VkExtent3D extent,
 	uint32_t array_layers,
 	VkFormat format,
@@ -178,7 +176,7 @@ int vk_utils_create_image (
 	create_info.initialLayout = initial_layout;
 	create_info.sharingMode = sharing_mode;
 	create_info.queueFamilyIndexCount = 1;
-	create_info.pQueueFamilyIndices = &graphics_queue_family_index;
+	create_info.pQueueFamilyIndices = &transfer_queue_family_index;
 	create_info.usage = usage;
 	create_info.imageType = VK_IMAGE_TYPE_2D;
 
@@ -285,9 +283,9 @@ errno_t ReadShaderFile (char* full_file_path, char** file_contents)
 
 int vk_utils_change_image_layout (
 	VkDevice graphics_device,
-	VkQueue graphics_queue,
-	VkCommandPool common_command_pool,
-	uint32_t graphics_queue_family_index,
+	VkQueue transfer_queue,
+	vk_command_pool transfer_command_pool,
+	uint32_t transfer_queue_family_index,
 	VkImage image,
 	uint32_t layer_count,
 	VkImageLayout old_layout,
@@ -299,27 +297,7 @@ int vk_utils_change_image_layout (
 {
 	AGAINSTRESULT result = AGAINST_SUCCESS;
 
-	VkCommandBufferAllocateInfo allocate_info = { 0 };
-	allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocate_info.commandPool = common_command_pool;
-	allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocate_info.commandBufferCount = 1;
-
-	VkCommandBuffer command_buffer;
-
-	if (vkAllocateCommandBuffers (graphics_device, &allocate_info, &command_buffer) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
-	}
-
-	VkCommandBufferBeginInfo begin_info = { 0 };
-	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	if (vkBeginCommandBuffer (command_buffer, &begin_info) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
-	}
+	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
 	VkImageSubresourceRange subresource_range = { 0 };
 	subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -331,29 +309,32 @@ int vk_utils_change_image_layout (
 	VkImageMemoryBarrier image_memory_barrier = { 0 };
 	image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	image_memory_barrier.image = image;
-	image_memory_barrier.srcQueueFamilyIndex = graphics_queue_family_index;
-	image_memory_barrier.dstQueueFamilyIndex = graphics_queue_family_index;
+	image_memory_barrier.srcQueueFamilyIndex = transfer_queue_family_index;
+	image_memory_barrier.dstQueueFamilyIndex = transfer_queue_family_index;
 	image_memory_barrier.oldLayout = old_layout;
 	image_memory_barrier.newLayout = new_layout;
 	image_memory_barrier.srcAccessMask = src_access;
 	image_memory_barrier.dstAccessMask = dst_access;
 	image_memory_barrier.subresourceRange = subresource_range;
 
-	vkCmdPipelineBarrier (command_buffer, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
-	if (vkEndCommandBuffer (command_buffer) != VK_SUCCESS)
+	vkCmdPipelineBarrier (transfer_command_pool.command_buffers[0], src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+	if (vkEndCommandBuffer (transfer_command_pool.command_buffers[0]) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
 	}
-	CHECK_AGAINST_RESULT (submit_one_time_cmd (graphics_queue, command_buffer), result);
-	vkFreeCommandBuffers (graphics_device, common_command_pool, 1, &command_buffer);
+	CHECK_AGAINST_RESULT (submit_one_time_cmd (transfer_queue, transfer_command_pool.command_buffers[0]), result);
+	vkFreeCommandBuffers (graphics_device, transfer_command_pool.command_pool, 1, &transfer_command_pool.command_buffers[0]);
+	
+	transfer_command_pool.command_buffers_count = 0;
+	utils_free (transfer_command_pool.command_buffers);
 
 	return 0;
 }
 
 int vk_utils_copy_buffer_to_buffer (
 	VkDevice graphics_device,
-	VkCommandPool common_command_pool,
-	VkQueue graphics_queue,
+	vk_command_pool transfer_command_pool,
+	VkQueue transfer_queue,
 	VkBuffer src_buffer,
 	VkBuffer dst_buffer,
 	VkDeviceSize size)
@@ -363,7 +344,7 @@ int vk_utils_copy_buffer_to_buffer (
 	VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
 
 	command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	command_buffer_allocate_info.commandPool = common_command_pool;
+	command_buffer_allocate_info.commandPool = transfer_command_pool.command_pool;
 	command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	command_buffer_allocate_info.commandBufferCount = 1;
 
@@ -391,16 +372,16 @@ int vk_utils_copy_buffer_to_buffer (
 	{
 		return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
 	}
-	CHECK_AGAINST_RESULT (submit_one_time_cmd (graphics_queue, command_buffer), result);
-	vkFreeCommandBuffers (graphics_device, common_command_pool, 1, &command_buffer);
+	CHECK_AGAINST_RESULT (submit_one_time_cmd (transfer_queue, command_buffer), result);
+	vkFreeCommandBuffers (graphics_device, transfer_command_pool.command_pool, 1, &command_buffer);
 
 	return 0;
 }
 
 int vk_utils_copy_buffer_to_image (
 	VkDevice graphics_device,
-	VkCommandPool common_command_pool,
-	VkQueue graphics_queue,
+	vk_command_pool transfer_command_pool,
+	VkQueue transfer_queue,
 	VkDeviceSize offset,
 	VkBuffer buffer,
 	VkImage* image,
@@ -408,8 +389,7 @@ int vk_utils_copy_buffer_to_image (
 	uint32_t layer_count)
 {
 	AGAINSTRESULT result;
-	VkCommandBuffer command_buffer;
-	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, common_command_pool, &command_buffer), result);
+	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
 	VkImageSubresourceLayers subresource_layers = { 0 };
 	subresource_layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -420,14 +400,17 @@ int vk_utils_copy_buffer_to_image (
 	buffer_image_copy.imageExtent = extent;
 	buffer_image_copy.imageSubresource = subresource_layers;
 
-	vkCmdCopyBufferToImage (command_buffer, buffer, *image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
-	if (vkEndCommandBuffer (command_buffer) != VK_SUCCESS)
+	vkCmdCopyBufferToImage (transfer_command_pool.command_buffers[0], buffer, *image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
+	if (vkEndCommandBuffer (transfer_command_pool.command_buffers[0]) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
 	}
 
-	CHECK_AGAINST_RESULT (submit_one_time_cmd (graphics_queue, command_buffer), result);
-	vkFreeCommandBuffers (graphics_device, common_command_pool, 1, &command_buffer);
+	CHECK_AGAINST_RESULT (submit_one_time_cmd (transfer_queue, transfer_command_pool.command_buffers[0]), result);
+	vkFreeCommandBuffers (graphics_device, transfer_command_pool.command_pool, 1, &transfer_command_pool.command_buffers[0]);
+
+	utils_free (transfer_command_pool.command_buffers);
+	transfer_command_pool.command_buffers_count = 0;
 
 	return 0;
 }
@@ -611,30 +594,36 @@ int vk_utils_update_descriptor_sets (
 	return 0;
 }
 
-int vk_utils_create_command_pool (VkDevice graphics_device, size_t graphics_queue_family_index, VkCommandPoolCreateFlags flags, VkCommandPool* out_command_pool)
+int vk_utils_create_command_pools (VkDevice graphics_device, size_t queue_family_index, size_t command_pools_count, VkCommandPoolCreateFlags flags, vk_command_pool* out_command_pools)
 {
 	VkCommandPoolCreateInfo create_info = { 0 };
 	create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	create_info.queueFamilyIndex = graphics_queue_family_index;
+	create_info.queueFamilyIndex = queue_family_index;
 	create_info.flags = flags;
 
-	if (vkCreateCommandPool (graphics_device, &create_info, NULL, out_command_pool) != VK_SUCCESS)
+	for (size_t c = 0; c < command_pools_count; ++c)
 	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
+		if (vkCreateCommandPool (graphics_device, &create_info, NULL, &out_command_pools[c].command_pool) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_CREATE_COMMAND_POOL;
+		}
 	}
 
 	return 0;
 }
 
-int vk_utils_allocate_command_buffers (VkDevice graphics_device, VkCommandPool command_pool, size_t command_buffers_count, VkCommandBufferLevel level, VkCommandBuffer* out_command_buffers)
+int vk_utils_allocate_command_buffers (VkDevice graphics_device, size_t command_buffers_count, VkCommandBufferLevel level, vk_command_pool in_out_command_pool)
 {
+	in_out_command_pool.command_buffers_count = command_buffers_count;
+	in_out_command_pool.command_buffers = (VkCommandBuffer*)utils_calloc (command_buffers_count, sizeof (VkCommandBuffer));
+
 	VkCommandBufferAllocateInfo allocate_info = { 0 };
 	allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocate_info.commandPool = command_pool;
+	allocate_info.commandPool = in_out_command_pool.command_pool;
 	allocate_info.commandBufferCount = command_buffers_count;
 	allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-	if (vkAllocateCommandBuffers (graphics_device, &allocate_info, out_command_buffers) != VK_SUCCESS)
+	if (vkAllocateCommandBuffers (graphics_device, &allocate_info, in_out_command_pool.command_buffers) != VK_SUCCESS)
 	{
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
 	}
@@ -675,5 +664,24 @@ void vk_utils_destroy_buffer_and_buffer_memory (VkDevice graphics_device,
 	if (buffer_memory != VK_NULL_HANDLE)
 	{
 		vkFreeMemory (graphics_device, buffer_memory, NULL);
+	}
+}
+
+void vk_utils_destroy_command_pools_and_buffers (VkDevice graphics_device, vk_command_pool* command_pools, size_t command_pools_count)
+{
+	if (command_pools_count == 1)
+	{
+		vkFreeCommandBuffers (graphics_device, command_pools->command_pool, command_pools->command_buffers_count, command_pools->command_buffers);
+		vkDestroyCommandPool (graphics_device, command_pools->command_pool, NULL);
+		command_pools->command_pool = VK_NULL_HANDLE;
+	}
+	else
+	{
+		for (size_t c = 0; c < command_pools_count; ++c)
+		{
+			vkFreeCommandBuffers (graphics_device, command_pools[c].command_pool, command_pools[c].command_buffers_count, command_pools[c].command_buffers);
+			vkDestroyCommandPool (graphics_device, command_pools[c].command_pool, NULL);
+			command_pools[c].command_pool = VK_NULL_HANDLE;
+		}
 	}
 }

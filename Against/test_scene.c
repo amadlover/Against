@@ -10,9 +10,8 @@
 scene_asset_data* asset_data = NULL;
 vk_skeletal_opaque_graphics_pipeline* skeletal_opaque_graphics_pipeline = NULL;
 
-VkCommandPool command_pool = VK_NULL_HANDLE;
-VkCommandBuffer* command_buffers = NULL;
-size_t command_buffers_count = 0;
+vk_command_pool* graphics_command_pools = NULL;
+size_t graphics_command_pools_count = 0;
 
 VkSemaphore* signal_semaphores = NULL;
 VkSemaphore wait_semaphore = VK_NULL_HANDLE;
@@ -26,15 +25,10 @@ int test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
 
     CHECK_AGAINST_RESULT (import_scene_data ("", &asset_data), result);
     CHECK_AGAINST_RESULT (create_skeletal_opaque_graphics_pipeline (asset_data, &skeletal_opaque_graphics_pipeline), result);
-    CHECK_AGAINST_RESULT (vk_utils_create_command_pool (graphics_device, graphics_queue_family_index, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, &command_pool), result);
-
-    command_buffers_count = swapchain_image_count;
-    command_buffers = (VkCommandBuffer*)utils_calloc (command_buffers_count, sizeof (VkCommandBuffer));
-    CHECK_AGAINST_RESULT (vk_utils_allocate_command_buffers (graphics_device, command_pool, command_buffers_count, VK_COMMAND_BUFFER_LEVEL_PRIMARY, command_buffers), result);
-
-    signal_semaphores_count = command_buffers_count;
-    signal_semaphores = (VkSemaphore*)utils_calloc (command_buffers_count, sizeof (VkSemaphore));
-    CHECK_AGAINST_RESULT (vk_utils_create_semaphores (graphics_device, signal_semaphores_count, signal_semaphores), result);
+    
+    graphics_command_pools_count = swapchain_image_count;
+    graphics_command_pools = (vk_command_pool*)utils_calloc (graphics_command_pools_count, sizeof (vk_command_pool));
+    CHECK_AGAINST_RESULT (vk_utils_create_command_pools (graphics_device, graphics_queue_family_index, 3, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, graphics_command_pools), result);
 
     return 0;
 }
@@ -102,7 +96,7 @@ int tick ()
 
 int submit_present ()
 {
-    size_t image_index = 0;
+    /*size_t image_index = 0;
     VkResult result = vkAcquireNextImageKHR (graphics_device, swapchain, UINT64_MAX, wait_semaphore, VK_NULL_HANDLE, &image_index);
 
     if (result != VK_SUCCESS)
@@ -115,7 +109,7 @@ int submit_present ()
         {
             return AGAINST_ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE;
         }
-    }
+    }*/
 
     return 0;
 }
@@ -137,9 +131,8 @@ void test_scene_exit ()
     destroy_skeletal_opaque_graphics_pipeline (skeletal_opaque_graphics_pipeline);
     cleanup_scene_data (asset_data);
     
-    vkFreeCommandBuffers (graphics_device, command_pool, command_buffers_count, command_buffers);
-    vkDestroyCommandPool (graphics_device, command_pool, NULL);
-    utils_free (command_buffers);
+    vk_utils_destroy_command_pools_and_buffers (graphics_device, graphics_command_pools, graphics_command_pools_count);
+    utils_free (graphics_command_pools);
 
     for (size_t s = 0; s < signal_semaphores_count; ++s)
     {

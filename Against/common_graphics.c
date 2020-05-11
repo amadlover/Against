@@ -25,6 +25,7 @@ VkDebugUtilsMessengerEXT debug_utils_messenger;
 VkPhysicalDevice physical_device;
 VkSurfaceKHR surface;
 VkPresentModeKHR chosen_present_mode;
+VkSurfaceCapabilitiesKHR surface_capabilites;
 
 VkResult create_debug_utils_messenger (VkInstance instance,
 	const VkDebugUtilsMessengerCreateInfoEXT* debug_utils_messenger_create_info,
@@ -317,77 +318,9 @@ int populate_graphics_device_extensions ()
 	return 0;
 }
 
-int create_graphics_device ()
+int get_surface_properties ()
 {
-	OutputDebugString (L"create_graphics_device\n");
-
-	float priorities = 1.f;
-
-	VkDeviceQueueCreateInfo queue_create_infos[3] = { 0,0,0 };
-	size_t unique_queue_family_indices[3] = { 0,0,0 };
-	size_t unique_queue_counts[3] = { 1,1,1 };
-	size_t unique_queue_family_indices_count = 0;
-
-	if (graphics_queue_family_index == compute_queue_family_index)
-	{
-		unique_queue_family_indices[0] = graphics_queue_family_index;
-		++unique_queue_family_indices_count;
-		++unique_queue_counts[0];
-	}
-	else
-	{
-		unique_queue_family_indices[0] = graphics_queue_family_index;
-		unique_queue_family_indices[1] = compute_queue_family_index;
-		unique_queue_family_indices_count += 2;
-	}
-
-	if (graphics_queue_family_index != transfer_queue_family_index)
-	{
-		unique_queue_family_indices[unique_queue_family_indices_count] = transfer_queue_family_index;
-		++unique_queue_family_indices_count;
-	}
-
-	for (size_t ui = 0; ui < unique_queue_family_indices_count; ++ui)
-	{
-		queue_create_infos[ui].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queue_create_infos[ui].pNext = NULL;
-		queue_create_infos[ui].pQueuePriorities = &priorities;
-		queue_create_infos[ui].queueCount = unique_queue_counts[ui];
-		queue_create_infos[ui].queueFamilyIndex = unique_queue_family_indices[ui];
-		queue_create_infos[ui].flags = 0;
-	}
-	
-	VkDeviceCreateInfo create_info = { 0 };
-
-	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	create_info.pNext = NULL;
-	create_info.enabledExtensionCount = requested_device_extension_count;
-	create_info.ppEnabledExtensionNames = requested_device_extensions;
-	create_info.enabledLayerCount = 0;
-	create_info.ppEnabledLayerNames = NULL;
-	create_info.queueCreateInfoCount = unique_queue_family_indices_count;
-	create_info.pQueueCreateInfos = queue_create_infos;
-	create_info.flags = 0;
-
-	if (vkCreateDevice (physical_device, &create_info, NULL, &graphics_device) != VK_SUCCESS)
-	{
-		return AGAINST_ERROR_GRAPHICS_CREATE_GRAPHICS_DEVICE;
-	}
-
-	size_t graphics_queue_index = 0;
-	size_t compute_queue_index = graphics_queue_family_index == compute_queue_family_index ? 1 : 0;
-	size_t transfer_queue_index = transfer_queue_family_index == compute_queue_family_index ? compute_queue_index + 1 : 0;
-
-	vkGetDeviceQueue (graphics_device, graphics_queue_family_index, graphics_queue_index, &graphics_queue);
-	vkGetDeviceQueue (graphics_device, compute_queue_family_index, compute_queue_index, &compute_queue);
-	vkGetDeviceQueue (graphics_device, transfer_queue_family_index, transfer_queue_index, &transfer_queue);
-
-	return 0;
-}
-
-int create_swapchain ()
-{
-	OutputDebugString (L"create_swapchain\n");
+	OutputDebugString (L"get_surface_properties\n");
 
 	VkBool32 is_surface_supported = false;
 	vkGetPhysicalDeviceSurfaceSupportKHR (physical_device, graphics_queue_family_index, surface, &is_surface_supported);
@@ -397,7 +330,6 @@ int create_swapchain ()
 		return AGAINST_ERROR_GRAPHICS_SURFACE_SUPPORT;
 	}
 
-	VkSurfaceCapabilitiesKHR surface_capabilites;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR (physical_device, surface, &surface_capabilites);
 
 	size_t surface_format_count = 0;
@@ -432,6 +364,76 @@ int create_swapchain ()
 
 	surface_extent = surface_capabilites.currentExtent;
 
+	utils_free (surface_formats);
+	utils_free (present_modes);
+
+	return 0;
+}
+
+int create_graphics_device ()
+{
+	OutputDebugString (L"create_graphics_device\n");
+
+	float priorities = 1.f;
+
+	VkDeviceQueueCreateInfo queue_create_infos[3] = { 0,0,0 };
+	size_t unique_queue_family_indices[3] = { 0,0,0 };
+	size_t unique_queue_counts[3] = { surface_capabilites.minImageCount + 1,1,1 };
+	size_t unique_queue_family_indices_count = 0;
+
+	if (graphics_queue_family_index == compute_queue_family_index)
+	{
+		unique_queue_family_indices[0] = graphics_queue_family_index;
+		++unique_queue_family_indices_count;
+		++unique_queue_counts[0];
+	}
+	else
+	{
+		unique_queue_family_indices[0] = graphics_queue_family_index;
+		unique_queue_family_indices[1] = compute_queue_family_index;
+		unique_queue_family_indices_count += 2;
+	}
+
+	if (graphics_queue_family_index != transfer_queue_family_index)
+	{
+		unique_queue_family_indices[unique_queue_family_indices_count] = transfer_queue_family_index;
+		++unique_queue_family_indices_count;
+	}
+
+	for (size_t ui = 0; ui < unique_queue_family_indices_count; ++ui)
+	{
+		queue_create_infos[ui].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queue_create_infos[ui].pNext = NULL;
+		queue_create_infos[ui].pQueuePriorities = &priorities;
+		queue_create_infos[ui].queueCount = unique_queue_counts[ui];
+		queue_create_infos[ui].queueFamilyIndex = unique_queue_family_indices[ui];
+		queue_create_infos[ui].flags = 0;
+	}
+
+	VkDeviceCreateInfo create_info = { 0 };
+
+	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	create_info.pNext = NULL;
+	create_info.enabledExtensionCount = requested_device_extension_count;
+	create_info.ppEnabledExtensionNames = requested_device_extensions;
+	create_info.enabledLayerCount = 0;
+	create_info.ppEnabledLayerNames = NULL;
+	create_info.queueCreateInfoCount = unique_queue_family_indices_count;
+	create_info.pQueueCreateInfos = queue_create_infos;
+	create_info.flags = 0;
+
+	if (vkCreateDevice (physical_device, &create_info, NULL, &graphics_device) != VK_SUCCESS)
+	{
+		return AGAINST_ERROR_GRAPHICS_CREATE_GRAPHICS_DEVICE;
+	}
+
+	return 0;
+}
+
+int create_swapchain ()
+{
+	OutputDebugString (L"create_swapchain\n");
+
 	VkSwapchainCreateInfoKHR create_info = { 0 };
 
 	create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -445,16 +447,13 @@ int create_swapchain ()
 	create_info.imageFormat = chosen_surface_format.format;
 	create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	create_info.imageUsage = surface_capabilites.supportedUsageFlags;
-	create_info.minImageCount = 1;//surface_capabilites.minImageCount + 1;
+	create_info.minImageCount = surface_capabilites.minImageCount + 1;
 	create_info.oldSwapchain = VK_NULL_HANDLE;
 	create_info.presentMode = chosen_present_mode;
 	create_info.preTransform = surface_capabilites.currentTransform;
 
 	if (vkCreateSwapchainKHR (graphics_device, &create_info, NULL, &swapchain) != VK_SUCCESS)
 	{
-		utils_free (surface_formats);
-		utils_free (present_modes);
-
 		return AGAINST_ERROR_GRAPHICS_CREATE_SWAPCHAIN;
 	}
 
@@ -464,9 +463,6 @@ int create_swapchain ()
 	vkGetSwapchainImagesKHR (graphics_device, swapchain, &swapchain_image_count, swapchain_images);
 
 	swapchain_imageviews = (VkImageView*)utils_calloc (swapchain_image_count, sizeof (VkImageView));
-	
-	utils_free (surface_formats);
-	utils_free (present_modes);
 
 	return 0;
 }
@@ -501,6 +497,21 @@ int create_swapchain_imageviews ()
 	return 0;
 }
 
+int get_device_queues ()
+{
+	OutputDebugString (L"get_device_queues\n");
+
+	size_t graphics_queue_index = 0;
+	size_t compute_queue_index = graphics_queue_family_index == compute_queue_family_index ? 3 : 0;
+	size_t transfer_queue_index = transfer_queue_family_index == compute_queue_family_index ? compute_queue_index + 1 : 0;
+
+	vkGetDeviceQueue (graphics_device, graphics_queue_family_index, graphics_queue_index, &graphics_queues);
+	vkGetDeviceQueue (graphics_device, compute_queue_family_index, compute_queue_index, &compute_queue);
+	vkGetDeviceQueue (graphics_device, transfer_queue_family_index, transfer_queue_index, &transfer_queue);
+
+	return 0;
+}
+
 int common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 {
 	OutputDebugString (L"graphics_init\n");
@@ -524,10 +535,12 @@ int common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 	CHECK_AGAINST_RESULT (get_physical_device (), result);
 	CHECK_AGAINST_RESULT (create_surface (HInstance, HWnd), result);
 	CHECK_AGAINST_RESULT (populate_graphics_device_extensions (), result);
+	CHECK_AGAINST_RESULT (get_surface_properties (), result);
 	CHECK_AGAINST_RESULT (create_graphics_device (), result);
 	CHECK_AGAINST_RESULT (create_swapchain (), result);
 	CHECK_AGAINST_RESULT (create_swapchain_imageviews (), result);
-	CHECK_AGAINST_RESULT (vk_utils_create_command_pool (graphics_device, graphics_queue_family_index, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, &common_command_pool), result);
+	CHECK_AGAINST_RESULT (get_device_queues (), result);
+	CHECK_AGAINST_RESULT (vk_utils_create_command_pools (graphics_device, transfer_queue_family_index, 1, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, &transfer_command_pool), result);
 
 	return 0;
 }
@@ -536,10 +549,7 @@ void common_graphics_exit ()
 {
 	OutputDebugString (L"graphics_exit\n");
 
-	if (common_command_pool != VK_NULL_HANDLE)
-	{
-		vkDestroyCommandPool (graphics_device, common_command_pool, NULL);
-	}
+	vk_utils_destroy_command_pools_and_buffers (graphics_device, &transfer_command_pool, 1);
 
 	if (swapchain != VK_NULL_HANDLE)
 	{
@@ -559,10 +569,7 @@ void common_graphics_exit ()
 		utils_free (swapchain_imageviews);
 	}
 
-	if (swapchain_images)
-	{
-		utils_free (swapchain_images);
-	}
+	utils_free (swapchain_images);
 
 	if (graphics_device != VK_NULL_HANDLE)
 	{

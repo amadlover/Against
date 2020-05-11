@@ -175,7 +175,7 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t data
     }
 
     VkBuffer staging_buffer; VkDeviceMemory staging_memory;
-    CHECK_AGAINST_RESULT (vk_utils_create_buffer (graphics_device, total_image_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, graphics_queue_family_index, &staging_buffer), result);
+    CHECK_AGAINST_RESULT (vk_utils_create_buffer (graphics_device, total_image_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, transfer_queue_family_index, &staging_buffer), result);
     CHECK_AGAINST_RESULT (vk_utils_allocate_bind_buffer_memory (graphics_device, &staging_buffer, 1, physical_device_memory_properties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &staging_memory), result);
 
     for (size_t i = 0; i < ref_cgltf_images_count; ++i)
@@ -188,9 +188,9 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t data
     for (size_t i = 0; i < ref_cgltf_images_count; ++i)
     {
         VkExtent3D img_extent = { img_widths[i], img_heights[i], 1 };
-        CHECK_AGAINST_RESULT (vk_utils_change_image_layout (graphics_device, graphics_queue, common_command_pool, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT), result);
-        CHECK_AGAINST_RESULT (vk_utils_copy_buffer_to_image (graphics_device, common_command_pool, graphics_queue, img_offsets[i], staging_buffer, &out_data->images[i], img_extent, 1), result);
-        CHECK_AGAINST_RESULT (vk_utils_change_image_layout (graphics_device, graphics_queue, common_command_pool, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT), result);
+        CHECK_AGAINST_RESULT (vk_utils_change_image_layout (graphics_device, transfer_queue, transfer_command_pool, transfer_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT), result);
+        CHECK_AGAINST_RESULT (vk_utils_copy_buffer_to_image (graphics_device, transfer_command_pool, transfer_queue, img_offsets[i], staging_buffer, &out_data->images[i], img_extent, 1), result);
+        CHECK_AGAINST_RESULT (vk_utils_change_image_layout (graphics_device, transfer_queue, transfer_command_pool, transfer_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT), result);
         CHECK_AGAINST_RESULT (vk_utils_create_image_view (graphics_device, out_data->images[i], &out_data->image_views[i]), result);
     }
 
@@ -819,8 +819,8 @@ int import_graphics_primitives (cgltf_data** datas, size_t datas_count, scene_as
     CHECK_AGAINST_RESULT (
         vk_utils_copy_buffer_to_buffer (
             graphics_device,
-            common_command_pool,
-            graphics_queue,
+            transfer_command_pool,
+            transfer_queue,
             staging_buffer,
             out_data->vb_ib,
             current_primitive_data_offset
@@ -993,7 +993,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 
     CHECK_AGAINST_RESULT (vk_utils_create_buffer (graphics_device, total_data_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, graphics_queue_family_index, &out_data->bone_buffer), result);
     CHECK_AGAINST_RESULT (vk_utils_allocate_bind_buffer_memory (graphics_device, &out_data->bone_buffer, 1, physical_device_memory_properties, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &out_data->bone_buffer_memory), result);
-    CHECK_AGAINST_RESULT (vk_utils_copy_buffer_to_buffer (graphics_device, common_command_pool, graphics_queue, staging_buffer, out_data->bone_buffer, total_data_size), result);
+    CHECK_AGAINST_RESULT (vk_utils_copy_buffer_to_buffer (graphics_device, transfer_command_pool, transfer_queue, staging_buffer, out_data->bone_buffer, total_data_size), result);
 
     vk_utils_destroy_buffer_and_buffer_memory (graphics_device, staging_buffer, staging_buffer_memory);
 
@@ -1368,7 +1368,7 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
     CHECK_AGAINST_RESULT (vk_utils_map_data_to_device_memory (graphics_device, staging_buffer_memory, 0, total_data_allocated, all_animations_aligned_memory), result);
     CHECK_AGAINST_RESULT (vk_utils_create_buffer (graphics_device, total_data_allocated, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, graphics_queue_family_index, &out_data->anim_buffer), result);
     CHECK_AGAINST_RESULT (vk_utils_allocate_bind_buffer_memory (graphics_device, &out_data->anim_buffer, 1, physical_device_memory_properties, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &out_data->anim_buffer_memory), result);
-    CHECK_AGAINST_RESULT (vk_utils_copy_buffer_to_buffer (graphics_device, common_command_pool, graphics_queue, staging_buffer, out_data->anim_buffer, total_data_allocated), result);
+    CHECK_AGAINST_RESULT (vk_utils_copy_buffer_to_buffer (graphics_device, transfer_command_pool, transfer_queue, staging_buffer, out_data->anim_buffer, total_data_allocated), result);
 
     vk_utils_destroy_buffer_and_buffer_memory (graphics_device, staging_buffer, staging_buffer_memory);
 
