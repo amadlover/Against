@@ -37,7 +37,7 @@ int vk_utils_map_data_to_device_memory (
 
 int vk_utils_create_image (
     VkDevice graphics_device, 
-    uint32_t transfer_queue_family_index, 
+    uint32_t src_queue_family_index, 
     VkExtent3D extent, 
     uint32_t array_layers, 
     VkFormat format, 
@@ -66,7 +66,8 @@ int vk_utils_change_image_layout (
     VkDevice graphics_device,
     VkQueue transfer_queue,
     vk_command_pool transfer_command_pool,
-    uint32_t transfer_queue_family_index,
+    uint32_t src_queue_family_index,
+    uint32_t dst_queue_family_index,
     VkImage image,
     uint32_t layer_count,
     VkImageLayout old_layout,

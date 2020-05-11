@@ -188,9 +188,9 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t data
     for (size_t i = 0; i < ref_cgltf_images_count; ++i)
     {
         VkExtent3D img_extent = { img_widths[i], img_heights[i], 1 };
-        CHECK_AGAINST_RESULT (vk_utils_change_image_layout (graphics_device, transfer_queue, transfer_command_pool, transfer_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT), result);
+        CHECK_AGAINST_RESULT (vk_utils_change_image_layout (graphics_device, transfer_queue, transfer_command_pool, transfer_queue_family_index, transfer_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT), result);
         CHECK_AGAINST_RESULT (vk_utils_copy_buffer_to_image (graphics_device, transfer_command_pool, transfer_queue, img_offsets[i], staging_buffer, &out_data->images[i], img_extent, 1), result);
-        CHECK_AGAINST_RESULT (vk_utils_change_image_layout (graphics_device, transfer_queue, transfer_command_pool, transfer_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT), result);
+        CHECK_AGAINST_RESULT (vk_utils_change_image_layout (graphics_device, transfer_queue, transfer_command_pool, transfer_queue_family_index, graphics_queue_family_index, out_data->images[i], 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT), result);
         CHECK_AGAINST_RESULT (vk_utils_create_image_view (graphics_device, out_data->images[i], &out_data->image_views[i]), result);
     }
 
