@@ -18,7 +18,7 @@ VkSwapchainKHR swapchain;
 VkImage* swapchain_images;
 VkImageView* swapchain_imageviews;
 size_t swapchain_image_count;
-VkQueue graphics_queues;
+VkQueue graphics_queue;
 VkQueue transfer_queue;
 VkQueue compute_queue;
 vk_command_pool transfer_command_pool;

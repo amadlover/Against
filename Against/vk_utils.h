@@ -6,6 +6,7 @@ typedef struct _vk_command_pool
 {
     VkCommandPool command_pool;
     VkCommandBuffer* command_buffers;
+    VkSemaphore* submit_signal_semaphores;
     size_t command_buffers_count;
 } vk_command_pool;
 
@@ -161,15 +162,22 @@ int vk_utils_create_command_pools (
 
 int vk_utils_allocate_command_buffers (
     VkDevice graphics_device,
-    size_t command_buffers_count,
-    VkCommandBufferLevel level,
-    vk_command_pool in_out_command_pool
+    VkCommandBufferLevel level, 
+    size_t command_pools_count, 
+    size_t* command_buffers_counts, 
+    vk_command_pool* in_out_command_pools
 );
 
 int vk_utils_create_semaphores (
     VkDevice graphics_device, 
     size_t semaphores_count, 
     VkSemaphore* out_semaphores
+);
+
+int vk_utils_create_semaphores_for_command_pools (
+    VkDevice graphics_device,
+    size_t command_pools_count,
+    vk_command_pool* in_out_command_pools
 );
 
 void vk_utils_get_aligned_size (size_t original_size, 

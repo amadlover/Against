@@ -594,20 +594,23 @@ int vk_utils_create_command_pools (VkDevice graphics_device, size_t queue_family
 	return 0;
 }
 
-int vk_utils_allocate_command_buffers (VkDevice graphics_device, size_t command_buffers_count, VkCommandBufferLevel level, vk_command_pool in_out_command_pool)
+int vk_utils_allocate_command_buffers (VkDevice graphics_device, VkCommandBufferLevel level, size_t command_pools_count, size_t* command_buffers_counts, vk_command_pool* in_out_command_pools)
 {
-	in_out_command_pool.command_buffers_count = command_buffers_count;
-	in_out_command_pool.command_buffers = (VkCommandBuffer*)utils_calloc (command_buffers_count, sizeof (VkCommandBuffer));
-
-	VkCommandBufferAllocateInfo allocate_info = { 0 };
-	allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocate_info.commandPool = in_out_command_pool.command_pool;
-	allocate_info.commandBufferCount = command_buffers_count;
-	allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-	if (vkAllocateCommandBuffers (graphics_device, &allocate_info, in_out_command_pool.command_buffers) != VK_SUCCESS)
+	for (size_t cp = 0; cp < command_pools_count; ++cp)
 	{
-		return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
+		in_out_command_pools[cp].command_buffers_count = command_buffers_counts[cp];
+		in_out_command_pools[cp].command_buffers = (VkCommandBuffer*)utils_calloc (command_buffers_counts[cp], sizeof (VkCommandBuffer));
+
+		VkCommandBufferAllocateInfo allocate_info = { 0 };
+		allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocate_info.commandPool = in_out_command_pools[cp].command_pool;
+		allocate_info.commandBufferCount = command_buffers_counts[cp];
+		allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+		if (vkAllocateCommandBuffers (graphics_device, &allocate_info, in_out_command_pools[cp].command_buffers) != VK_SUCCESS)
+		{
+			return AGAINST_ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
+		}
 	}
 
 	return 0;
@@ -623,6 +626,27 @@ int vk_utils_create_semaphores (VkDevice graphics_device, size_t semaphores_coun
 		if (vkCreateSemaphore (graphics_device, &create_info, NULL, out_semaphores + s) != VK_SUCCESS)
 		{
 			return AGAINST_ERROR_GRAPHICS_CREATE_SEMAPHORE;
+		}
+	}
+
+	return 0;
+}
+
+int vk_utils_create_semaphores_for_command_pools (VkDevice graphics_device, size_t command_pools_count, vk_command_pool* in_out_command_pools)
+{
+	VkSemaphoreCreateInfo create_info = { 0 };
+	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	for (size_t cp = 0; cp < command_pools_count; ++cp)
+	{
+		in_out_command_pools[cp].submit_signal_semaphores = (VkSemaphore*)utils_calloc (in_out_command_pools[cp].command_buffers_count, sizeof (VkSemaphore));
+
+		for (size_t cb = 0; cb < in_out_command_pools[cp].command_buffers_count; ++cb)
+		{
+			if (vkCreateSemaphore (graphics_device, &create_info, NULL, in_out_command_pools[cp].submit_signal_semaphores + cb) != VK_SUCCESS)
+			{
+				return AGAINST_ERROR_GRAPHICS_CREATE_SEMAPHORE;
+			}
 		}
 	}
 
@@ -653,6 +677,11 @@ void vk_utils_destroy_command_pools_and_buffers (VkDevice graphics_device, vk_co
 {
 	if (command_pools_count == 1)
 	{
+		for (size_t cb = 0; cb < command_pools->command_buffers_count; ++cb)
+		{
+			vkDestroySemaphore (graphics_device, command_pools->submit_signal_semaphores[cb], NULL);
+		}
+		utils_free (command_pools->submit_signal_semaphores);
 		vkFreeCommandBuffers (graphics_device, command_pools->command_pool, command_pools->command_buffers_count, command_pools->command_buffers);
 		vkDestroyCommandPool (graphics_device, command_pools->command_pool, NULL);
 		command_pools->command_pool = VK_NULL_HANDLE;
@@ -661,6 +690,11 @@ void vk_utils_destroy_command_pools_and_buffers (VkDevice graphics_device, vk_co
 	{
 		for (size_t c = 0; c < command_pools_count; ++c)
 		{
+			for (size_t cb = 0; cb < command_pools[c].command_buffers_count; ++cb)
+			{
+				vkDestroySemaphore (graphics_device, command_pools[c].submit_signal_semaphores[cb], NULL);
+			}
+			utils_free (command_pools[c].submit_signal_semaphores);
 			vkFreeCommandBuffers (graphics_device, command_pools[c].command_pool, command_pools[c].command_buffers_count, command_pools[c].command_buffers);
 			vkDestroyCommandPool (graphics_device, command_pools[c].command_pool, NULL);
 			command_pools[c].command_pool = VK_NULL_HANDLE;
