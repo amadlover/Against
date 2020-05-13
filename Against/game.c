@@ -15,27 +15,27 @@ int (*current_scene_process_keyboard_input)(WPARAM, LPARAM);
 int (*current_scene_main_loop)();
 void (*current_scene_exit)();
 
-int process_left_mouse_click ()
+int game_process_left_mouse_click ()
 {
 	return 0;
 }
 
-int process_middle_mouse_click ()
+int game_process_middle_mouse_click ()
 {
 	return 0;
 }
 
-int process_right_mouse_click ()
+int game_process_right_mouse_click ()
 {
 	return 0;
 }
 
-int process_mouse_movement (WPARAM wParam, LPARAM lParam)
+int game_process_mouse_movement (WPARAM wParam, LPARAM lParam)
 {
 	return 0;
 }
 
-int process_keyboard_input (WPARAM wParam, LPARAM lParam)
+int game_process_keyboard_input (WPARAM wParam, LPARAM lParam)
 {
 	if (current_scene_process_keyboard_input != NULL)
 	{
