@@ -1,6 +1,7 @@
 #pragma once
 
 #include "asset.h"
+#include "error.h"
 
 typedef struct _scene_asset_data
 {
@@ -36,5 +37,5 @@ typedef struct _scene_asset_data
     VkDescriptorPool descriptor_pool;
 } scene_asset_data;
 
-int import_scene_data (const char* partial_folder_path, scene_asset_data** scene_data);
+AGAINST_RESULT import_scene_data (const char* partial_folder_path, scene_asset_data** scene_data);
 void cleanup_scene_data (scene_asset_data* scene_data);

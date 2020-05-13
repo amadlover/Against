@@ -5,12 +5,12 @@
 #include "vk_utils.h"
 #include "common_graphics.h"
 
-int import_scene_data (const char* partial_folder_path, scene_asset_data** scene_data)
+AGAINST_RESULT import_scene_data (const char* partial_folder_path, scene_asset_data** scene_data)
 {
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
     CHECK_AGAINST_RESULT (import_gltf_files_from_folder (partial_folder_path, scene_data), result);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
 void cleanup_scene_data (scene_asset_data* scene_data)

@@ -10,55 +10,55 @@
 
 #include <Windowsx.h>
 
-int (*current_scene_init)();
-int (*current_scene_process_keyboard_input)(WPARAM, LPARAM);
-int (*current_scene_main_loop)();
+AGAINST_RESULT (*current_scene_init)();
+AGAINST_RESULT (*current_scene_process_keyboard_input)(WPARAM, LPARAM);
+AGAINST_RESULT (*current_scene_main_loop)();
 void (*current_scene_exit)();
 
-int game_process_left_mouse_click ()
+AGAINST_RESULT game_process_left_mouse_click ()
 {
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int game_process_middle_mouse_click ()
+AGAINST_RESULT game_process_middle_mouse_click ()
 {
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int game_process_right_mouse_click ()
+AGAINST_RESULT game_process_right_mouse_click ()
 {
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int game_process_mouse_movement (WPARAM wParam, LPARAM lParam)
+AGAINST_RESULT game_process_mouse_movement (WPARAM wParam, LPARAM lParam)
 {
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int game_process_keyboard_input (WPARAM wParam, LPARAM lParam)
+AGAINST_RESULT game_process_keyboard_input (WPARAM wParam, LPARAM lParam)
 {
 	if (current_scene_process_keyboard_input != NULL)
 	{
-		AGAINSTRESULT result;
+		AGAINST_RESULT result;
 		CHECK_AGAINST_RESULT (current_scene_process_keyboard_input (wParam, lParam), result);
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int game_init (HINSTANCE hInstance, HWND hWnd)
+AGAINST_RESULT game_init (HINSTANCE hInstance, HWND hWnd)
 {
 	OutputDebugString (L"game_init\n");
 
-	AGAINSTRESULT result;
+	AGAINST_RESULT result;
 
 	CHECK_AGAINST_RESULT (common_graphics_init (hInstance, hWnd), result);
 	CHECK_AGAINST_RESULT (game_set_current_scene (e_scene_type_test), result);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int game_set_current_scene (e_scene_type scene_type)
+AGAINST_RESULT game_set_current_scene (e_scene_type scene_type)
 {
 	OutputDebugString (L"game_set_current_scene\n");
 	
@@ -80,22 +80,22 @@ int game_set_current_scene (e_scene_type scene_type)
 
 	if (current_scene_init != NULL)
 	{
-		AGAINSTRESULT result;
+		AGAINST_RESULT result;
 		CHECK_AGAINST_RESULT (current_scene_init (), result);
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int game_main_loop ()
+AGAINST_RESULT game_main_loop ()
 {
 	if (current_scene_main_loop != NULL)
 	{
-		AGAINSTRESULT result;
+		AGAINST_RESULT result;
 		CHECK_AGAINST_RESULT (current_scene_main_loop (), result);
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
 void game_exit ()

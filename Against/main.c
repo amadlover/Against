@@ -81,7 +81,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 
 	if (!RegisterClass (&wc))
 	{
-		return 0;
+		return AGAINST_SUCCESS;
 	}
 
 	HWND hWnd = CreateWindow 
@@ -104,7 +104,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 		return -1;
 	}
 
-	AGAINSTRESULT result = game_init (hInstance, hWnd);
+	AGAINST_RESULT result = game_init (hInstance, hWnd);
 
 	if (result != AGAINST_SUCCESS)
 	{
@@ -142,5 +142,5 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 	game_exit ();
 	DestroyWindow (hWnd);
 	
-	return 0;
+	return AGAINST_SUCCESS;
 }

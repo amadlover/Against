@@ -77,10 +77,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback (
 		OutputDebugString (buff);
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int populate_instance_layers_and_extensions ()
+AGAINST_RESULT populate_instance_layers_and_extensions ()
 {
 	OutputDebugString (L"populate_instance_layers_and_extensions\n");
 
@@ -131,10 +131,10 @@ int populate_instance_layers_and_extensions ()
 
 	utils_free (extension_properties);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int create_instance ()
+AGAINST_RESULT create_instance ()
 {
 	OutputDebugString (L"create_instance\n");
 
@@ -162,10 +162,10 @@ int create_instance ()
 		return AGAINST_ERROR_GRAPHICS_CREATE_INSTANCE;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int setup_debug_utils_messenger ()
+AGAINST_RESULT setup_debug_utils_messenger ()
 {
 	OutputDebugString (L"setup_debug_utils_messenger\n");
 
@@ -185,10 +185,10 @@ int setup_debug_utils_messenger ()
 		return AGAINST_ERROR_GRAPHICS_CREATE_DEBUG_UTILS_MESSENGER;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int get_physical_device ()
+AGAINST_RESULT get_physical_device ()
 {
 	OutputDebugString (L"get_physical_device\n");
 
@@ -273,10 +273,10 @@ int get_physical_device ()
 	utils_free (physical_devices);
 	utils_free (queue_family_properties);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int create_surface (HINSTANCE HInstance, HWND HWnd)
+AGAINST_RESULT create_surface (HINSTANCE HInstance, HWND HWnd)
 {
 	OutputDebugString (L"create_surface\n");
 
@@ -291,10 +291,10 @@ int create_surface (HINSTANCE HInstance, HWND HWnd)
 		return AGAINST_ERROR_GRAPHICS_CREATE_SURFACE;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int populate_graphics_device_extensions ()
+AGAINST_RESULT populate_graphics_device_extensions ()
 {
 	OutputDebugString (L"populate_graphics_device_extensions\n");
 
@@ -315,10 +315,10 @@ int populate_graphics_device_extensions ()
 
 	utils_free (extension_properties);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int get_surface_properties ()
+AGAINST_RESULT get_surface_properties ()
 {
 	OutputDebugString (L"get_surface_properties\n");
 
@@ -367,10 +367,10 @@ int get_surface_properties ()
 	utils_free (surface_formats);
 	utils_free (present_modes);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int create_graphics_device ()
+AGAINST_RESULT create_graphics_device ()
 {
 	OutputDebugString (L"create_graphics_device\n");
 
@@ -427,10 +427,10 @@ int create_graphics_device ()
 		return AGAINST_ERROR_GRAPHICS_CREATE_GRAPHICS_DEVICE;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int create_swapchain ()
+AGAINST_RESULT create_swapchain ()
 {
 	OutputDebugString (L"create_swapchain\n");
 
@@ -464,10 +464,10 @@ int create_swapchain ()
 
 	swapchain_imageviews = (VkImageView*)utils_calloc (swapchain_image_count, sizeof (VkImageView));
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int create_swapchain_imageviews ()
+AGAINST_RESULT create_swapchain_imageviews ()
 {
 	OutputDebugString (L"create_swapchain_imageviews\n");
 
@@ -494,10 +494,10 @@ int create_swapchain_imageviews ()
 		}
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int get_device_queues ()
+AGAINST_RESULT get_device_queues ()
 {
 	OutputDebugString (L"get_device_queues\n");
 
@@ -509,10 +509,10 @@ int get_device_queues ()
 	vkGetDeviceQueue (graphics_device, compute_queue_family_index, compute_queue_index, &compute_queue);
 	vkGetDeviceQueue (graphics_device, transfer_queue_family_index, transfer_queue_index, &transfer_queue);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int common_graphics_init (HINSTANCE HInstance, HWND HWnd)
+AGAINST_RESULT common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 {
 	OutputDebugString (L"graphics_init\n");
 
@@ -522,7 +522,7 @@ int common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 	is_validation_needed = false;
 #endif
 
-	AGAINSTRESULT result;
+	AGAINST_RESULT result;
 
 	CHECK_AGAINST_RESULT (populate_instance_layers_and_extensions (), result);
 	CHECK_AGAINST_RESULT (create_instance (), result);
@@ -542,7 +542,7 @@ int common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 	CHECK_AGAINST_RESULT (get_device_queues (), result);
 	CHECK_AGAINST_RESULT (vk_utils_create_command_pools (graphics_device, transfer_queue_family_index, 1, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, &transfer_command_pool), result);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
 void common_graphics_exit ()

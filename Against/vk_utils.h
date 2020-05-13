@@ -1,5 +1,6 @@
 #pragma once
 
+#include "error.h"
 #include <vulkan/vulkan.h>
 
 typedef struct _vk_command_pool
@@ -10,7 +11,7 @@ typedef struct _vk_command_pool
     size_t command_buffers_count;
 } vk_command_pool;
 
-int vk_utils_create_buffer (
+AGAINST_RESULT vk_utils_create_buffer (
     VkDevice graphics_device, 
     VkDeviceSize size, 
     VkBufferUsageFlags usage, 
@@ -19,7 +20,7 @@ int vk_utils_create_buffer (
     VkBuffer* out_buffer
 );
 
-int vk_utils_allocate_bind_buffer_memory (
+AGAINST_RESULT vk_utils_allocate_bind_buffer_memory (
     VkDevice graphics_device, 
     VkBuffer* buffers, 
     uint32_t buffer_count, 
@@ -28,7 +29,7 @@ int vk_utils_allocate_bind_buffer_memory (
     VkDeviceMemory* out_memory
 );
 
-int vk_utils_map_data_to_device_memory (
+AGAINST_RESULT vk_utils_map_data_to_device_memory (
     VkDevice graphics_device, 
     VkDeviceMemory memory, 
     VkDeviceSize offset, 
@@ -36,7 +37,7 @@ int vk_utils_map_data_to_device_memory (
     void* data_source
 );
 
-int vk_utils_create_image (
+AGAINST_RESULT vk_utils_create_image (
     VkDevice graphics_device, 
     uint32_t src_queue_family_index, 
     VkExtent3D extent, 
@@ -48,13 +49,13 @@ int vk_utils_create_image (
     VkImage* out_image
 );
 
-int vk_utils_create_image_view (
+AGAINST_RESULT vk_utils_create_image_view (
     VkDevice graphics_device,
     VkImage image,
     VkImageView* out_image_view
 );
 
-int vk_utils_allocate_bind_image_memory (
+AGAINST_RESULT vk_utils_allocate_bind_image_memory (
     VkDevice graphics_device, 
     VkImage* images, 
     uint32_t image_count, 
@@ -63,7 +64,7 @@ int vk_utils_allocate_bind_image_memory (
     VkDeviceMemory* out_memory
 );
 
-int vk_utils_change_image_layout (
+AGAINST_RESULT vk_utils_change_image_layout (
     VkDevice graphics_device,
     VkQueue transfer_queue,
     vk_command_pool transfer_command_pool,
@@ -79,7 +80,7 @@ int vk_utils_change_image_layout (
     VkPipelineStageFlags dst_stage
 );
 
-int vk_utils_copy_buffer_to_buffer (
+AGAINST_RESULT vk_utils_copy_buffer_to_buffer (
     VkDevice graphics_device, 
     vk_command_pool transfer_command_pool, 
     VkQueue transfer_queue, 
@@ -88,7 +89,7 @@ int vk_utils_copy_buffer_to_buffer (
     VkDeviceSize size
 );
 
-int vk_utils_copy_buffer_to_image (
+AGAINST_RESULT vk_utils_copy_buffer_to_image (
     VkDevice graphics_device,
     vk_command_pool transfer_command_pool,
     VkQueue transfer_queue,
@@ -99,7 +100,7 @@ int vk_utils_copy_buffer_to_image (
     uint32_t layer_count
 );
 
-int vk_utils_create_shader (
+AGAINST_RESULT vk_utils_create_shader (
     const char* file_path, 
     VkDevice graphics_device, 
     VkShaderStageFlagBits shader_stage, 
@@ -107,7 +108,7 @@ int vk_utils_create_shader (
     VkPipelineShaderStageCreateInfo* shader_stage_create_info
 );
 
-int vk_utils_create_descriptor_pool (
+AGAINST_RESULT vk_utils_create_descriptor_pool (
     VkDevice graphics_device,
     VkDescriptorType* types,
     size_t* type_counts,
@@ -116,7 +117,7 @@ int vk_utils_create_descriptor_pool (
     VkDescriptorPool* out_descriptor_pool
 );
 
-int vk_utils_create_descriptor_set_layout_bindings (
+AGAINST_RESULT vk_utils_create_descriptor_set_layout_bindings (
     VkDevice graphics_device,
     VkDescriptorType* descriptor_types,
     size_t* descriptor_count_per_type,
@@ -126,14 +127,14 @@ int vk_utils_create_descriptor_set_layout_bindings (
     VkDescriptorSetLayoutBinding* out_descriptor_set_layout_bindings
 );
 
-int vk_utils_create_descriptor_set_layout (
+AGAINST_RESULT vk_utils_create_descriptor_set_layout (
     VkDevice graphics_device,
     VkDescriptorSetLayoutBinding* bindings,
     size_t num_bindings,
     VkDescriptorSetLayout* out_descriptor_set_layout
 );
 
-int vk_utils_allocate_descriptor_sets (
+AGAINST_RESULT vk_utils_allocate_descriptor_sets (
     VkDevice graphics_device,
     VkDescriptorPool descriptor_pool,
     VkDescriptorSetLayout* descriptor_set_layouts,
@@ -141,7 +142,7 @@ int vk_utils_allocate_descriptor_sets (
     VkDescriptorSet* out_descriptor_sets
 );
 
-int vk_utils_update_descriptor_sets (
+AGAINST_RESULT vk_utils_update_descriptor_sets (
     VkDevice graphics_device,
     VkDescriptorSet* descriptor_sets,
     VkDescriptorType* descriptor_types,
@@ -152,7 +153,7 @@ int vk_utils_update_descriptor_sets (
     size_t num_descriptor_sets
 );
 
-int vk_utils_create_command_pools (
+AGAINST_RESULT vk_utils_create_command_pools (
     VkDevice graphics_device, 
     size_t queue_family_index, 
     size_t command_pools_count,
@@ -160,7 +161,7 @@ int vk_utils_create_command_pools (
     vk_command_pool* out_command_pools
 );
 
-int vk_utils_allocate_command_buffers (
+AGAINST_RESULT vk_utils_allocate_command_buffers (
     VkDevice graphics_device,
     VkCommandBufferLevel level, 
     size_t command_pools_count, 
@@ -168,13 +169,13 @@ int vk_utils_allocate_command_buffers (
     vk_command_pool* in_out_command_pools
 );
 
-int vk_utils_create_semaphores (
+AGAINST_RESULT vk_utils_create_semaphores (
     VkDevice graphics_device, 
     size_t semaphores_count, 
     VkSemaphore* out_semaphores
 );
 
-int vk_utils_create_semaphores_for_command_pools (
+AGAINST_RESULT vk_utils_create_semaphores_for_command_pools (
     VkDevice graphics_device,
     size_t command_pools_count,
     vk_command_pool* in_out_command_pools

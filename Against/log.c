@@ -1,59 +1,8 @@
-#include <stdio.h>
 #include "log.h"
+
 #include <Windows.h>
 
-#include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
-
-char file_name_base[256];
-char* file_name_suffix = ".txt";
-char file_name_timestamp[256];
-char old_file_name[256];
-
-FILE* log_file;
-
-int log_init ()
-{
-	strcpy (file_name_base, getenv ("TMP"));
-	strcat (file_name_base, "\\Against\\log");
-	
-	strcpy (old_file_name, file_name_base);
-	strcat (old_file_name, "_live");
-	strcat (old_file_name, file_name_suffix);
-	
-	log_file = fopen (old_file_name, "w");
-
-	if (log_file != NULL)
-	{
-		return AGAINST_ERROR_SYSTEM_TMP_FILE;
-	}
-
-	return 0;
-}
-
-int log_info (const char* category, const char* message)
-{
-	if (log_file == NULL)
-	{
-		return AGAINST_ERROR_SYSTEM_TMP_FILE;
-	}
-
-	char buffer[256];
-	strcpy (buffer, category);
-	strcat (buffer, ":");
-	strcat (buffer, message);
-	strcat (buffer, "\n");
-	fwrite (buffer, sizeof (char), strlen (buffer), log_file);
-
-	wchar_t buff[256];
-	swprintf (buff, 256, L"%hs", buffer);
-	OutputDebugString (buff);
-
-	return 0;
-}
-
-int log_error (AGAINSTRESULT Result)
+int log_error (AGAINST_RESULT Result)
 {
 	switch (Result)
 	{
@@ -229,25 +178,5 @@ int log_error (AGAINSTRESULT Result)
 		break;
 	}
 
-	return 0;
-}
-
-int log_exit ()
-{
-	if (log_file == NULL)
-	{
-		return AGAINST_ERROR_SYSTEM_TMP_FILE;
-	}
-
-	fclose (log_file);
-
-	strcpy (file_name_timestamp, "_sometime");
-	char new_file_name[256];
-	strcpy (new_file_name, file_name_base);
-	strcat (new_file_name, file_name_timestamp);
-	strcat (new_file_name, file_name_suffix);
-
-	rename (old_file_name, new_file_name);
-
-	return 0;
+	return AGAINST_SUCCESS;
 }

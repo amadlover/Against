@@ -60,7 +60,7 @@ typedef struct anim_joint_data
     char name[2048];
 } anim_joint_data;
 
-int import_images (const char* full_folder_path, cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+AGAINST_RESULT import_images (const char* full_folder_path, cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_images\n");
 
@@ -72,7 +72,7 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t data
     size_t* img_heights = NULL;
     uint8_t** img_pixels = NULL;
 
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
 
     size_t current_index = 0;
 
@@ -208,10 +208,10 @@ int import_images (const char* full_folder_path, cgltf_data** datas, size_t data
 
     vk_utils_destroy_buffer_and_buffer_memory (graphics_device, staging_buffer, staging_memory);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int import_materials (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+AGAINST_RESULT import_materials (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_materials\n");
 
@@ -312,10 +312,10 @@ int import_materials (cgltf_data** datas, size_t datas_count, scene_asset_data* 
         ref_cgltf_materials_count += current_data->materials_count;
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int import_graphics_primitives (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+AGAINST_RESULT import_graphics_primitives (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_graphics_primitives\n");
     unsigned char** positions = NULL;
@@ -679,7 +679,7 @@ int import_graphics_primitives (cgltf_data** datas, size_t datas_count, scene_as
         }
     }
     
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
     
     VkBuffer staging_buffer;
     VkDeviceMemory staging_buffer_memory;
@@ -853,10 +853,10 @@ int import_graphics_primitives (cgltf_data** datas, size_t datas_count, scene_as
     utils_free (indices_offsets);
     utils_free (indices_types);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-/*int link_graphics_primitives_to_materials (scene_asset_data* out_data)
+/*AGAINST_RESULT link_graphics_primitives_to_materials (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_graphics_primitives_to_materials\n");
 
@@ -888,10 +888,10 @@ int import_graphics_primitives (cgltf_data** datas, size_t datas_count, scene_as
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }*/
 
-int link_materials_to_graphics_primitives (scene_asset_data* out_data)
+AGAINST_RESULT link_materials_to_graphics_primitives (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_materials_to_graphics_primitives\n");
 
@@ -910,10 +910,10 @@ int link_materials_to_graphics_primitives (scene_asset_data* out_data)
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+AGAINST_RESULT import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_skins\n");
 
@@ -983,7 +983,7 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
         out_data->skins[s].bind_pose_offset = (VkDeviceSize)aligned_skin_joints_size * (VkDeviceSize)s;
     }
 
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
 
     VkBuffer staging_buffer; VkDeviceMemory staging_buffer_memory;
     CHECK_AGAINST_RESULT (vk_utils_create_buffer (graphics_device, total_data_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, graphics_queue_family_index, &staging_buffer), result);
@@ -999,10 +999,10 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
 
     utils_aligned_free (skin_joints_matrices);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-/*int import_skin_animations (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+/*AGAINST_RESULT import_skin_animations (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_skin_animations\n");
 
@@ -1092,10 +1092,10 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-/*int gather_animations (cgltf_data** datas, size_t datas_count)
+/*AGAINST_RESULT gather_animations (cgltf_data** datas, size_t datas_count)
 {
     OutputDebugString (L"gather_animations\n");
 
@@ -1123,10 +1123,10 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
         ref_cgltf_anims_count += current_data->animations_count;
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }*/
 
-/*int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+/*AGAINST_RESULT import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_animations\n");
 
@@ -1210,10 +1210,10 @@ int import_skins (cgltf_data** datas, size_t datas_count, scene_asset_data* out_
     }
     utils_free (skin_anims);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }*/
 
-int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+AGAINST_RESULT import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_animations\n");
 
@@ -1359,7 +1359,7 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
         total_data_allocated += size_of_single_frame * current_out_anim->frames_count;
     }
 
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
 
     VkBuffer staging_buffer;
     VkDeviceMemory staging_buffer_memory;
@@ -1384,10 +1384,10 @@ int import_animations (cgltf_data** datas, size_t datas_count, scene_asset_data*
 
     utils_aligned_free (all_animations_aligned_memory);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int import_skeletal_meshes (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+AGAINST_RESULT import_skeletal_meshes (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_skeletal_meshes\n");
 
@@ -1438,10 +1438,10 @@ int import_skeletal_meshes (cgltf_data** datas, size_t datas_count, scene_asset_
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-/*int link_materials_to_meshes (scene_asset_data* out_data)
+/*AGAINST_RESULT link_materials_to_meshes (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_materials_to_meshes\n");
 
@@ -1515,10 +1515,10 @@ int import_skeletal_meshes (cgltf_data** datas, size_t datas_count, scene_asset_
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }*/
 
-/*int link_graphics_primitives_to_meshes (scene_asset_data* out_data)
+/*AGAINST_RESULT link_graphics_primitives_to_meshes (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_graphics_primitives_to_meshes\n");
 
@@ -1583,10 +1583,10 @@ int import_skeletal_meshes (cgltf_data** datas, size_t datas_count, scene_asset_
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }*/
 
-/*int link_mesh_node_graphics_primitives_to_skins (scene_asset_data* out_data)
+/*AGAINST_RESULT link_mesh_node_graphics_primitives_to_skins (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_mesh_node_graphics_primitives_to_skins\n");
     
@@ -1666,10 +1666,10 @@ int import_skeletal_meshes (cgltf_data** datas, size_t datas_count, scene_asset_
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }*/
 
-int link_animations_to_skins (scene_asset_data* out_data)
+AGAINST_RESULT link_animations_to_skins (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_animations_to_skins\n");
 
@@ -1697,10 +1697,10 @@ int link_animations_to_skins (scene_asset_data* out_data)
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-/*int link_skins_to_meshes (scene_asset_data* out_data)
+/*AGAINST_RESULT link_skins_to_meshes (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_skins_to_meshes\n");
 
@@ -1715,10 +1715,10 @@ int link_animations_to_skins (scene_asset_data* out_data)
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }*/
 
-int link_graphics_primitives_to_skeletal_meshes (scene_asset_data* out_data)
+AGAINST_RESULT link_graphics_primitives_to_skeletal_meshes (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_graphics_primitives_to_skeletal_meshes\n");
 
@@ -1783,10 +1783,10 @@ int link_graphics_primitives_to_skeletal_meshes (scene_asset_data* out_data)
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int link_skeletal_meshes_to_skins (scene_asset_data* out_data)
+AGAINST_RESULT link_skeletal_meshes_to_skins (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_skeletal_meshes_to_skins\n");
 
@@ -1813,14 +1813,14 @@ int link_skeletal_meshes_to_skins (scene_asset_data* out_data)
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+AGAINST_RESULT import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_gltf_datas\n");
 
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
     
     CHECK_AGAINST_RESULT (import_images (full_folder_path, datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (import_materials (datas, datas_count, out_data), result);
@@ -1833,10 +1833,10 @@ int import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t 
     CHECK_AGAINST_RESULT (link_graphics_primitives_to_skeletal_meshes (out_data), result);
     CHECK_AGAINST_RESULT (link_skeletal_meshes_to_skins (out_data), result);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int gather_gltf_datas (const char* full_file_path, cgltf_data** datas, size_t current_data_index)
+AGAINST_RESULT gather_gltf_datas (const char* full_file_path, cgltf_data** datas, size_t current_data_index)
 {
     OutputDebugString (L"gather_gltf_datas\n");
     cgltf_options options = { 0 };
@@ -1858,10 +1858,10 @@ int gather_gltf_datas (const char* full_file_path, cgltf_data** datas, size_t cu
     }
 
     gltf_datas[current_data_index] = data;
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int import_gltf_files_from_folder (const char* partial_folder_path, scene_asset_data** out_gltf_data)
+AGAINST_RESULT import_gltf_files_from_folder (const char* partial_folder_path, scene_asset_data** out_gltf_data)
 {
     OutputDebugString (L"import_gltf_files_from_folder\n");
     
@@ -1875,7 +1875,7 @@ int import_gltf_files_from_folder (const char* partial_folder_path, scene_asset_
     char full_folder_path[MAX_PATH];
     utils_get_full_file_path (partial_folder_path, full_folder_path);
 
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
 
     for (size_t f = 0 ; f < num_files; ++f)
     {
@@ -1929,10 +1929,10 @@ int import_gltf_files_from_folder (const char* partial_folder_path, scene_asset_
     ref_cgltf_mesh_nodes = NULL;
     ref_cgltf_mesh_nodes_count = 0;
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int import_gltf_file (const char* file_path)
+AGAINST_RESULT import_gltf_file (const char* file_path)
 {
     cgltf_options options = { 0 };
     cgltf_data* data = NULL;
@@ -1954,5 +1954,5 @@ int import_gltf_file (const char* file_path)
 
     cgltf_free (data);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }

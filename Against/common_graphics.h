@@ -23,5 +23,5 @@ VkQueue transfer_queue;
 VkQueue compute_queue;
 vk_command_pool transfer_command_pool;
 
-int common_graphics_init (HINSTANCE HInstance, HWND WindowHandle);
+AGAINST_RESULT common_graphics_init (HINSTANCE HInstance, HWND WindowHandle);
 void common_graphics_exit ();

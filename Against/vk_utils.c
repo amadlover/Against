@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int vk_utils_create_buffer (VkDevice graphics_device,
+AGAINST_RESULT vk_utils_create_buffer (VkDevice graphics_device,
 	VkDeviceSize size,
 	VkBufferUsageFlags usage,
 	VkSharingMode sharing_mode,
@@ -25,10 +25,10 @@ int vk_utils_create_buffer (VkDevice graphics_device,
 		return AGAINST_ERROR_GRAPHICS_CREATE_BUFFER;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int get_memory_type_index (
+AGAINST_RESULT get_memory_type_index (
 	VkMemoryRequirements memory_requirements,
 	VkPhysicalDeviceMemoryProperties physical_device_memory_properties,
 	VkMemoryPropertyFlags required_memory_types,
@@ -44,10 +44,10 @@ int get_memory_type_index (
 		}
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int submit_one_time_cmd (VkQueue transfer_queue, VkCommandBuffer command_buffer)
+AGAINST_RESULT submit_one_time_cmd (VkQueue transfer_queue, VkCommandBuffer command_buffer)
 {
 	VkSubmitInfo submit_info = { 0 };
 
@@ -62,10 +62,10 @@ int submit_one_time_cmd (VkQueue transfer_queue, VkCommandBuffer command_buffer)
 
 	vkQueueWaitIdle (transfer_queue);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int get_one_time_command_buffer (VkDevice graphics_device, vk_command_pool* in_out_transfer_command_pool)
+AGAINST_RESULT get_one_time_command_buffer (VkDevice graphics_device, vk_command_pool* in_out_transfer_command_pool)
 {
 	in_out_transfer_command_pool->command_buffers_count = 1;
 	in_out_transfer_command_pool->command_buffers = (VkCommandBuffer*)utils_calloc (1, sizeof (VkCommandBuffer));
@@ -91,10 +91,10 @@ int get_one_time_command_buffer (VkDevice graphics_device, vk_command_pool* in_o
 		return AGAINST_ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
+AGAINST_RESULT vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 	VkBuffer* buffers,
 	uint32_t buffer_count,
 	VkPhysicalDeviceMemoryProperties physical_device_memory_properties,
@@ -132,10 +132,10 @@ int vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 
 	utils_free (offsets);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_map_data_to_device_memory (VkDevice graphics_device,
+AGAINST_RESULT vk_utils_map_data_to_device_memory (VkDevice graphics_device,
 	VkDeviceMemory memory,
 	VkDeviceSize offset,
 	VkDeviceSize size,
@@ -150,10 +150,10 @@ int vk_utils_map_data_to_device_memory (VkDevice graphics_device,
 	memcpy (Data, data_source, (size_t)size);
 	vkUnmapMemory (graphics_device, memory);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_create_image (
+AGAINST_RESULT vk_utils_create_image (
 	VkDevice graphics_device,
 	uint32_t queue_family_index,
 	VkExtent3D extent,
@@ -185,10 +185,10 @@ int vk_utils_create_image (
 		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_create_image_view (
+AGAINST_RESULT vk_utils_create_image_view (
 	VkDevice graphics_device,
 	VkImage image,
 	VkImageView* out_image_view
@@ -213,10 +213,10 @@ int vk_utils_create_image_view (
 		return AGAINST_ERROR_GRAPHICS_CREATE_IMAGE_VIEW;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_allocate_bind_image_memory (
+AGAINST_RESULT vk_utils_allocate_bind_image_memory (
 	VkDevice graphics_device, 
 	VkImage* images, 
 	uint32_t image_count, 
@@ -255,7 +255,7 @@ int vk_utils_allocate_bind_image_memory (
 
 	utils_free (offsets);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
 errno_t ReadShaderFile (char* full_file_path, char** file_contents)
@@ -277,10 +277,10 @@ errno_t ReadShaderFile (char* full_file_path, char** file_contents)
 	fread (*file_contents, sizeof (uint32_t), file_size, vert_file);
 	fclose (vert_file);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_change_image_layout (
+AGAINST_RESULT vk_utils_change_image_layout (
 	VkDevice graphics_device,
 	VkQueue transfer_queue,
 	vk_command_pool transfer_command_pool,
@@ -295,7 +295,7 @@ int vk_utils_change_image_layout (
 	VkPipelineStageFlags src_stage,
 	VkPipelineStageFlags dst_stage)
 {
-	AGAINSTRESULT result = AGAINST_SUCCESS;
+	AGAINST_RESULT result = AGAINST_SUCCESS;
 
 	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
@@ -328,10 +328,10 @@ int vk_utils_change_image_layout (
 	utils_free (transfer_command_pool.command_buffers);
 	transfer_command_pool.command_buffers_count = 0;
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_copy_buffer_to_buffer (
+AGAINST_RESULT vk_utils_copy_buffer_to_buffer (
 	VkDevice graphics_device,
 	vk_command_pool transfer_command_pool,
 	VkQueue queue,
@@ -339,7 +339,7 @@ int vk_utils_copy_buffer_to_buffer (
 	VkBuffer dst_buffer,
 	VkDeviceSize size)
 {
-	AGAINSTRESULT result;
+	AGAINST_RESULT result;
 
 	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
@@ -357,10 +357,10 @@ int vk_utils_copy_buffer_to_buffer (
 	utils_free (transfer_command_pool.command_buffers);
 	transfer_command_pool.command_buffers_count = 0;
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_copy_buffer_to_image (
+AGAINST_RESULT vk_utils_copy_buffer_to_image (
 	VkDevice graphics_device,
 	vk_command_pool transfer_command_pool,
 	VkQueue transfer_queue,
@@ -370,7 +370,7 @@ int vk_utils_copy_buffer_to_image (
 	VkExtent3D extent,
 	uint32_t layer_count)
 {
-	AGAINSTRESULT result;
+	AGAINST_RESULT result;
 	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
 	VkImageSubresourceLayers subresource_layers = { 0 };
@@ -394,10 +394,10 @@ int vk_utils_copy_buffer_to_image (
 	utils_free (transfer_command_pool.command_buffers);
 	transfer_command_pool.command_buffers_count = 0;
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_create_shader (const char* full_file_path,
+AGAINST_RESULT vk_utils_create_shader (const char* full_file_path,
 	VkDevice graphics_device,
 	VkShaderStageFlagBits shader_stage,
 	VkShaderModule* shader_module,
@@ -451,10 +451,10 @@ int vk_utils_create_shader (const char* full_file_path,
 		*shader_stage_create_info = shader_stage_c_i;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_create_descriptor_pool (
+AGAINST_RESULT vk_utils_create_descriptor_pool (
 	VkDevice graphics_device,
 	VkDescriptorType* types,
 	size_t* type_counts,
@@ -484,10 +484,10 @@ int vk_utils_create_descriptor_pool (
 
 	utils_free (pool_sizes);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_create_descriptor_set_layout_bindings (
+AGAINST_RESULT vk_utils_create_descriptor_set_layout_bindings (
 	VkDevice graphics_device,
 	VkDescriptorType* descriptor_types,
 	size_t* descriptor_count_per_type,
@@ -504,10 +504,10 @@ int vk_utils_create_descriptor_set_layout_bindings (
 		out_descriptor_set_layout_bindings[d].stageFlags = stage_flags[d];
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_create_descriptor_set_layout (
+AGAINST_RESULT vk_utils_create_descriptor_set_layout (
 	VkDevice graphics_device,
 	VkDescriptorSetLayoutBinding* bindings,
 	size_t num_bindings,
@@ -523,10 +523,10 @@ int vk_utils_create_descriptor_set_layout (
 		return AGAINST_ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_allocate_descriptor_sets (
+AGAINST_RESULT vk_utils_allocate_descriptor_sets (
 	VkDevice graphics_device,
 	VkDescriptorPool descriptor_pool,
 	VkDescriptorSetLayout* descriptor_set_layouts,
@@ -544,10 +544,10 @@ int vk_utils_allocate_descriptor_sets (
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SET;
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_update_descriptor_sets (
+AGAINST_RESULT vk_utils_update_descriptor_sets (
 	VkDevice graphics_device,
 	VkDescriptorSet* descriptor_sets,
 	VkDescriptorType* descriptor_types,
@@ -573,10 +573,10 @@ int vk_utils_update_descriptor_sets (
 
 	utils_free (descriptor_writes);
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_create_command_pools (VkDevice graphics_device, size_t queue_family_index, size_t command_pools_count, VkCommandPoolCreateFlags flags, vk_command_pool* out_command_pools)
+AGAINST_RESULT vk_utils_create_command_pools (VkDevice graphics_device, size_t queue_family_index, size_t command_pools_count, VkCommandPoolCreateFlags flags, vk_command_pool* out_command_pools)
 {
 	VkCommandPoolCreateInfo create_info = { 0 };
 	create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -591,10 +591,10 @@ int vk_utils_create_command_pools (VkDevice graphics_device, size_t queue_family
 		}
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_allocate_command_buffers (VkDevice graphics_device, VkCommandBufferLevel level, size_t command_pools_count, size_t* command_buffers_counts, vk_command_pool* in_out_command_pools)
+AGAINST_RESULT vk_utils_allocate_command_buffers (VkDevice graphics_device, VkCommandBufferLevel level, size_t command_pools_count, size_t* command_buffers_counts, vk_command_pool* in_out_command_pools)
 {
 	for (size_t cp = 0; cp < command_pools_count; ++cp)
 	{
@@ -613,10 +613,10 @@ int vk_utils_allocate_command_buffers (VkDevice graphics_device, VkCommandBuffer
 		}
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_create_semaphores (VkDevice graphics_device, size_t semaphores_count, VkSemaphore* out_semaphores)
+AGAINST_RESULT vk_utils_create_semaphores (VkDevice graphics_device, size_t semaphores_count, VkSemaphore* out_semaphores)
 {
 	VkSemaphoreCreateInfo create_info = { 0 };
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -629,10 +629,10 @@ int vk_utils_create_semaphores (VkDevice graphics_device, size_t semaphores_coun
 		}
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
-int vk_utils_create_semaphores_for_command_pools (VkDevice graphics_device, size_t command_pools_count, vk_command_pool* in_out_command_pools)
+AGAINST_RESULT vk_utils_create_semaphores_for_command_pools (VkDevice graphics_device, size_t command_pools_count, vk_command_pool* in_out_command_pools)
 {
 	VkSemaphoreCreateInfo create_info = { 0 };
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -650,7 +650,7 @@ int vk_utils_create_semaphores_for_command_pools (VkDevice graphics_device, size
 		}
 	}
 
-	return 0;
+	return AGAINST_SUCCESS;
 }
 
 void vk_utils_get_aligned_size (size_t original_size, size_t alignment, size_t* out_aligned_size)

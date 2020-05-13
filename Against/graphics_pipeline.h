@@ -17,7 +17,7 @@ typedef struct _vk_skybox_graphics_pipeline
     VkDescriptorSetLayout descriptor_set_layout;
 } vk_skybox_graphics_pipeline;
 
-int create_skybox_graphics_pipeline (scene_asset_data* asset_data, vk_skybox_graphics_pipeline** out_graphics_pipeline);
-int create_skeletal_opaque_graphics_pipeline (scene_asset_data* asset_data, vk_skeletal_opaque_graphics_pipeline** out_graphics_pipeline);
+AGAINST_RESULT create_skybox_graphics_pipeline (scene_asset_data* asset_data, vk_skybox_graphics_pipeline** out_graphics_pipeline);
+AGAINST_RESULT create_skeletal_opaque_graphics_pipeline (scene_asset_data* asset_data, vk_skeletal_opaque_graphics_pipeline** out_graphics_pipeline);
 
 void destroy_skeletal_opaque_graphics_pipeline (vk_skeletal_opaque_graphics_pipeline* graphics_pipeline); 

@@ -3,21 +3,21 @@
 #include "vk_utils.h"
 #include "common_graphics.h"
 
-int create_skybox_graphics_pipeline (scene_asset_data* asset_data, vk_skybox_graphics_pipeline** out_graphics_pipeline)
+AGAINST_RESULT create_skybox_graphics_pipeline (scene_asset_data* asset_data, vk_skybox_graphics_pipeline** out_graphics_pipeline)
 {
     OutputDebugString (L"create_skybox_graphics_pipeine\n");
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int create_skeletal_opaque_graphics_pipeline (scene_asset_data* asset_data, vk_skeletal_opaque_graphics_pipeline** out_graphics_pipeline)
+AGAINST_RESULT create_skeletal_opaque_graphics_pipeline (scene_asset_data* asset_data, vk_skeletal_opaque_graphics_pipeline** out_graphics_pipeline)
 {
     OutputDebugString (L"create_skeletal_opaque_graphics_pipeline\n");
 
     *out_graphics_pipeline = (vk_skeletal_opaque_graphics_pipeline*)utils_calloc (1, sizeof (vk_skeletal_opaque_graphics_pipeline));
     vk_skeletal_opaque_graphics_pipeline* graphics_pipeline = *out_graphics_pipeline;
 
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
     
     char full_vertex_shader_path[MAX_PATH];
     utils_get_full_file_path ("pbr_opaque.vert.spv", full_vertex_shader_path);
@@ -44,7 +44,7 @@ int create_skeletal_opaque_graphics_pipeline (scene_asset_data* asset_data, vk_s
 
     CHECK_AGAINST_RESULT (vk_utils_create_descriptor_set_layout (graphics_device, descriptor_set_layout_bindings, 2, &graphics_pipeline->descriptor_set_layout), result);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
 void destroy_skeletal_opaque_graphics_pipeline (vk_skeletal_opaque_graphics_pipeline* graphics_pipeline)

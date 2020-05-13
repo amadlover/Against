@@ -21,7 +21,7 @@ VkRenderPass render_pass = VK_NULL_HANDLE;
 VkFramebuffer* frame_buffers = NULL;
 size_t frame_buffers_count = 0;
 
-int create_render_pass ()
+AGAINST_RESULT create_render_pass ()
 {
     OutputDebugString (L"create_render_pass\n");
 
@@ -55,10 +55,10 @@ int create_render_pass ()
         return AGAINST_ERROR_GRAPHICS_CREATE_RENDER_PASS;
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int create_frame_buffers ()
+AGAINST_RESULT create_frame_buffers ()
 {
     OutputDebugString (L"create_frame_buffers\n");
 
@@ -82,10 +82,10 @@ int create_frame_buffers ()
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int record_command_buffers ()
+AGAINST_RESULT record_command_buffers ()
 {
     OutputDebugString (L"record_command_buffers\n");
 
@@ -122,14 +122,14 @@ int record_command_buffers ()
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
+AGAINST_RESULT test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
 {
     OutputDebugString (L"test_scene_init\n");
     
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
 
     CHECK_AGAINST_RESULT (import_scene_data ("", &asset_data), result);
     CHECK_AGAINST_RESULT (create_skeletal_opaque_graphics_pipeline (asset_data, &skeletal_opaque_graphics_pipeline), result);
@@ -147,14 +147,14 @@ int test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
     CHECK_AGAINST_RESULT (vk_utils_create_semaphores_for_command_pools (graphics_device, graphics_command_pools_count, graphics_command_pools), result);
     CHECK_AGAINST_RESULT (record_command_buffers (), result);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int test_scene_process_keyboard_input (WPARAM w_param, LPARAM l_param)
+AGAINST_RESULT test_scene_process_keyboard_input (WPARAM w_param, LPARAM l_param)
 {
     OutputDebugString (L"test_scene_process_keyboard_input\n");
     
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
 
     switch (w_param)
     {
@@ -166,27 +166,27 @@ int test_scene_process_keyboard_input (WPARAM w_param, LPARAM l_param)
         break;
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int draw_skybox ()
+AGAINST_RESULT draw_skybox ()
 {
     OutputDebugString (L"draw_skybox\n");
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int draw_opaque_skeletal_meshes ()
+AGAINST_RESULT draw_opaque_skeletal_meshes ()
 {
     OutputDebugString (L"draw_opaque_skeletal_meshes\n");
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int tick ()
+AGAINST_RESULT tick ()
 {
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int submit_present ()
+AGAINST_RESULT submit_present ()
 {
     size_t image_index = 0;
     VkResult result = vkAcquireNextImageKHR (graphics_device, swapchain, UINT64_MAX, wait_semaphore, VK_NULL_HANDLE, &image_index);
@@ -195,7 +195,7 @@ int submit_present ()
     {
         if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            return 0;
+            return AGAINST_SUCCESS;
         }
         else
         {
@@ -239,17 +239,17 @@ int submit_present ()
         }
     }
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
-int test_scene_main_loop ()
+AGAINST_RESULT test_scene_main_loop ()
 {
-    AGAINSTRESULT result;
+    AGAINST_RESULT result;
 
     CHECK_AGAINST_RESULT (tick (), result);
     CHECK_AGAINST_RESULT (submit_present (), result);
 
-    return 0;
+    return AGAINST_SUCCESS;
 }
 
 void test_scene_exit ()
