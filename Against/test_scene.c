@@ -125,7 +125,7 @@ AGAINST_RESULT record_command_buffers ()
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT test_scene_init (HINSTANCE h_instnace, HWND h_wnd)
+AGAINST_RESULT test_scene_init ()
 {
     OutputDebugString (L"test_scene_init\n");
     

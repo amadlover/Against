@@ -81,7 +81,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 
 	if (!RegisterClass (&wc))
 	{
-		return AGAINST_SUCCESS;
+		return EXIT_FAILURE;
 	}
 
 	HWND hWnd = CreateWindow 
@@ -101,7 +101,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 
 	if (!hWnd)
 	{
-		return -1;
+		return EXIT_FAILURE;
 	}
 
 	AGAINST_RESULT result = game_init (hInstance, hWnd);
@@ -111,7 +111,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 		log_error (result);
 		game_exit ();
 
-		return result;
+		return EXIT_FAILURE;
 	}
 
 	ShowWindow (hWnd, cmd_show);
@@ -135,12 +135,12 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 			log_error (result);
 			game_exit ();
 
-			return result;
+			return EXIT_FAILURE;
 		}
 	}
 
 	game_exit ();
 	DestroyWindow (hWnd);
 	
-	return AGAINST_SUCCESS;
+	return EXIT_SUCCESS;
 }
