@@ -378,7 +378,7 @@ AGAINST_RESULT create_graphics_device ()
 
 	VkDeviceQueueCreateInfo queue_create_infos[3] = { 0,0,0 };
 	size_t unique_queue_family_indices[3] = { 0,0,0 };
-	size_t unique_queue_counts[3] = { surface_capabilites.minImageCount + 1,1,1 };
+	size_t unique_queue_counts[3] = { 1,1,1 };
 	size_t unique_queue_family_indices_count = 0;
 
 	if (graphics_queue_family_index == compute_queue_family_index)
