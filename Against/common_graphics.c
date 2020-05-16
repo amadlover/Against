@@ -502,7 +502,7 @@ AGAINST_RESULT get_device_queues ()
 	OutputDebugString (L"get_device_queues\n");
 
 	size_t graphics_queue_index = 0;
-	size_t compute_queue_index = graphics_queue_family_index == compute_queue_family_index ? 3 : 0;
+	size_t compute_queue_index = graphics_queue_family_index == compute_queue_family_index ? 1 : 0;
 	size_t transfer_queue_index = transfer_queue_family_index == compute_queue_family_index ? compute_queue_index + 1 : 0;
 
 	vkGetDeviceQueue (graphics_device, graphics_queue_family_index, graphics_queue_index, &graphics_queue);

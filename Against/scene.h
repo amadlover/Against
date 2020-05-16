@@ -24,10 +24,10 @@ typedef struct _scene_asset_data
     vk_skeletal_mesh* skeletal_meshes;
     size_t skeletal_meshes_count;
 
-    vk_skeletal_graphics_primitive* graphics_primitives;
-    size_t graphics_primitives_count;
+    vk_skeletal_graphics_primitive* skeletal_graphics_primitives;
+    size_t skeletal_graphics_primitives_count;
 
-    vk_skeletal_material* materials;
+    vk_material* materials;
     size_t materials_count;
 
     vk_skin* skins;

@@ -45,8 +45,8 @@ void scene_cleanpup_data (scene_asset_data* scene_data)
 
         vkDestroyDescriptorPool (graphics_device, scene_data->descriptor_pool, NULL);
 
-        utils_free (scene_data->graphics_primitives);
-        scene_data->graphics_primitives_count = 0;
+        utils_free (scene_data->skeletal_graphics_primitives);
+        scene_data->skeletal_graphics_primitives_count = 0;
         utils_free (scene_data->materials);
         scene_data->materials_count = 0;
 
