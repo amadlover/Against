@@ -3,6 +3,8 @@
 #include "asset.h"
 #include "error.h"
 
+#include <Windows.h>
+
 typedef struct _scene_asset_data
 {
     VkBuffer vb_ib;
@@ -37,5 +39,10 @@ typedef struct _scene_asset_data
     VkDescriptorPool descriptor_pool;
 } scene_asset_data;
 
-AGAINST_RESULT import_scene_data (const char* partial_folder_path, scene_asset_data** scene_data);
-void cleanup_scene_data (scene_asset_data* scene_data);
+AGAINST_RESULT scene_import_data (const char* partial_folder_path, scene_asset_data** scene_data);
+void scene_cleanpup_data (scene_asset_data* scene_data);
+
+AGAINST_RESULT scene_init ();
+AGAINST_RESULT scene_process_keyboard_input (WPARAM w_param, LPARAM l_param);
+AGAINST_RESULT scene_main_loop ();
+void scene_shutdown ();

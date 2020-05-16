@@ -8,5 +8,5 @@ typedef enum _e_scene_type
 typedef enum _e_scene_state
 {
 	e_scene_state_inited,
-	e_scene_state_exited
+	e_scene_state_shutdowned
 } e_scene_state;

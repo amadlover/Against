@@ -5,7 +5,7 @@
 #include "vk_utils.h"
 #include "common_graphics.h"
 
-AGAINST_RESULT import_scene_data (const char* partial_folder_path, scene_asset_data** scene_data)
+AGAINST_RESULT scene_import_data (const char* partial_folder_path, scene_asset_data** scene_data)
 {
     AGAINST_RESULT result;
     CHECK_AGAINST_RESULT (import_gltf_files_from_folder (partial_folder_path, scene_data), result);
@@ -13,9 +13,9 @@ AGAINST_RESULT import_scene_data (const char* partial_folder_path, scene_asset_d
     return AGAINST_SUCCESS;
 }
 
-void cleanup_scene_data (scene_asset_data* scene_data)
+void scene_cleanpup_data (scene_asset_data* scene_data)
 {
-    OutputDebugString (L"cleanup_scene_data\n");
+    OutputDebugString (L"scene_cleanpup_data\n");
 
     if (scene_data)
     {
@@ -81,4 +81,23 @@ void cleanup_scene_data (scene_asset_data* scene_data)
         scene_data->skeletal_meshes_count = 0;
         utils_free (scene_data);
     }
+}
+
+AGAINST_RESULT scene_init ()
+{
+    return AGAINST_SUCCESS;
+}
+
+AGAINST_RESULT scene_process_keyboard_input (WPARAM w_param, LPARAM l_param)
+{
+    return AGAINST_SUCCESS;
+}
+
+AGAINST_RESULT scene_main_loop ()
+{
+    return AGAINST_SUCCESS;
+}
+
+void scene_shutdown ()
+{
 }

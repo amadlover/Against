@@ -24,4 +24,4 @@ VkQueue compute_queue;
 vk_command_pool transfer_command_pool;
 
 AGAINST_RESULT common_graphics_init (HINSTANCE HInstance, HWND WindowHandle);
-void common_graphics_exit ();
+void common_graphics_shutdown ();

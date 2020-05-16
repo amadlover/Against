@@ -13,7 +13,7 @@
 AGAINST_RESULT (*current_scene_init)();
 AGAINST_RESULT (*current_scene_process_keyboard_input)(WPARAM, LPARAM);
 AGAINST_RESULT (*current_scene_main_loop)();
-void (*current_scene_exit)();
+void (*current_scene_shutdown)();
 
 AGAINST_RESULT game_process_left_mouse_click ()
 {
@@ -62,9 +62,9 @@ AGAINST_RESULT game_set_current_scene (e_scene_type scene_type)
 {
 	OutputDebugString (L"game_set_current_scene\n");
 	
-	if (current_scene_exit != NULL)
+	if (current_scene_shutdown != NULL)
 	{
-		current_scene_exit ();
+		current_scene_shutdown ();
 	}
 
 	switch (scene_type)
@@ -73,7 +73,7 @@ AGAINST_RESULT game_set_current_scene (e_scene_type scene_type)
 		current_scene_init = test_scene_init;
 		current_scene_process_keyboard_input = test_scene_process_keyboard_input;
 		current_scene_main_loop = test_scene_main_loop;
-		current_scene_exit = test_scene_exit;
+		current_scene_shutdown = test_scene_shutdown;
 	default:
 		break;
 	}
@@ -98,14 +98,14 @@ AGAINST_RESULT game_main_loop ()
 	return AGAINST_SUCCESS;
 }
 
-void game_exit ()
+void game_shutdown ()
 {
-	OutputDebugString (L"game_exit\n");
+	OutputDebugString (L"game_shutdown\n");
 
-	if (current_scene_exit != NULL)
+	if (current_scene_shutdown != NULL)
 	{
-		current_scene_exit ();
+		current_scene_shutdown ();
 	}
 
-	common_graphics_exit ();
+	common_graphics_shutdown ();
 }

@@ -14,4 +14,4 @@ AGAINST_RESULT game_process_keyboard_input (WPARAM wParam, LPARAM lParam);
 AGAINST_RESULT game_init (HINSTANCE HInstance, HWND HWnd);
 AGAINST_RESULT game_set_current_scene (e_scene_type scene_type);
 AGAINST_RESULT game_main_loop ();
-void game_exit ();
+void game_shutdown ();

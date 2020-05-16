@@ -131,7 +131,7 @@ AGAINST_RESULT test_scene_init ()
     
     AGAINST_RESULT result;
 
-    CHECK_AGAINST_RESULT (import_scene_data ("", &asset_data), result);
+    CHECK_AGAINST_RESULT (scene_import_data ("", &asset_data), result);
     CHECK_AGAINST_RESULT (create_skeletal_opaque_graphics_pipeline (asset_data, &skeletal_opaque_graphics_pipeline), result);
     
     graphics_command_pools_count = swapchain_image_count;
@@ -166,18 +166,6 @@ AGAINST_RESULT test_scene_process_keyboard_input (WPARAM w_param, LPARAM l_param
         break;
     }
 
-    return AGAINST_SUCCESS;
-}
-
-AGAINST_RESULT draw_skybox ()
-{
-    OutputDebugString (L"draw_skybox\n");
-    return AGAINST_SUCCESS;
-}
-
-AGAINST_RESULT draw_opaque_skeletal_meshes ()
-{
-    OutputDebugString (L"draw_opaque_skeletal_meshes\n");
     return AGAINST_SUCCESS;
 }
 
@@ -252,16 +240,16 @@ AGAINST_RESULT test_scene_main_loop ()
     return AGAINST_SUCCESS;
 }
 
-void test_scene_exit ()
+void test_scene_shutdown ()
 {
-    OutputDebugString (L"test_scene_exit\n");
+    OutputDebugString (L"test_scene_shutdown\n");
 
     vkQueueWaitIdle (graphics_queue);
     vkQueueWaitIdle (compute_queue);
     vkQueueWaitIdle (transfer_queue);
 
     destroy_skeletal_opaque_graphics_pipeline (skeletal_opaque_graphics_pipeline);
-    cleanup_scene_data (asset_data);
+    scene_cleanpup_data (asset_data);
     
     vk_utils_destroy_command_pools_and_buffers (graphics_device, graphics_command_pools, graphics_command_pools_count);
     utils_free (graphics_command_pools);

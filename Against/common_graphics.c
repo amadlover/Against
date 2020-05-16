@@ -545,9 +545,9 @@ AGAINST_RESULT common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 	return AGAINST_SUCCESS;
 }
 
-void common_graphics_exit ()
+void common_graphics_shutdown ()
 {
-	OutputDebugString (L"graphics_exit\n");
+	OutputDebugString (L"graphics_shutdown\n");
 
 	vk_utils_destroy_command_pools_and_buffers (graphics_device, &transfer_command_pool, 1);
 
@@ -594,5 +594,5 @@ void common_graphics_exit ()
 		vkDestroyInstance (instance, NULL);
 	}
 
-	OutputDebugString (L"common_graphics_exit\n");
+	OutputDebugString (L"common_graphics_shutdown\n");
 }

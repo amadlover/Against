@@ -109,7 +109,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 	if (result != AGAINST_SUCCESS)
 	{
 		log_error (result);
-		game_exit ();
+		game_shutdown ();
 
 		return EXIT_FAILURE;
 	}
@@ -133,13 +133,13 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 		if (result != AGAINST_SUCCESS)
 		{
 			log_error (result);
-			game_exit ();
+			game_shutdown ();
 
 			return EXIT_FAILURE;
 		}
 	}
 
-	game_exit ();
+	game_shutdown ();
 	DestroyWindow (hWnd);
 	
 	return EXIT_SUCCESS;
