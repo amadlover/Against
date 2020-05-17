@@ -65,6 +65,17 @@ typedef struct _vk_skeletal_graphics_primitive
     vk_material* material;
 } vk_skeletal_graphics_primitive;
 
+typedef struct _vk_skeletal_physics_primitive
+{
+    size_t positions_offset;
+    size_t weights_offset;
+    size_t joints_offset;
+    size_t indices_offset;
+
+    size_t indices_count;
+    VkIndexType index_type;
+} vk_skeletal_physics_primitive;
+
 typedef struct _vk_static_graphics_primitive
 {
     size_t positions_offset;
@@ -74,11 +85,19 @@ typedef struct _vk_static_graphics_primitive
     size_t indices_offset;
 
     size_t indices_count;
-
     VkIndexType index_type;
 
     vk_material* material;
 } vk_static_graphics_primitive;
+
+typedef struct _vk_static_physics_primitive
+{
+    size_t positions_offset;
+    size_t indices_offset;
+
+    size_t indices_count;
+    VkIndexType index_type;
+} vk_static_physics_primitive;
 
 typedef struct _vk_skeletal_mesh
 {
@@ -92,6 +111,9 @@ typedef struct _vk_skeletal_mesh
 
     vk_skeletal_graphics_primitive** blend_graphics_primitives;
     size_t blend_graphics_primitives_count;
+
+    vk_skeletal_physics_primitive** physics_primitives;
+    size_t physics_primitives_count;
 } vk_skeletal_mesh;
 
 typedef struct _vk_static_mesh
@@ -106,6 +128,9 @@ typedef struct _vk_static_mesh
 
     vk_static_graphics_primitive** blend_graphics_primitives;
     size_t blend_graphics_primitive_count;
+
+    vk_static_physics_primitive** physics_primitives;
+    size_t physics_primitives_count;
 } vk_static_mesh;
 
 typedef struct _vk_skin
