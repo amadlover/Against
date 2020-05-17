@@ -79,6 +79,20 @@ void scene_cleanpup_data (scene_asset_data* scene_data)
 
         utils_free (scene_data->skeletal_meshes);
         scene_data->skeletal_meshes_count = 0;
+
+        for (size_t m = 0; m < scene_data->static_meshes_count; ++m)
+        {
+            utils_free (scene_data->static_meshes[m].opaque_graphics_primitives);
+            scene_data->static_meshes[m].opaque_graphics_primitives_count = 0;
+            utils_free (scene_data->static_meshes[m].alpha_graphics_primitives);
+            scene_data->static_meshes[m].alpha_graphics_primitives_count = 0;
+            utils_free (scene_data->static_meshes[m].blend_graphics_primitives);
+            scene_data->static_meshes[m].blend_graphics_primitives_count = 0;
+        }
+
+        utils_free (scene_data->static_meshes);
+        scene_data->static_meshes_count = 0;
+
         utils_free (scene_data);
     }
 }

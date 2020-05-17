@@ -121,13 +121,13 @@ typedef struct _vk_static_mesh
     char name[1024];
 
     vk_static_graphics_primitive** opaque_graphics_primitives;
-    size_t opaque_graphics_primitive_count;
+    size_t opaque_graphics_primitives_count;
 
     vk_static_graphics_primitive** alpha_graphics_primitives;
-    size_t alpha_graphics_primitive_count;
+    size_t alpha_graphics_primitives_count;
 
     vk_static_graphics_primitive** blend_graphics_primitives;
-    size_t blend_graphics_primitive_count;
+    size_t blend_graphics_primitives_count;
 
     vk_static_physics_primitive** physics_primitives;
     size_t physics_primitives_count;

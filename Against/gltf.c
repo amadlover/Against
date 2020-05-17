@@ -874,6 +874,13 @@ AGAINST_RESULT import_skeletal_graphics_primitives (cgltf_data** datas, size_t d
     return AGAINST_SUCCESS;
 }
 
+AGAINST_RESULT import_skeletal_physics_primitives (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+{
+    OutputDebugString (L"import_skeletal_physics_primitives\n");
+
+    return AGAINST_SUCCESS;
+}
+
 AGAINST_RESULT link_materials_to_skeletal_graphics_primitives (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_materials_to_skeletal_graphics_primitives\n");
@@ -1019,6 +1026,13 @@ AGAINST_RESULT link_skeletal_graphics_primitives_to_skeletal_meshes (scene_asset
             }
         }
     }
+
+    return AGAINST_SUCCESS;
+}
+
+AGAINST_RESULT link_skeletal_physics_primitives_to_skeletal_meshes (scene_asset_data* out_data)
+{
+    OutputDebugString (L"link_skeletal_physics_primitives_to_skeletal_meshes\n");
 
     return AGAINST_SUCCESS;
 }
@@ -1413,6 +1427,13 @@ AGAINST_RESULT import_static_graphics_primitives (cgltf_data** datas, size_t dat
     return AGAINST_SUCCESS;
 }
 
+AGAINST_RESULT import_static_physics_primitives (cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
+{
+    OutputDebugString (L"import_static_graphics_primitives\n");
+
+    return AGAINST_SUCCESS;
+}
+
 AGAINST_RESULT link_materials_to_static_graphics_primitives (scene_asset_data* out_data)
 {
     OutputDebugString (L"link_material_to_static_graphics_primitives\n");
@@ -1427,6 +1448,13 @@ AGAINST_RESULT link_static_graphics_primitives_to_static_meshes (scene_asset_dat
     return AGAINST_SUCCESS;
 }
 
+AGAINST_RESULT link_static_physics_primitives_to_static_meshes (scene_asset_data* out_data)
+{
+    OutputDebugString (L"link_static_physics_primitives_to_static_meshes\n");
+    
+    return AGAINST_SUCCESS;
+}
+
 AGAINST_RESULT import_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t datas_count, scene_asset_data* out_data)
 {
     OutputDebugString (L"import_gltf_datas\n");
@@ -1436,17 +1464,21 @@ AGAINST_RESULT import_gltf_datas (const char* full_folder_path, cgltf_data** dat
     CHECK_AGAINST_RESULT (import_images (full_folder_path, datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (import_materials (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (import_skeletal_graphics_primitives (datas, datas_count, out_data), result);
+    CHECK_AGAINST_RESULT (import_skeletal_physics_primitives (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_materials_to_skeletal_graphics_primitives(out_data), result);
     CHECK_AGAINST_RESULT (import_skeletal_meshes (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_skeletal_graphics_primitives_to_skeletal_meshes (out_data), result);
+    CHECK_AGAINST_RESULT (link_skeletal_physics_primitives_to_skeletal_meshes (out_data), result);
     CHECK_AGAINST_RESULT (import_skins (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_skeletal_meshes_to_skins (out_data), result);
     CHECK_AGAINST_RESULT (import_animations (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_animations_to_skins (out_data), result);
     CHECK_AGAINST_RESULT (import_static_graphics_primitives (datas, datas_count, out_data), result);
+    CHECK_AGAINST_RESULT (import_static_physics_primitives (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_materials_to_static_graphics_primitives (out_data), result);
     CHECK_AGAINST_RESULT (import_static_meshes (datas, datas_count, out_data), result);
     CHECK_AGAINST_RESULT (link_static_graphics_primitives_to_static_meshes (out_data), result);
+    CHECK_AGAINST_RESULT (link_static_physics_primitives_to_static_meshes (out_data), result);
 
     return AGAINST_SUCCESS;
 }
