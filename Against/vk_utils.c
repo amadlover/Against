@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-AGAINST_RESULT vk_utils_create_buffer (VkDevice graphics_device,
+AGAINST_RESULT vk_utils_create_buffer (
+	VkDevice graphics_device,
 	VkDeviceSize size,
 	VkBufferUsageFlags usage,
 	VkSharingMode sharing_mode,
@@ -94,7 +95,8 @@ AGAINST_RESULT get_one_time_command_buffer (VkDevice graphics_device, vk_command
 	return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
+AGAINST_RESULT vk_utils_allocate_bind_buffer_memory (
+	VkDevice graphics_device,
 	VkBuffer* buffers,
 	uint32_t num_buffers,
 	VkPhysicalDeviceMemoryProperties physical_device_memory_properties,

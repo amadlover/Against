@@ -5,7 +5,7 @@ AGAINST_RESULT scene_physics_init (scene_physics_obj* out_data)
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT scene_physics_main_loop ()
+AGAINST_RESULT scene_physics_main_loop (void)
 {
     return AGAINST_SUCCESS;
 }

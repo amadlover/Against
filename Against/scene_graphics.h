@@ -44,5 +44,5 @@ typedef struct _scene_graphics_obj
 } scene_graphics_obj;
 
 AGAINST_RESULT scene_graphics_init (scene_graphics_obj* scene_graphics_data);
-AGAINST_RESULT scene_graphics_main_loop ();
+AGAINST_RESULT scene_graphics_main_loop (void);
 void scene_graphics_shutdown (scene_graphics_obj* scene_graphics_data);

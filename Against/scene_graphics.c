@@ -204,7 +204,7 @@ AGAINST_RESULT submit_present ()
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT scene_graphics_main_loop ()
+AGAINST_RESULT scene_graphics_main_loop (void)
 {
     AGAINST_RESULT result = AGAINST_SUCCESS;
     CHECK_AGAINST_RESULT (submit_present (), result);

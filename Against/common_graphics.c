@@ -545,7 +545,7 @@ AGAINST_RESULT common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 	return AGAINST_SUCCESS;
 }
 
-void common_graphics_shutdown ()
+void common_graphics_shutdown (void)
 {
 	OutputDebugString (L"graphics_shutdown\n");
 

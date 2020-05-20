@@ -22,5 +22,5 @@ typedef struct _scene_obj
 
 AGAINST_RESULT scene_init (const char* partial_folder_path, scene_obj* scene_obj);
 AGAINST_RESULT scene_process_keyboard_input (WPARAM w_param, LPARAM l_param);
-AGAINST_RESULT scene_main_loop ();
+AGAINST_RESULT scene_main_loop (void);
 void scene_shutdown (scene_obj* scene);

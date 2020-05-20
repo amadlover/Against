@@ -110,7 +110,7 @@ AGAINST_RESULT scene_process_keyboard_input (WPARAM w_param, LPARAM l_param)
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT scene_main_loop ()
+AGAINST_RESULT scene_main_loop (void)
 {
     AGAINST_RESULT result = AGAINST_SUCCESS;
     CHECK_AGAINST_RESULT (scene_graphics_main_loop (), result);

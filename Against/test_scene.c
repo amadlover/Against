@@ -9,7 +9,7 @@
 
 scene_obj* scene = NULL;
 
-AGAINST_RESULT test_scene_init ()
+AGAINST_RESULT test_scene_init (void)
 {
     OutputDebugString (L"test_scene_init\n");
     
@@ -40,7 +40,7 @@ AGAINST_RESULT test_scene_process_keyboard_input (WPARAM w_param, LPARAM l_param
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT test_scene_main_loop ()
+AGAINST_RESULT test_scene_main_loop (void)
 {
     AGAINST_RESULT result = AGAINST_SUCCESS;
 
@@ -49,7 +49,7 @@ AGAINST_RESULT test_scene_main_loop ()
     return AGAINST_SUCCESS;
 }
 
-void test_scene_shutdown ()
+void test_scene_shutdown (void)
 {
     OutputDebugString (L"test_scene_shutdown\n");
 

@@ -10,22 +10,22 @@
 
 #include <Windowsx.h>
 
-AGAINST_RESULT (*current_scene_init)();
+AGAINST_RESULT (*current_scene_init)(void);
 AGAINST_RESULT (*current_scene_process_keyboard_input)(WPARAM, LPARAM);
-AGAINST_RESULT (*current_scene_main_loop)();
-void (*current_scene_shutdown)();
+AGAINST_RESULT (*current_scene_main_loop)(void);
+void (*current_scene_shutdown)(void);
 
-AGAINST_RESULT game_process_left_mouse_click ()
+AGAINST_RESULT game_process_left_mouse_click (void)
 {
 	return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT game_process_middle_mouse_click ()
+AGAINST_RESULT game_process_middle_mouse_click (void)
 {
 	return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT game_process_right_mouse_click ()
+AGAINST_RESULT game_process_right_mouse_click (void)
 {
 	return AGAINST_SUCCESS;
 }
@@ -87,7 +87,7 @@ AGAINST_RESULT game_set_current_scene (e_scene_type scene_type)
 	return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT game_main_loop ()
+AGAINST_RESULT game_main_loop (void)
 {
 	if (current_scene_main_loop != NULL)
 	{
@@ -98,7 +98,7 @@ AGAINST_RESULT game_main_loop ()
 	return AGAINST_SUCCESS;
 }
 
-void game_shutdown ()
+void game_shutdown (void)
 {
 	OutputDebugString (L"game_shutdown\n");
 
