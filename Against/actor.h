@@ -8,7 +8,7 @@ typedef struct _skinned_actor
     vk_skin* skin;
     
     phy_skinned_primitive** physics_primitives;
-    size_t num_physics_primitive;
+    size_t num_physics_primitives;
 } skinned_actor;
 
 typedef struct _static_actor
@@ -17,5 +17,5 @@ typedef struct _static_actor
     size_t num_static_meshes;
 
     phy_static_primitive** physics_primitives;
-    size_t num_physics_primitive;
+    size_t num_physics_primitives;
 } static_actor;

@@ -121,17 +121,17 @@ AGAINST_RESULT record_command_buffers ()
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT scene_import_data (const char* partial_folder_path, scene_graphics_obj* scene_obj)
+AGAINST_RESULT scene_graphics_import_data (const char* partial_folder_path, scene_graphics_obj* scene_obj)
 {
     AGAINST_RESULT result = AGAINST_SUCCESS;
-    CHECK_AGAINST_RESULT (gltf_import_files_from_folder (partial_folder_path, scene_obj), result);
+    CHECK_AGAINST_RESULT (gltf_import_graphics_from_files_from_folder (partial_folder_path, scene_obj), result);
 
     return AGAINST_SUCCESS;
 }
 
-void scene_cleanpup_data (scene_graphics_obj* scene_obj)
+void scene_graphics_cleanpup_data (scene_graphics_obj* scene_obj)
 {
-    OutputDebugString (L"scene_cleanpup_data\n");
+    OutputDebugString (L"scene_graphics_cleanpup_data\n");
 
     if (scene_obj)
     {
@@ -214,7 +214,7 @@ void scene_cleanpup_data (scene_graphics_obj* scene_obj)
 AGAINST_RESULT scene_graphics_init (const char* file_path, scene_graphics_obj* scene_graphics_data)
 {
     AGAINST_RESULT result = AGAINST_SUCCESS;
-    CHECK_AGAINST_RESULT (scene_import_data (file_path, scene_graphics_data), result);
+    CHECK_AGAINST_RESULT (scene_graphics_import_data (file_path, scene_graphics_data), result);
     
     CHECK_AGAINST_RESULT (create_skinned_opaque_graphics_pipeline (scene_graphics_data, &skinned_opaque_graphics_pipeline), result);
 
@@ -305,7 +305,7 @@ AGAINST_RESULT scene_graphics_main_loop ()
 
 void scene_graphics_shutdown (scene_graphics_obj* scene_graphics_data)
 {
-    scene_cleanpup_data (scene_graphics_data);
+    scene_graphics_cleanpup_data (scene_graphics_data);
 
     vkQueueWaitIdle (graphics_queue);
     vkQueueWaitIdle (compute_queue);

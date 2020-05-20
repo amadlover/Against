@@ -10,6 +10,7 @@
 typedef struct _scene_obj
 {
     scene_graphics_obj* graphics;
+    scene_physics_obj* physics;
 
     skinned_actor* skinned_actors;
     size_t num_skinned_actors;

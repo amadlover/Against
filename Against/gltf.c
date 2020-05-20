@@ -1508,9 +1508,9 @@ AGAINST_RESULT gather_gltf_datas (const char* full_file_path, cgltf_data** datas
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT gltf_import_files_from_folder (const char* partial_folder_path, scene_graphics_obj* out_gltf_data)
+AGAINST_RESULT gltf_import_graphics_from_files_from_folder (const char* partial_folder_path, scene_graphics_obj* out_gltf_data)
 {
-    OutputDebugString (L"gltf_import_files_from_folder\n");
+    OutputDebugString (L"gltf_import_graphics_from_files_from_folder\n");
     
     file_path* file_paths = NULL;
     size_t num_files = 0;
@@ -1580,32 +1580,6 @@ AGAINST_RESULT gltf_import_files_from_folder (const char* partial_folder_path, s
 
     return AGAINST_SUCCESS;
 }
-
-AGAINST_RESULT gltf_import_file (const char* file_path)
-{
-    cgltf_options options = { 0 };
-    cgltf_data* data = NULL;
-
-    if (cgltf_parse_file (&options, file_path, &data) != cgltf_result_success)
-    {
-        return AGAINST_ERROR_GLTF_IMPORT;
-    }
-
-    if (cgltf_load_buffers (&options, data, file_path) != cgltf_result_success)
-    {
-        return AGAINST_ERROR_GLTF_IMPORT;
-    }
-
-    if (cgltf_validate (data) != cgltf_result_success)
-    {
-        return AGAINST_ERROR_GLTF_IMPORT;
-    }
-
-    cgltf_free (data);
-
-    return AGAINST_SUCCESS;
-}
-
 
 /*AGAINST_RESULT link_graphics_primitives_to_materials (scene_graphics_obj* out_data)
 {

@@ -5,13 +5,7 @@
 #include "game.h"
 #include "log.h"
 
-LRESULT CALLBACK WindowProc 
-(
-	HWND hWnd, 
-	UINT msg, 
-	WPARAM wParam, 
-	LPARAM lParam
-)
+LRESULT CALLBACK WindowProc (HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -66,10 +60,7 @@ LRESULT CALLBACK WindowProc
 	return DefWindowProc (hWnd, msg, wParam, lParam);
 }
 
-int WINAPI wWinMain (_In_ HINSTANCE hInstance, 
-						_In_opt_ HINSTANCE previous_instance, 
-						_In_ PWSTR cmd_line, 
-						_In_ int cmd_show)
+int WINAPI wWinMain (_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE previous_instance, _In_ PWSTR cmd_line, _In_ int cmd_show)
 {
 	WNDCLASS wc = { 0 };
 
@@ -84,20 +75,7 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 		return EXIT_FAILURE;
 	}
 
-	HWND hWnd = CreateWindow 
-	(
-		L"Against", 
-		L"Against", 
-		WS_OVERLAPPEDWINDOW, 
-		CW_USEDEFAULT, 
-		CW_USEDEFAULT, 
-		1280, 
-		720, 
-		NULL, 
-		NULL, 
-		hInstance, 
-		NULL
-	);
+	HWND hWnd = CreateWindow (L"Against", L"Against", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, NULL, NULL, hInstance, NULL);
 
 	if (!hWnd)
 	{
@@ -141,6 +119,6 @@ int WINAPI wWinMain (_In_ HINSTANCE hInstance,
 
 	game_shutdown ();
 	DestroyWindow (hWnd);
-	
+
 	return EXIT_SUCCESS;
 }
