@@ -42,7 +42,7 @@ void utils_get_full_file_path (const char* partial_file_path, char* out_file_pat
 	strcat (out_file_path, partial_file_path);
 }
 
-void utils_get_files_in_folder (const char* partial_folder_path, file_path** out_file_paths, size_t* out_file_count)
+void utils_get_files_in_folder (const char* partial_folder_path, file_path** out_file_paths, size_t* num_out_files)
 {
 	char full_folder_path[MAX_PATH];
 	utils_get_full_file_path (partial_folder_path, full_folder_path);
@@ -55,7 +55,7 @@ void utils_get_files_in_folder (const char* partial_folder_path, file_path** out
 	HANDLE find_handle = INVALID_HANDLE_VALUE;
 
 	find_handle = FindFirstFile (folder_path, &ffd);
-	size_t file_count = 0;
+	size_t num_files = 0;
 	do
 	{
 		if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
@@ -67,13 +67,13 @@ void utils_get_files_in_folder (const char* partial_folder_path, file_path** out
 
 			if (strcmp (ext, "glb") == 0 || strcmp (ext, "gltf") == 0)
 			{
- 				++file_count;
+ 				++num_files;
 			}
 		}
 	} while (FindNextFile (find_handle, &ffd) != 0);
 
-	*out_file_count = file_count;
-	*out_file_paths = (file_path*) utils_calloc (file_count, sizeof (file_path));
+	*num_out_files = num_files;
+	*out_file_paths = (file_path*) utils_calloc (num_files, sizeof (file_path));
 
 	find_handle = FindFirstFile (folder_path, &ffd);
 	size_t current_file_index = 0;

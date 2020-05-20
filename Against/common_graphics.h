@@ -17,7 +17,7 @@ VkExtent2D surface_extent;
 VkSwapchainKHR swapchain;
 VkImage* swapchain_images;
 VkImageView* swapchain_imageviews;
-size_t swapchain_image_count;
+size_t num_swapchain_image;
 VkQueue graphics_queue;
 VkQueue transfer_queue;
 VkQueue compute_queue;

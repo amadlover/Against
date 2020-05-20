@@ -1,60 +1,24 @@
 #pragma once
 
-#include "asset.h"
+#include "vk_asset.h"
 #include "error.h"
+#include "scene_graphics.h"
+#include "actor.h"
 
 #include <Windows.h>
 
-typedef struct _scene_asset_data
+typedef struct _scene_obj
 {
-    VkBuffer vb_ib;
-    VkDeviceMemory vb_ib_memory;
+    scene_graphics_obj* graphics;
 
-    VkImage* images;
-    VkImageView* image_views;
-    size_t images_count;
-    VkDeviceMemory images_memory;
+    skinned_actor* skinned_actors;
+    size_t num_skinned_actors;
 
-    VkBuffer bone_buffer;
-    VkDeviceMemory bone_buffer_memory;
+    static_actor* static_actors;
+    size_t num_static_actors;
+} scene_obj;
 
-    VkBuffer anim_buffer;
-    VkDeviceMemory anim_buffer_memory;
-
-    vk_skeletal_mesh* skeletal_meshes;
-    size_t skeletal_meshes_count;
-
-    vk_skeletal_graphics_primitive* skeletal_graphics_primitives;
-    size_t skeletal_graphics_primitives_count;
-
-    vk_skeletal_physics_primitive* skeletal_physics_primitives;
-    size_t skeletal_physics_primitives_count;
-
-    vk_static_mesh* static_meshes;
-    size_t static_meshes_count;
-
-    vk_static_graphics_primitive* static_graphics_primitives;
-    size_t static_graphics_primitives_count;
-
-    vk_static_physics_primitive* static_physics_primitives;
-    size_t static_physics_primitives_count;
-
-    vk_material* materials;
-    size_t materials_count;
-
-    vk_skin* skins;
-    size_t skins_count;
-
-    vk_animation* animations;
-    size_t animations_count;
-
-    VkDescriptorPool descriptor_pool;
-} scene_asset_data;
-
-AGAINST_RESULT scene_import_data (const char* partial_folder_path, scene_asset_data** scene_data);
-void scene_cleanpup_data (scene_asset_data* scene_data);
-
-AGAINST_RESULT scene_init ();
+AGAINST_RESULT scene_init (const char* partial_folder_path, scene_obj* scene_obj);
 AGAINST_RESULT scene_process_keyboard_input (WPARAM w_param, LPARAM l_param);
 AGAINST_RESULT scene_main_loop ();
-void scene_shutdown ();
+void scene_shutdown (scene_obj* scene);

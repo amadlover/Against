@@ -12,13 +12,13 @@
 bool is_validation_needed;
 
 const char* requested_instance_layers[16];
-size_t requested_instance_layer_count;
+size_t num_requested_instance_layer;
 
 const char* requested_instance_extensions[16];
-size_t requested_instance_extension_count;
+size_t num_requested_instance_extension;
 
 const char* requested_device_extensions[16];
-size_t requested_device_extension_count;
+size_t num_requested_device_extension;
 
 VkInstance instance;
 VkDebugUtilsMessengerEXT debug_utils_messenger;
@@ -86,16 +86,16 @@ AGAINST_RESULT populate_instance_layers_and_extensions ()
 
 	if (is_validation_needed)
 	{
-		size_t layer_count = 0;
-		vkEnumerateInstanceLayerProperties (&layer_count, NULL);
-		VkLayerProperties* layer_properties = (VkLayerProperties*)utils_malloc (sizeof (VkLayerProperties) * layer_count);
-		vkEnumerateInstanceLayerProperties (&layer_count, layer_properties);
+		size_t num_layers = 0;
+		vkEnumerateInstanceLayerProperties (&num_layers, NULL);
+		VkLayerProperties* layer_properties = (VkLayerProperties*)utils_malloc (sizeof (VkLayerProperties) * num_layers);
+		vkEnumerateInstanceLayerProperties (&num_layers, layer_properties);
 
-		for (size_t l = 0; l < layer_count; l++)
+		for (size_t l = 0; l < num_layers; l++)
 		{
 			if (strcmp (layer_properties[l].layerName, "VK_LAYER_LUNARG_standard_validation") == 0)
 			{
-				requested_instance_layers[requested_instance_layer_count++] = ("VK_LAYER_LUNARG_standard_validation");
+				requested_instance_layers[num_requested_instance_layer++] = ("VK_LAYER_LUNARG_standard_validation");
 				break;
 			}
 		}
@@ -103,28 +103,28 @@ AGAINST_RESULT populate_instance_layers_and_extensions ()
 		utils_free (layer_properties);
 	}
 
-	size_t extension_count = 0;
-	vkEnumerateInstanceExtensionProperties (NULL, &extension_count, NULL);
+	size_t num_extensions = 0;
+	vkEnumerateInstanceExtensionProperties (NULL, &num_extensions, NULL);
 
-	VkExtensionProperties* extension_properties = (VkExtensionProperties*)utils_malloc (sizeof (VkExtensionProperties) * extension_count);
-	vkEnumerateInstanceExtensionProperties (NULL, &extension_count, extension_properties);
+	VkExtensionProperties* extension_properties = (VkExtensionProperties*)utils_malloc (sizeof (VkExtensionProperties) * num_extensions);
+	vkEnumerateInstanceExtensionProperties (NULL, &num_extensions, extension_properties);
 
-	for (size_t e = 0; e < extension_count; e++)
+	for (size_t e = 0; e < num_extensions; e++)
 	{
 		if (strcmp (extension_properties[e].extensionName, VK_KHR_SURFACE_EXTENSION_NAME) == 0)
 		{
-			requested_instance_extensions[requested_instance_extension_count++] = VK_KHR_SURFACE_EXTENSION_NAME;
+			requested_instance_extensions[num_requested_instance_extension++] = VK_KHR_SURFACE_EXTENSION_NAME;
 		}
 		else if (strcmp (extension_properties[e].extensionName, "VK_KHR_win32_surface") == 0)
 		{
-			requested_instance_extensions[requested_instance_extension_count++] = "VK_KHR_win32_surface";
+			requested_instance_extensions[num_requested_instance_extension++] = "VK_KHR_win32_surface";
 		}
 
 		if (is_validation_needed)
 		{
 			if (strcmp (extension_properties[e].extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
 			{
-				requested_instance_extensions[requested_instance_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+				requested_instance_extensions[num_requested_instance_extension++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 			}
 		}
 	}
@@ -150,9 +150,9 @@ AGAINST_RESULT create_instance ()
 	VkInstanceCreateInfo create_info = { 0 };
 
 	create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	create_info.enabledExtensionCount = requested_instance_extension_count;
+	create_info.enabledExtensionCount = num_requested_instance_extension;
 	create_info.ppEnabledExtensionNames = requested_instance_extensions;
-	create_info.enabledLayerCount = requested_instance_layer_count;
+	create_info.enabledLayerCount = num_requested_instance_layer;
 	create_info.ppEnabledLayerNames = requested_instance_layers;
 	create_info.pApplicationInfo = &application_info;
 	create_info.flags = 0;
@@ -192,13 +192,13 @@ AGAINST_RESULT get_physical_device ()
 {
 	OutputDebugString (L"get_physical_device\n");
 
-	size_t physical_device_count = 0;
-	vkEnumeratePhysicalDevices (instance, &physical_device_count, NULL);
+	size_t num_physical_devices = 0;
+	vkEnumeratePhysicalDevices (instance, &num_physical_devices, NULL);
 
-	VkPhysicalDevice* physical_devices = (VkPhysicalDevice*)utils_malloc (sizeof (VkPhysicalDevice) * physical_device_count);
-	vkEnumeratePhysicalDevices (instance, &physical_device_count, physical_devices);
+	VkPhysicalDevice* physical_devices = (VkPhysicalDevice*)utils_malloc (sizeof (VkPhysicalDevice) * num_physical_devices);
+	vkEnumeratePhysicalDevices (instance, &num_physical_devices, physical_devices);
 
-	if (physical_device_count == 0)
+	if (num_physical_devices == 0)
 	{
 		return AGAINST_ERROR_GRAPHICS_GET_PHYSICAL_DEVICE;
 	}
@@ -208,12 +208,12 @@ AGAINST_RESULT get_physical_device ()
 	VkPhysicalDeviceFeatures device_features;
 	vkGetPhysicalDeviceFeatures (physical_device, &device_features);
 
-	size_t queue_family_count = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &queue_family_count, NULL);
-	VkQueueFamilyProperties* queue_family_properties = (VkQueueFamilyProperties*)utils_malloc (sizeof (VkQueueFamilyProperties) * queue_family_count);
-	vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &queue_family_count, queue_family_properties);
+	size_t num_queue_families = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &num_queue_families, NULL);
+	VkQueueFamilyProperties* queue_family_properties = (VkQueueFamilyProperties*)utils_malloc (sizeof (VkQueueFamilyProperties) * num_queue_families);
+	vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &num_queue_families, queue_family_properties);
 
-	for (size_t i = 0; i < queue_family_count; ++i)
+	for (size_t i = 0; i < num_queue_families; ++i)
 	{
 		if (queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 		{
@@ -222,7 +222,7 @@ AGAINST_RESULT get_physical_device ()
 		}
 	}
 
-	for (size_t i = 0; i < queue_family_count; ++i)
+	for (size_t i = 0; i < num_queue_families; ++i)
 	{
 		if (queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT && (i != graphics_queue_family_index))
 		{
@@ -233,7 +233,7 @@ AGAINST_RESULT get_physical_device ()
 
 	if (compute_queue_family_index == -1)
 	{
-		for (size_t i = 0; i < queue_family_count; ++i)
+		for (size_t i = 0; i < num_queue_families; ++i)
 		{
 			if (queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
@@ -243,7 +243,7 @@ AGAINST_RESULT get_physical_device ()
 		}	
 	}
 
-	for (size_t i = 0; i < queue_family_count; ++i)
+	for (size_t i = 0; i < num_queue_families; ++i)
 	{
 		if (queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT && (i != graphics_queue_family_index) && (i != compute_queue_family_index))
 		{
@@ -254,7 +254,7 @@ AGAINST_RESULT get_physical_device ()
 
 	if (transfer_queue_family_index == -1)
 	{
-		for (size_t i = 0; i < queue_family_count; ++i)
+		for (size_t i = 0; i < num_queue_families; ++i)
 		{
 			if (queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
 			{
@@ -298,17 +298,17 @@ AGAINST_RESULT populate_graphics_device_extensions ()
 {
 	OutputDebugString (L"populate_graphics_device_extensions\n");
 
-	size_t extension_count = 0;
-	vkEnumerateDeviceExtensionProperties (physical_device, NULL, &extension_count, NULL);
+	size_t num_extensions = 0;
+	vkEnumerateDeviceExtensionProperties (physical_device, NULL, &num_extensions, NULL);
 
-	VkExtensionProperties* extension_properties = (VkExtensionProperties*)utils_malloc (sizeof (VkExtensionProperties) * extension_count);
-	vkEnumerateDeviceExtensionProperties (physical_device, NULL, &extension_count, extension_properties);
+	VkExtensionProperties* extension_properties = (VkExtensionProperties*)utils_malloc (sizeof (VkExtensionProperties) * num_extensions);
+	vkEnumerateDeviceExtensionProperties (physical_device, NULL, &num_extensions, extension_properties);
 
-	for (size_t e = 0; e < extension_count; e++)
+	for (size_t e = 0; e < num_extensions; e++)
 	{
 		if (strcmp (extension_properties[e].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
 		{
-			requested_device_extensions[requested_device_extension_count++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+			requested_device_extensions[num_requested_device_extension++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 			break;
 		}
 	}
@@ -332,13 +332,13 @@ AGAINST_RESULT get_surface_properties ()
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR (physical_device, surface, &surface_capabilites);
 
-	size_t surface_format_count = 0;
-	vkGetPhysicalDeviceSurfaceFormatsKHR (physical_device, surface, &surface_format_count, NULL);
+	size_t num_surface_formats = 0;
+	vkGetPhysicalDeviceSurfaceFormatsKHR (physical_device, surface, &num_surface_formats, NULL);
 
-	VkSurfaceFormatKHR* surface_formats = (VkSurfaceFormatKHR*)utils_malloc (sizeof (VkSurfaceFormatKHR) * surface_format_count);
-	vkGetPhysicalDeviceSurfaceFormatsKHR (physical_device, surface, &surface_format_count, surface_formats);
+	VkSurfaceFormatKHR* surface_formats = (VkSurfaceFormatKHR*)utils_malloc (sizeof (VkSurfaceFormatKHR) * num_surface_formats);
+	vkGetPhysicalDeviceSurfaceFormatsKHR (physical_device, surface, &num_surface_formats, surface_formats);
 
-	for (size_t s = 0; s < surface_format_count; s++)
+	for (size_t s = 0; s < num_surface_formats; s++)
 	{
 		if (surface_formats[s].format == VK_FORMAT_B8G8R8A8_UNORM)
 		{
@@ -347,13 +347,13 @@ AGAINST_RESULT get_surface_properties ()
 		}
 	}
 
-	size_t present_mode_count = 0;
-	vkGetPhysicalDeviceSurfacePresentModesKHR (physical_device, surface, &present_mode_count, NULL);
+	size_t num_present_modes = 0;
+	vkGetPhysicalDeviceSurfacePresentModesKHR (physical_device, surface, &num_present_modes, NULL);
 
-	VkPresentModeKHR* present_modes = (VkPresentModeKHR*)utils_malloc (sizeof (VkPresentModeKHR) * present_mode_count);
-	vkGetPhysicalDeviceSurfacePresentModesKHR (physical_device, surface, &present_mode_count, present_modes);
+	VkPresentModeKHR* present_modes = (VkPresentModeKHR*)utils_malloc (sizeof (VkPresentModeKHR) * num_present_modes);
+	vkGetPhysicalDeviceSurfacePresentModesKHR (physical_device, surface, &num_present_modes, present_modes);
 
-	for (size_t p = 0; p < present_mode_count; p++)
+	for (size_t p = 0; p < num_present_modes; p++)
 	{
 		if (present_modes[p] == VK_PRESENT_MODE_MAILBOX_KHR)
 		{
@@ -378,34 +378,34 @@ AGAINST_RESULT create_graphics_device ()
 
 	VkDeviceQueueCreateInfo queue_create_infos[3] = { 0,0,0 };
 	size_t unique_queue_family_indices[3] = { 0,0,0 };
-	size_t unique_queue_counts[3] = { 1,1,1 };
-	size_t unique_queue_family_indices_count = 0;
+	size_t num_unique_queues[3] = { 1,1,1 };
+	size_t num_unique_queue_family_indices = 0;
 
 	if (graphics_queue_family_index == compute_queue_family_index)
 	{
 		unique_queue_family_indices[0] = graphics_queue_family_index;
-		++unique_queue_family_indices_count;
-		++unique_queue_counts[0];
+		++num_unique_queue_family_indices;
+		++num_unique_queues[0];
 	}
 	else
 	{
 		unique_queue_family_indices[0] = graphics_queue_family_index;
 		unique_queue_family_indices[1] = compute_queue_family_index;
-		unique_queue_family_indices_count += 2;
+		num_unique_queue_family_indices += 2;
 	}
 
 	if (graphics_queue_family_index != transfer_queue_family_index)
 	{
-		unique_queue_family_indices[unique_queue_family_indices_count] = transfer_queue_family_index;
-		++unique_queue_family_indices_count;
+		unique_queue_family_indices[num_unique_queue_family_indices] = transfer_queue_family_index;
+		++num_unique_queue_family_indices;
 	}
 
-	for (size_t ui = 0; ui < unique_queue_family_indices_count; ++ui)
+	for (size_t ui = 0; ui < num_unique_queue_family_indices; ++ui)
 	{
 		queue_create_infos[ui].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queue_create_infos[ui].pNext = NULL;
 		queue_create_infos[ui].pQueuePriorities = &priorities;
-		queue_create_infos[ui].queueCount = unique_queue_counts[ui];
+		queue_create_infos[ui].queueCount = num_unique_queues[ui];
 		queue_create_infos[ui].queueFamilyIndex = unique_queue_family_indices[ui];
 		queue_create_infos[ui].flags = 0;
 	}
@@ -414,11 +414,11 @@ AGAINST_RESULT create_graphics_device ()
 
 	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	create_info.pNext = NULL;
-	create_info.enabledExtensionCount = requested_device_extension_count;
+	create_info.enabledExtensionCount = num_requested_device_extension;
 	create_info.ppEnabledExtensionNames = requested_device_extensions;
 	create_info.enabledLayerCount = 0;
 	create_info.ppEnabledLayerNames = NULL;
-	create_info.queueCreateInfoCount = unique_queue_family_indices_count;
+	create_info.queueCreateInfoCount = num_unique_queue_family_indices;
 	create_info.pQueueCreateInfos = queue_create_infos;
 	create_info.flags = 0;
 
@@ -457,12 +457,12 @@ AGAINST_RESULT create_swapchain ()
 		return AGAINST_ERROR_GRAPHICS_CREATE_SWAPCHAIN;
 	}
 
-	vkGetSwapchainImagesKHR (graphics_device, swapchain, &swapchain_image_count, NULL);
-	swapchain_images = (VkImage*)utils_calloc (swapchain_image_count, sizeof (VkImage));
+	vkGetSwapchainImagesKHR (graphics_device, swapchain, &num_swapchain_image, NULL);
+	swapchain_images = (VkImage*)utils_calloc (num_swapchain_image, sizeof (VkImage));
 
-	vkGetSwapchainImagesKHR (graphics_device, swapchain, &swapchain_image_count, swapchain_images);
+	vkGetSwapchainImagesKHR (graphics_device, swapchain, &num_swapchain_image, swapchain_images);
 
-	swapchain_imageviews = (VkImageView*)utils_calloc (swapchain_image_count, sizeof (VkImageView));
+	swapchain_imageviews = (VkImageView*)utils_calloc (num_swapchain_image, sizeof (VkImageView));
 
 	return AGAINST_SUCCESS;
 }
@@ -485,7 +485,7 @@ AGAINST_RESULT create_swapchain_imageviews ()
 	create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	create_info.subresourceRange = subresource_range;
 
-	for (size_t i = 0; i < swapchain_image_count; i++)
+	for (size_t i = 0; i < num_swapchain_image; i++)
 	{
 		create_info.image = swapchain_images[i];
 		if (vkCreateImageView (graphics_device, &create_info, NULL, swapchain_imageviews + i) != VK_SUCCESS)
@@ -522,7 +522,7 @@ AGAINST_RESULT common_graphics_init (HINSTANCE HInstance, HWND HWnd)
 	is_validation_needed = false;
 #endif
 
-	AGAINST_RESULT result;
+	AGAINST_RESULT result = AGAINST_SUCCESS;
 
 	CHECK_AGAINST_RESULT (populate_instance_layers_and_extensions (), result);
 	CHECK_AGAINST_RESULT (create_instance (), result);
@@ -558,7 +558,7 @@ void common_graphics_shutdown ()
 
 	if (swapchain_imageviews)
 	{
-		for (size_t i = 0; i < swapchain_image_count; i++)
+		for (size_t i = 0; i < num_swapchain_image; i++)
 		{
 			if (swapchain_imageviews[i] != VK_NULL_HANDLE)
 			{

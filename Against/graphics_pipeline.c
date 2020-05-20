@@ -3,21 +3,21 @@
 #include "vk_utils.h"
 #include "common_graphics.h"
 
-AGAINST_RESULT create_skybox_graphics_pipeline (scene_asset_data* asset_data, vk_skybox_graphics_pipeline** out_graphics_pipeline)
+AGAINST_RESULT create_skybox_graphics_pipeline (scene_graphics_obj* scene, vk_skybox_graphics_pipeline** out_graphics_pipeline)
 {
     OutputDebugString (L"create_skybox_graphics_pipeine\n");
 
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT create_skeletal_opaque_graphics_pipeline (scene_asset_data* asset_data, vk_skeletal_opaque_graphics_pipeline** out_graphics_pipeline)
+AGAINST_RESULT create_skinned_opaque_graphics_pipeline (scene_graphics_obj* scene, vk_skinned_opaque_graphics_pipeline** out_graphics_pipeline)
 {
-    OutputDebugString (L"create_skeletal_opaque_graphics_pipeline\n");
+    OutputDebugString (L"create_skinned_opaque_graphics_pipeline\n");
 
-    *out_graphics_pipeline = (vk_skeletal_opaque_graphics_pipeline*)utils_calloc (1, sizeof (vk_skeletal_opaque_graphics_pipeline));
-    vk_skeletal_opaque_graphics_pipeline* graphics_pipeline = *out_graphics_pipeline;
+    *out_graphics_pipeline = (vk_skinned_opaque_graphics_pipeline*)utils_calloc (1, sizeof (vk_skinned_opaque_graphics_pipeline));
+    vk_skinned_opaque_graphics_pipeline* graphics_pipeline = *out_graphics_pipeline;
 
-    AGAINST_RESULT result;
+    AGAINST_RESULT result = AGAINST_SUCCESS;
     
     char full_vertex_shader_path[MAX_PATH];
     utils_get_full_file_path ("pbr_opaque.vert.spv", full_vertex_shader_path);
@@ -34,7 +34,7 @@ AGAINST_RESULT create_skeletal_opaque_graphics_pipeline (scene_asset_data* asset
 
     VkDescriptorType descriptor_types[2] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER };
     size_t descriptor_types_count[2] = { 1, 1 };
-    CHECK_AGAINST_RESULT (vk_utils_create_descriptor_pool (graphics_device, descriptor_types, descriptor_types_count, 2, 2, &asset_data->descriptor_pool), result);
+    CHECK_AGAINST_RESULT (vk_utils_create_descriptor_pool (graphics_device, descriptor_types, descriptor_types_count, 2, 2, &scene->descriptor_pool), result);
     
     VkDescriptorSetLayoutBinding descriptor_set_layout_bindings[2] = { 0, 0 };
     size_t descriptor_count_per_type[2] = { 1, 5 };
@@ -47,9 +47,9 @@ AGAINST_RESULT create_skeletal_opaque_graphics_pipeline (scene_asset_data* asset
     return AGAINST_SUCCESS;
 }
 
-void destroy_skeletal_opaque_graphics_pipeline (vk_skeletal_opaque_graphics_pipeline* graphics_pipeline)
+void destroy_skinned_opaque_graphics_pipeline (vk_skinned_opaque_graphics_pipeline* graphics_pipeline)
 {
-    OutputDebugString (L"destroy_skeletal_opaque_graphics_pipeline\n");
+    OutputDebugString (L"destroy_skinned_opaque_graphics_pipeline\n");
 
     vkDestroyShaderModule (graphics_device, graphics_pipeline->shader_modules[0], NULL);
     vkDestroyShaderModule (graphics_device, graphics_pipeline->shader_modules[1], NULL);

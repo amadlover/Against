@@ -8,7 +8,7 @@ typedef struct _vk_command_pool
     VkCommandPool command_pool;
     VkCommandBuffer* command_buffers;
     VkSemaphore* submit_signal_semaphores;
-    size_t command_buffers_count;
+    size_t num_command_buffers;
 } vk_command_pool;
 
 AGAINST_RESULT vk_utils_create_buffer (
@@ -23,7 +23,7 @@ AGAINST_RESULT vk_utils_create_buffer (
 AGAINST_RESULT vk_utils_allocate_bind_buffer_memory (
     VkDevice graphics_device, 
     VkBuffer* buffers, 
-    uint32_t buffer_count, 
+    uint32_t num_buffers, 
     VkPhysicalDeviceMemoryProperties physical_device_memory_properties, 
     VkMemoryPropertyFlags required_types, 
     VkDeviceMemory* out_memory
@@ -58,7 +58,7 @@ AGAINST_RESULT vk_utils_create_image_view (
 AGAINST_RESULT vk_utils_allocate_bind_image_memory (
     VkDevice graphics_device, 
     VkImage* images, 
-    uint32_t image_count, 
+    uint32_t num_images, 
     VkPhysicalDeviceMemoryProperties physical_device_memory_properties, 
     VkMemoryPropertyFlags required_types, 
     VkDeviceMemory* out_memory
@@ -71,7 +71,7 @@ AGAINST_RESULT vk_utils_change_image_layout (
     uint32_t src_queue_family_index,
     uint32_t dst_queue_family_index,
     VkImage image,
-    uint32_t layer_count,
+    uint32_t num_layers,
     VkImageLayout old_layout,
     VkImageLayout new_layout,
     VkAccessFlags src_access,
@@ -97,7 +97,7 @@ AGAINST_RESULT vk_utils_copy_buffer_to_image (
     VkBuffer buffer,
     VkImage* image,
     VkExtent3D extent,
-    uint32_t layer_count
+    uint32_t num_layers
 );
 
 AGAINST_RESULT vk_utils_create_shader (
@@ -156,7 +156,7 @@ AGAINST_RESULT vk_utils_update_descriptor_sets (
 AGAINST_RESULT vk_utils_create_command_pools (
     VkDevice graphics_device, 
     size_t queue_family_index, 
-    size_t command_pools_count,
+    size_t num_command_pools,
     VkCommandPoolCreateFlags flags, 
     vk_command_pool* out_command_pools
 );
@@ -164,20 +164,20 @@ AGAINST_RESULT vk_utils_create_command_pools (
 AGAINST_RESULT vk_utils_allocate_command_buffers (
     VkDevice graphics_device,
     VkCommandBufferLevel level, 
-    size_t command_pools_count, 
-    size_t* command_buffers_counts, 
+    size_t num_command_pools, 
+    size_t* num_command_buffers, 
     vk_command_pool* in_out_command_pools
 );
 
 AGAINST_RESULT vk_utils_create_semaphores (
     VkDevice graphics_device, 
-    size_t semaphores_count, 
+    size_t num_semaphores, 
     VkSemaphore* out_semaphores
 );
 
 AGAINST_RESULT vk_utils_create_semaphores_for_command_pools (
     VkDevice graphics_device,
-    size_t command_pools_count,
+    size_t num_command_pools,
     vk_command_pool* in_out_command_pools
 );
 
@@ -194,5 +194,5 @@ void vk_utils_destroy_buffer_and_buffer_memory (
 void vk_utils_destroy_command_pools_and_buffers (
     VkDevice graphics_device,
     vk_command_pool* command_pools,
-    size_t command_pools_count
+    size_t num_command_pools
 );

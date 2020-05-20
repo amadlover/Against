@@ -39,7 +39,7 @@ AGAINST_RESULT game_process_keyboard_input (WPARAM wParam, LPARAM lParam)
 {
 	if (current_scene_process_keyboard_input != NULL)
 	{
-		AGAINST_RESULT result;
+		AGAINST_RESULT result = AGAINST_SUCCESS;
 		CHECK_AGAINST_RESULT (current_scene_process_keyboard_input (wParam, lParam), result);
 	}
 
@@ -50,7 +50,7 @@ AGAINST_RESULT game_init (HINSTANCE hInstance, HWND hWnd)
 {
 	OutputDebugString (L"game_init\n");
 
-	AGAINST_RESULT result;
+	AGAINST_RESULT result = AGAINST_SUCCESS;
 
 	CHECK_AGAINST_RESULT (common_graphics_init (hInstance, hWnd), result);
 	CHECK_AGAINST_RESULT (game_set_current_scene (e_scene_type_test), result);
@@ -80,7 +80,7 @@ AGAINST_RESULT game_set_current_scene (e_scene_type scene_type)
 
 	if (current_scene_init != NULL)
 	{
-		AGAINST_RESULT result;
+		AGAINST_RESULT result = AGAINST_SUCCESS;
 		CHECK_AGAINST_RESULT (current_scene_init (), result);
 	}
 
@@ -91,7 +91,7 @@ AGAINST_RESULT game_main_loop ()
 {
 	if (current_scene_main_loop != NULL)
 	{
-		AGAINST_RESULT result;
+		AGAINST_RESULT result = AGAINST_SUCCESS;
 		CHECK_AGAINST_RESULT (current_scene_main_loop (), result);
 	}
 

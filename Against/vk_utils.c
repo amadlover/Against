@@ -67,7 +67,7 @@ AGAINST_RESULT submit_one_time_cmd (VkQueue transfer_queue, VkCommandBuffer comm
 
 AGAINST_RESULT get_one_time_command_buffer (VkDevice graphics_device, vk_command_pool* in_out_transfer_command_pool)
 {
-	in_out_transfer_command_pool->command_buffers_count = 1;
+	in_out_transfer_command_pool->num_command_buffers = 1;
 	in_out_transfer_command_pool->command_buffers = (VkCommandBuffer*)utils_calloc (1, sizeof (VkCommandBuffer));
 
 	VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
@@ -96,7 +96,7 @@ AGAINST_RESULT get_one_time_command_buffer (VkDevice graphics_device, vk_command
 
 AGAINST_RESULT vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 	VkBuffer* buffers,
-	uint32_t buffer_count,
+	uint32_t num_buffers,
 	VkPhysicalDeviceMemoryProperties physical_device_memory_properties,
 	VkMemoryPropertyFlags required_types,
 	VkDeviceMemory* out_buffer_memory)
@@ -104,9 +104,9 @@ AGAINST_RESULT vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 	VkMemoryAllocateInfo memory_allocation = { 0 };
 	memory_allocation.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-	VkDeviceSize* offsets = (VkDeviceSize*)utils_calloc (buffer_count, sizeof (VkDeviceSize));
+	VkDeviceSize* offsets = (VkDeviceSize*)utils_calloc (num_buffers, sizeof (VkDeviceSize));
 
-	for (uint32_t b = 0; b < buffer_count; b++)
+	for (uint32_t b = 0; b < num_buffers; b++)
 	{
 		offsets[b] = memory_allocation.allocationSize;
 
@@ -122,7 +122,7 @@ AGAINST_RESULT vk_utils_allocate_bind_buffer_memory (VkDevice graphics_device,
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
 	}
 
-	for (uint32_t b = 0; b < buffer_count; b++)
+	for (uint32_t b = 0; b < num_buffers; b++)
 	{
 		if (vkBindBufferMemory (graphics_device, buffers[b], *out_buffer_memory, offsets[b]) != VK_SUCCESS)
 		{
@@ -219,7 +219,7 @@ AGAINST_RESULT vk_utils_create_image_view (
 AGAINST_RESULT vk_utils_allocate_bind_image_memory (
 	VkDevice graphics_device, 
 	VkImage* images, 
-	uint32_t image_count, 
+	uint32_t num_images, 
 	VkPhysicalDeviceMemoryProperties physical_device_memory_properties, 
 	VkMemoryPropertyFlags required_types, 
 	VkDeviceMemory* out_memory
@@ -228,9 +228,9 @@ AGAINST_RESULT vk_utils_allocate_bind_image_memory (
 	VkMemoryAllocateInfo memory_allocate_info = { 0 };
 	memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-	VkDeviceSize* offsets = (VkDeviceSize*)utils_calloc (image_count, sizeof (VkDeviceSize));
+	VkDeviceSize* offsets = (VkDeviceSize*)utils_calloc (num_images, sizeof (VkDeviceSize));
 
-	for (uint32_t i = 0; i < image_count; i++)
+	for (uint32_t i = 0; i < num_images; i++)
 	{
 		VkMemoryRequirements memory_requirements = { 0 };
 		vkGetImageMemoryRequirements (graphics_device, images[i], &memory_requirements);
@@ -245,7 +245,7 @@ AGAINST_RESULT vk_utils_allocate_bind_image_memory (
 		return AGAINST_ERROR_GRAPHICS_ALLOCATE_MEMORY;
 	}
 
-	for (uint32_t i = 0; i < image_count; i++)
+	for (uint32_t i = 0; i < num_images; i++)
 	{
 		if (vkBindImageMemory (graphics_device, images[i], *out_memory, offsets[i]) != VK_SUCCESS)
 		{
@@ -287,7 +287,7 @@ AGAINST_RESULT vk_utils_change_image_layout (
 	uint32_t src_queue_family_index,
 	uint32_t dst_queue_family_index,
 	VkImage image,
-	uint32_t layer_count,
+	uint32_t num_layers,
 	VkImageLayout old_layout,
 	VkImageLayout new_layout,
 	VkAccessFlags src_access,
@@ -304,7 +304,7 @@ AGAINST_RESULT vk_utils_change_image_layout (
 	subresource_range.baseMipLevel = 0;
 	subresource_range.levelCount = 1;
 	subresource_range.baseArrayLayer = 0;
-	subresource_range.layerCount = layer_count;
+	subresource_range.layerCount = num_layers;
 
 	VkImageMemoryBarrier image_memory_barrier = { 0 };
 	image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -326,7 +326,7 @@ AGAINST_RESULT vk_utils_change_image_layout (
 	vkFreeCommandBuffers (graphics_device, transfer_command_pool.command_pool, 1, &transfer_command_pool.command_buffers[0]);
 	
 	utils_free (transfer_command_pool.command_buffers);
-	transfer_command_pool.command_buffers_count = 0;
+	transfer_command_pool.num_command_buffers = 0;
 
 	return AGAINST_SUCCESS;
 }
@@ -339,7 +339,7 @@ AGAINST_RESULT vk_utils_copy_buffer_to_buffer (
 	VkBuffer dst_buffer,
 	VkDeviceSize size)
 {
-	AGAINST_RESULT result;
+	AGAINST_RESULT result = AGAINST_SUCCESS;
 
 	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
@@ -355,7 +355,7 @@ AGAINST_RESULT vk_utils_copy_buffer_to_buffer (
 	vkFreeCommandBuffers (graphics_device, transfer_command_pool.command_pool, 1, &transfer_command_pool.command_buffers[0]);
 	
 	utils_free (transfer_command_pool.command_buffers);
-	transfer_command_pool.command_buffers_count = 0;
+	transfer_command_pool.num_command_buffers = 0;
 
 	return AGAINST_SUCCESS;
 }
@@ -368,14 +368,14 @@ AGAINST_RESULT vk_utils_copy_buffer_to_image (
 	VkBuffer buffer,
 	VkImage* image,
 	VkExtent3D extent,
-	uint32_t layer_count)
+	uint32_t num_layers)
 {
-	AGAINST_RESULT result;
+	AGAINST_RESULT result = AGAINST_SUCCESS;
 	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
 	VkImageSubresourceLayers subresource_layers = { 0 };
 	subresource_layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subresource_layers.layerCount = layer_count;
+	subresource_layers.layerCount = num_layers;
 
 	VkBufferImageCopy buffer_image_copy = { 0 };
 	buffer_image_copy.bufferOffset = offset;
@@ -392,7 +392,7 @@ AGAINST_RESULT vk_utils_copy_buffer_to_image (
 	vkFreeCommandBuffers (graphics_device, transfer_command_pool.command_pool, 1, &transfer_command_pool.command_buffers[0]);
 
 	utils_free (transfer_command_pool.command_buffers);
-	transfer_command_pool.command_buffers_count = 0;
+	transfer_command_pool.num_command_buffers = 0;
 
 	return AGAINST_SUCCESS;
 }
@@ -576,14 +576,14 @@ AGAINST_RESULT vk_utils_update_descriptor_sets (
 	return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT vk_utils_create_command_pools (VkDevice graphics_device, size_t queue_family_index, size_t command_pools_count, VkCommandPoolCreateFlags flags, vk_command_pool* out_command_pools)
+AGAINST_RESULT vk_utils_create_command_pools (VkDevice graphics_device, size_t queue_family_index, size_t num_command_pools, VkCommandPoolCreateFlags flags, vk_command_pool* out_command_pools)
 {
 	VkCommandPoolCreateInfo create_info = { 0 };
 	create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	create_info.queueFamilyIndex = queue_family_index;
 	create_info.flags = flags;
 
-	for (size_t c = 0; c < command_pools_count; ++c)
+	for (size_t c = 0; c < num_command_pools; ++c)
 	{
 		if (vkCreateCommandPool (graphics_device, &create_info, NULL, &out_command_pools[c].command_pool) != VK_SUCCESS)
 		{
@@ -594,17 +594,17 @@ AGAINST_RESULT vk_utils_create_command_pools (VkDevice graphics_device, size_t q
 	return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT vk_utils_allocate_command_buffers (VkDevice graphics_device, VkCommandBufferLevel level, size_t command_pools_count, size_t* command_buffers_counts, vk_command_pool* in_out_command_pools)
+AGAINST_RESULT vk_utils_allocate_command_buffers (VkDevice graphics_device, VkCommandBufferLevel level, size_t num_command_pools, size_t* num_command_buffers, vk_command_pool* in_out_command_pools)
 {
-	for (size_t cp = 0; cp < command_pools_count; ++cp)
+	for (size_t cp = 0; cp < num_command_pools; ++cp)
 	{
-		in_out_command_pools[cp].command_buffers_count = command_buffers_counts[cp];
-		in_out_command_pools[cp].command_buffers = (VkCommandBuffer*)utils_calloc (command_buffers_counts[cp], sizeof (VkCommandBuffer));
+		in_out_command_pools[cp].num_command_buffers = num_command_buffers[cp];
+		in_out_command_pools[cp].command_buffers = (VkCommandBuffer*)utils_calloc (num_command_buffers[cp], sizeof (VkCommandBuffer));
 
 		VkCommandBufferAllocateInfo allocate_info = { 0 };
 		allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocate_info.commandPool = in_out_command_pools[cp].command_pool;
-		allocate_info.commandBufferCount = command_buffers_counts[cp];
+		allocate_info.commandBufferCount = num_command_buffers[cp];
 		allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
 		if (vkAllocateCommandBuffers (graphics_device, &allocate_info, in_out_command_pools[cp].command_buffers) != VK_SUCCESS)
@@ -616,12 +616,12 @@ AGAINST_RESULT vk_utils_allocate_command_buffers (VkDevice graphics_device, VkCo
 	return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT vk_utils_create_semaphores (VkDevice graphics_device, size_t semaphores_count, VkSemaphore* out_semaphores)
+AGAINST_RESULT vk_utils_create_semaphores (VkDevice graphics_device, size_t num_semaphores, VkSemaphore* out_semaphores)
 {
 	VkSemaphoreCreateInfo create_info = { 0 };
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	for (size_t s = 0; s < semaphores_count; ++s)
+	for (size_t s = 0; s < num_semaphores; ++s)
 	{
 		if (vkCreateSemaphore (graphics_device, &create_info, NULL, out_semaphores + s) != VK_SUCCESS)
 		{
@@ -632,16 +632,16 @@ AGAINST_RESULT vk_utils_create_semaphores (VkDevice graphics_device, size_t sema
 	return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT vk_utils_create_semaphores_for_command_pools (VkDevice graphics_device, size_t command_pools_count, vk_command_pool* in_out_command_pools)
+AGAINST_RESULT vk_utils_create_semaphores_for_command_pools (VkDevice graphics_device, size_t num_command_pools, vk_command_pool* in_out_command_pools)
 {
 	VkSemaphoreCreateInfo create_info = { 0 };
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	for (size_t cp = 0; cp < command_pools_count; ++cp)
+	for (size_t cp = 0; cp < num_command_pools; ++cp)
 	{
-		in_out_command_pools[cp].submit_signal_semaphores = (VkSemaphore*)utils_calloc (in_out_command_pools[cp].command_buffers_count, sizeof (VkSemaphore));
+		in_out_command_pools[cp].submit_signal_semaphores = (VkSemaphore*)utils_calloc (in_out_command_pools[cp].num_command_buffers, sizeof (VkSemaphore));
 
-		for (size_t cb = 0; cb < in_out_command_pools[cp].command_buffers_count; ++cb)
+		for (size_t cb = 0; cb < in_out_command_pools[cp].num_command_buffers; ++cb)
 		{
 			if (vkCreateSemaphore (graphics_device, &create_info, NULL, in_out_command_pools[cp].submit_signal_semaphores + cb) != VK_SUCCESS)
 			{
@@ -673,30 +673,30 @@ void vk_utils_destroy_buffer_and_buffer_memory (VkDevice graphics_device,
 	}
 }
 
-void vk_utils_destroy_command_pools_and_buffers (VkDevice graphics_device, vk_command_pool* command_pools, size_t command_pools_count)
+void vk_utils_destroy_command_pools_and_buffers (VkDevice graphics_device, vk_command_pool* command_pools, size_t num_command_pools)
 {
-	if (command_pools_count == 1)
+	if (num_command_pools == 1)
 	{
-		for (size_t cb = 0; cb < command_pools->command_buffers_count; ++cb)
+		for (size_t cb = 0; cb < command_pools->num_command_buffers; ++cb)
 		{
 			vkDestroySemaphore (graphics_device, command_pools->submit_signal_semaphores[cb], NULL);
 		}
 		utils_free (command_pools->submit_signal_semaphores);
-		vkFreeCommandBuffers (graphics_device, command_pools->command_pool, command_pools->command_buffers_count, command_pools->command_buffers);
+		vkFreeCommandBuffers (graphics_device, command_pools->command_pool, command_pools->num_command_buffers, command_pools->command_buffers);
 		utils_free (command_pools->command_buffers);
 		vkDestroyCommandPool (graphics_device, command_pools->command_pool, NULL);
 		command_pools->command_pool = VK_NULL_HANDLE;
 	}
 	else
 	{
-		for (size_t c = 0; c < command_pools_count; ++c)
+		for (size_t c = 0; c < num_command_pools; ++c)
 		{
-			for (size_t cb = 0; cb < command_pools[c].command_buffers_count; ++cb)
+			for (size_t cb = 0; cb < command_pools[c].num_command_buffers; ++cb)
 			{
 				vkDestroySemaphore (graphics_device, command_pools[c].submit_signal_semaphores[cb], NULL);
 			}
 			utils_free (command_pools[c].submit_signal_semaphores);
-			vkFreeCommandBuffers (graphics_device, command_pools[c].command_pool, command_pools[c].command_buffers_count, command_pools[c].command_buffers);
+			vkFreeCommandBuffers (graphics_device, command_pools[c].command_pool, command_pools[c].num_command_buffers, command_pools[c].command_buffers);
 			utils_free (command_pools[c].command_buffers);
 			vkDestroyCommandPool (graphics_device, command_pools[c].command_pool, NULL);
 			command_pools[c].command_pool = VK_NULL_HANDLE;

@@ -13,7 +13,7 @@ typedef struct _file_path
 
 void utils_get_full_texture_path_from_uri (const char* file_path, const char* uri, char* out_full_texture_path);
 void utils_get_full_file_path (const char* partial_file_path, char* out_file_path);
-void utils_get_files_in_folder (const char* partial_folder_path, file_path** out_file_paths, size_t* out_file_count);
+void utils_get_files_in_folder (const char* partial_folder_path, file_path** out_file_paths, size_t* num_out_files);
 
 void utils_read_image_from_uri (const char* file_path, const char* uri, int* width, int* height, int* bpp, uint8_t* pixels);
 
