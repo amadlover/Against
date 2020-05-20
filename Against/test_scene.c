@@ -9,7 +9,6 @@
 
 scene_obj* scene = NULL;
 
-
 AGAINST_RESULT test_scene_init ()
 {
     OutputDebugString (L"test_scene_init\n");

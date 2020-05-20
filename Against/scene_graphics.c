@@ -121,100 +121,9 @@ AGAINST_RESULT record_command_buffers ()
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT scene_graphics_import_data (const char* partial_folder_path, scene_graphics_obj* scene_obj)
+AGAINST_RESULT scene_graphics_init (scene_graphics_obj* scene_graphics_data)
 {
     AGAINST_RESULT result = AGAINST_SUCCESS;
-    CHECK_AGAINST_RESULT (gltf_import_graphics_from_files_from_folder (partial_folder_path, scene_obj), result);
-
-    return AGAINST_SUCCESS;
-}
-
-void scene_graphics_cleanpup_data (scene_graphics_obj* scene_obj)
-{
-    OutputDebugString (L"scene_graphics_cleanpup_data\n");
-
-    if (scene_obj)
-    {
-        if (scene_obj->images)
-        {
-            for (size_t i = 0; i < scene_obj->num_images; ++i)
-            {
-                if (scene_obj->images[i] != VK_NULL_HANDLE)
-                {
-                    vkDestroyImage (graphics_device, scene_obj->images[i], NULL);
-                }
-                if (scene_obj->image_views[i] != VK_NULL_HANDLE)
-                {
-                    vkDestroyImageView (graphics_device, scene_obj->image_views[i], NULL);
-                }
-            }
-
-            utils_free (scene_obj->images);
-            utils_free (scene_obj->image_views);
-            scene_obj->num_images = 0;
-        }
-
-        vk_utils_destroy_buffer_and_buffer_memory (graphics_device, scene_obj->vb_ib, scene_obj->vb_ib_memory);
-        vk_utils_destroy_buffer_and_buffer_memory (graphics_device, scene_obj->bone_buffer, scene_obj->bone_buffer_memory);
-        vk_utils_destroy_buffer_and_buffer_memory (graphics_device, scene_obj->anim_buffer, scene_obj->anim_buffer_memory);
-        vkFreeMemory (graphics_device, scene_obj->images_memory, NULL);
-
-        vkDestroyDescriptorPool (graphics_device, scene_obj->descriptor_pool, NULL);
-
-        utils_free (scene_obj->skinned_graphics_primitives);
-        scene_obj->num_skinned_graphics_primitives = 0;
-        utils_free (scene_obj->materials);
-        scene_obj->num_materials = 0;
-
-        for (size_t s = 0; s < scene_obj->num_skins; ++s)
-        {
-            utils_free (scene_obj->skins[s].animations);
-            scene_obj->skins[s].num_animations = 0;
-            utils_free (scene_obj->skins[s].skinned_meshes);
-            scene_obj->skins[s].skinned_meshes = 0;
-        }
-
-        for (size_t a = 0; a < scene_obj->num_animations; ++a)
-        {
-            utils_free ((scene_obj->animations + a)->frame_data_offsets);
-        }
-        utils_free (scene_obj->animations);
-        scene_obj->num_animations = 0;
-        utils_free (scene_obj->skins);
-        scene_obj->num_skins = 0;
-
-        for (size_t m = 0; m < scene_obj->num_skinned_meshes; ++m)
-        {
-            utils_free (scene_obj->skinned_meshes[m].opaque_graphics_primitives);
-            scene_obj->skinned_meshes[m].num_opaque_graphics_primitives = 0;
-            utils_free (scene_obj->skinned_meshes[m].alpha_graphics_primitives);
-            scene_obj->skinned_meshes[m].num_alpha_graphics_primitives = 0;
-            utils_free (scene_obj->skinned_meshes[m].blend_graphics_primitives);
-            scene_obj->skinned_meshes[m].num_blend_graphics_primitives = 0;
-        }
-
-        utils_free (scene_obj->skinned_meshes);
-        scene_obj->num_skinned_meshes = 0;
-
-        for (size_t m = 0; m < scene_obj->num_static_meshes; ++m)
-        {
-            utils_free (scene_obj->static_meshes[m].opaque_graphics_primitives);
-            scene_obj->static_meshes[m].num_opaque_graphics_primitives = 0;
-            utils_free (scene_obj->static_meshes[m].alpha_graphics_primitives);
-            scene_obj->static_meshes[m].num_alpha_graphics_primitives = 0;
-            utils_free (scene_obj->static_meshes[m].blend_graphics_primitives);
-            scene_obj->static_meshes[m].num_blend_graphics_primitives = 0;
-        }
-
-        utils_free (scene_obj->static_meshes);
-        scene_obj->num_static_meshes = 0;
-    }
-}
-
-AGAINST_RESULT scene_graphics_init (const char* file_path, scene_graphics_obj* scene_graphics_data)
-{
-    AGAINST_RESULT result = AGAINST_SUCCESS;
-    CHECK_AGAINST_RESULT (scene_graphics_import_data (file_path, scene_graphics_data), result);
     
     CHECK_AGAINST_RESULT (create_skinned_opaque_graphics_pipeline (scene_graphics_data, &skinned_opaque_graphics_pipeline), result);
 
@@ -305,8 +214,6 @@ AGAINST_RESULT scene_graphics_main_loop ()
 
 void scene_graphics_shutdown (scene_graphics_obj* scene_graphics_data)
 {
-    scene_graphics_cleanpup_data (scene_graphics_data);
-
     vkQueueWaitIdle (graphics_queue);
     vkQueueWaitIdle (compute_queue);
     vkQueueWaitIdle (transfer_queue);

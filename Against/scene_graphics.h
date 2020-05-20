@@ -43,6 +43,6 @@ typedef struct _scene_graphics_obj
     VkDescriptorPool descriptor_pool;
 } scene_graphics_obj;
 
-AGAINST_RESULT scene_graphics_init (const char* file_path, scene_graphics_obj* scene_graphics_data);
+AGAINST_RESULT scene_graphics_init (scene_graphics_obj* scene_graphics_data);
 AGAINST_RESULT scene_graphics_main_loop ();
 void scene_graphics_shutdown (scene_graphics_obj* scene_graphics_data);

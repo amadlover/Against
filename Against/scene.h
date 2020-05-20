@@ -3,6 +3,7 @@
 #include "vk_asset.h"
 #include "error.h"
 #include "scene_graphics.h"
+#include "scene_physics.h"
 #include "actor.h"
 
 #include <Windows.h>
