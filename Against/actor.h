@@ -5,6 +5,8 @@
 
 typedef struct _skinned_actor
 {
+    char name[1024];
+    
     vk_skin* skin;
     
     phy_skinned_primitive** physics_primitives;
@@ -13,6 +15,8 @@ typedef struct _skinned_actor
 
 typedef struct _static_actor
 {
+    char name[1024];
+
     vk_static_mesh* static_meshes;
     size_t num_static_meshes;
 
