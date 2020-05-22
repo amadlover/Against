@@ -1202,7 +1202,25 @@ AGAINST_RESULT import_graphics_primitives (cgltf_data** datas, size_t num_datas,
             out_data->vb_ib,
             current_primitive_data_offset
         ),
-        result);
+    result);
+
+    CHECK_AGAINST_RESULT (
+        vk_utils_transfer_buffer_ownership (
+            graphics_device,
+            transfer_command_pool,
+            transfer_queue,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_ACCESS_MEMORY_WRITE_BIT,
+            VK_ACCESS_TRANSFER_WRITE_BIT,
+            transfer_queue_family_index,
+            graphics_queue_family_index,
+            out_data->vb_ib,
+            0,
+            current_primitive_data_offset
+        ),
+    result
+    );
 
     vk_utils_destroy_buffer_and_buffer_memory (graphics_device, staging_buffer, staging_buffer_memory);
 
@@ -1907,13 +1925,6 @@ AGAINST_RESULT import_static_meshes (cgltf_data** datas, size_t num_datas, scene
             ++current_mesh_node_index;
         }
     }
-
-    return AGAINST_SUCCESS;
-}
-
-AGAINST_RESULT link_static_graphics_primitives_to_static_meshes (scene_graphics_obj* out_data)
-{
-    OutputDebugString (L"link_static_graphics_primitives_to_static_meshes\n");
 
     return AGAINST_SUCCESS;
 }

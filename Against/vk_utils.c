@@ -68,9 +68,6 @@ AGAINST_RESULT submit_one_time_cmd (VkQueue transfer_queue, VkCommandBuffer comm
 
 AGAINST_RESULT get_one_time_command_buffer (VkDevice graphics_device, vk_command_pool* in_out_transfer_command_pool)
 {
-	in_out_transfer_command_pool->num_command_buffers = 1;
-	in_out_transfer_command_pool->command_buffers = (VkCommandBuffer*)utils_calloc (1, sizeof (VkCommandBuffer));
-
 	VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
 
 	command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -299,6 +296,8 @@ AGAINST_RESULT vk_utils_change_image_layout (
 {
 	AGAINST_RESULT result = AGAINST_SUCCESS;
 
+	transfer_command_pool.num_command_buffers = 1;
+	transfer_command_pool.command_buffers = (VkCommandBuffer*)utils_calloc (1, sizeof (VkCommandBuffer));
 	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
 	VkImageSubresourceRange subresource_range = { 0 };
@@ -343,6 +342,8 @@ AGAINST_RESULT vk_utils_copy_buffer_to_buffer (
 {
 	AGAINST_RESULT result = AGAINST_SUCCESS;
 
+	transfer_command_pool.num_command_buffers = 1;
+	transfer_command_pool.command_buffers = (VkCommandBuffer*)utils_calloc (1, sizeof (VkCommandBuffer));
 	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
 	VkBufferCopy buffer_copy = { 0 };
@@ -362,6 +363,33 @@ AGAINST_RESULT vk_utils_copy_buffer_to_buffer (
 	return AGAINST_SUCCESS;
 }
 
+AGAINST_RESULT vk_utils_transfer_buffer_ownership (VkDevice graphics_device, vk_command_pool transfer_command_pool, VkQueue transfer_queue, VkPipelineStageFlags src_stage_flags, VkPipelineStageFlags dst_stage_flags, VkAccessFlags src_access_mask, VkAccessFlags dst_access_mask, size_t src_queue_family_index, size_t dst_queue_family_index, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size)
+{
+	AGAINST_RESULT result = AGAINST_SUCCESS;
+
+	transfer_command_pool.num_command_buffers = 1;
+	transfer_command_pool.command_buffers = (VkCommandBuffer*)utils_calloc (1, sizeof (VkCommandBuffer));
+	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
+
+	VkBufferMemoryBarrier buffer_barrier = { 0 };
+	buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	buffer_barrier.buffer = buffer;
+	buffer_barrier.srcAccessMask = src_access_mask;
+	buffer_barrier.dstAccessMask = dst_access_mask;
+	buffer_barrier.srcQueueFamilyIndex = src_queue_family_index;
+	buffer_barrier.dstQueueFamilyIndex = dst_queue_family_index;
+	buffer_barrier.size = size;
+
+	vkCmdPipelineBarrier (transfer_command_pool.command_buffers[0], src_stage_flags, dst_stage_flags, 0, 0, NULL, 1, &buffer_barrier, 0, NULL);
+	CHECK_AGAINST_RESULT (submit_one_time_cmd (transfer_queue, transfer_command_pool.command_buffers[0]), result);
+	vkFreeCommandBuffers (graphics_device, transfer_command_pool.command_pool, 1, &transfer_command_pool.command_buffers[0]);
+
+	utils_free (transfer_command_pool.command_buffers);
+	transfer_command_pool.num_command_buffers = 0;
+
+	return AGAINST_SUCCESS;
+}
+
 AGAINST_RESULT vk_utils_copy_buffer_to_image (
 	VkDevice graphics_device,
 	vk_command_pool transfer_command_pool,
@@ -373,6 +401,9 @@ AGAINST_RESULT vk_utils_copy_buffer_to_image (
 	uint32_t num_layers)
 {
 	AGAINST_RESULT result = AGAINST_SUCCESS;
+
+	transfer_command_pool.num_command_buffers = 1;
+	transfer_command_pool.command_buffers = (VkCommandBuffer*)utils_calloc (1, sizeof (VkCommandBuffer));
 	CHECK_AGAINST_RESULT (get_one_time_command_buffer (graphics_device, &transfer_command_pool), result);
 
 	VkImageSubresourceLayers subresource_layers = { 0 };

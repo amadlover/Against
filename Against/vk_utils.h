@@ -89,6 +89,21 @@ AGAINST_RESULT vk_utils_copy_buffer_to_buffer (
     VkDeviceSize size
 );
 
+AGAINST_RESULT vk_utils_transfer_buffer_ownership (
+    VkDevice graphics_device,
+    vk_command_pool transfer_command_pool,
+    VkQueue transfer_queue,
+    VkPipelineStageFlags src_stage_flags,
+    VkPipelineStageFlags dst_stage_flags,
+    VkAccessFlags src_access_mask,
+    VkAccessFlags dst_access_mask,
+    size_t src_queue_family_index,
+    size_t dst_queue_family_index,
+    VkBuffer buffer,
+    VkDeviceSize offset,
+    VkDeviceSize size
+);
+
 AGAINST_RESULT vk_utils_copy_buffer_to_image (
     VkDevice graphics_device,
     vk_command_pool transfer_command_pool,
