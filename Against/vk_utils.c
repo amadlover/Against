@@ -381,6 +381,10 @@ AGAINST_RESULT vk_utils_transfer_buffer_ownership (VkDevice graphics_device, vk_
 	buffer_barrier.size = size;
 
 	vkCmdPipelineBarrier (transfer_command_pool.command_buffers[0], src_stage_flags, dst_stage_flags, 0, 0, NULL, 1, &buffer_barrier, 0, NULL);
+	if (vkEndCommandBuffer (transfer_command_pool.command_buffers[0]) != VK_SUCCESS) 
+	{
+		return AGAINST_ERROR_GRAPHICS_END_COMMAND_BUFFER;
+	}
 	CHECK_AGAINST_RESULT (submit_one_time_cmd (transfer_queue, transfer_command_pool.command_buffers[0]), result);
 	vkFreeCommandBuffers (graphics_device, transfer_command_pool.command_pool, 1, &transfer_command_pool.command_buffers[0]);
 

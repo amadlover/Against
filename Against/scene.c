@@ -5,6 +5,29 @@
 #include "vk_utils.h"
 #include "common_graphics.h"
 
+char** image_names = NULL;
+size_t num_image_names = 0;
+
+AGAINST_RESULT scene_import_image (const char* image_name)
+{
+    if (image_names == NULL)
+    {
+        image_names = (char**) utils_calloc (1, sizeof (char*));
+    }
+    else
+    {
+        image_names = (char**) utils_realloc_zero (image_names, sizeof (char*) * num_image_names, sizeof (char*) * (num_image_names + 1));
+    }
+
+    image_names[num_image_names] = (char*) utils_calloc (strlen (image_name), sizeof (char));
+    strcpy (image_names[num_image_names], image_name);
+    strcat (image_names[num_image_names], ".tga");
+    
+    ++num_image_names;
+
+    return AGAINST_SUCCESS;
+}
+
 AGAINST_RESULT scene_init (const char* partial_folder_path, scene_obj* scene_obj)
 {
     AGAINST_RESULT result = AGAINST_SUCCESS;
