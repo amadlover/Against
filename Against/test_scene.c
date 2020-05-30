@@ -7,17 +7,17 @@
 #include "scene.h"
 #include "vk_utils.h"
 
-scene_obj* scene = NULL;
-
 AGAINST_RESULT test_scene_init (void)
 {
     OutputDebugString (L"test_scene_init\n");
-    
-    AGAINST_RESULT result = AGAINST_SUCCESS;
 
-    scene = (scene_obj*)utils_calloc (1, sizeof (scene_obj));
-    CHECK_AGAINST_RESULT (scene_init ("", scene), result);
-    
+    AGAINST_RESULT result = AGAINST_SUCCESS;
+    CHECK_AGAINST_RESULT (scene_import_mesh ("PlayerShip"), result);
+    CHECK_AGAINST_RESULT (scene_import_mesh ("LargeAsteroid"), result);
+    CHECK_AGAINST_RESULT (scene_import_mesh ("SmallAsteroid"), result);
+
+    CHECK_AGAINST_RESULT (scene_commit_assets (), result);
+
     return AGAINST_SUCCESS;
 }
 
@@ -53,6 +53,5 @@ void test_scene_shutdown (void)
 {
     OutputDebugString (L"test_scene_shutdown\n");
 
-    scene_shutdown (scene);
-    utils_free (scene);
+    scene_shutdown ();
 }
