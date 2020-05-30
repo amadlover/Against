@@ -66,7 +66,7 @@ typedef struct _anim_joint_data
     char name[2048];
 } anim_joint_data;
 
-AGAINST_RESULT import_images (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_graphics_obj* out_data)
+AGAINST_RESULT import_images (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_graphics* out_data)
 {
     OutputDebugString (L"import_images\n");
 
@@ -217,7 +217,7 @@ AGAINST_RESULT import_images (const char* full_folder_path, cgltf_data** datas, 
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_materials (cgltf_data** datas, size_t num_datas, scene_graphics_obj* out_data)
+AGAINST_RESULT import_materials (cgltf_data** datas, size_t num_datas, scene_graphics* out_data)
 {
     OutputDebugString (L"import_materials\n");
 
@@ -321,7 +321,7 @@ AGAINST_RESULT import_materials (cgltf_data** datas, size_t num_datas, scene_gra
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_graphics_primitives (cgltf_data** datas, size_t num_datas, scene_graphics_obj* out_data)
+AGAINST_RESULT import_graphics_primitives (cgltf_data** datas, size_t num_datas, scene_graphics* out_data)
 {
     OutputDebugString (L"import_graphics_primitives\n");
     unsigned char** skinned_positions = NULL;
@@ -1269,7 +1269,7 @@ AGAINST_RESULT import_graphics_primitives (cgltf_data** datas, size_t num_datas,
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT link_materials_to_graphics_primitives (scene_graphics_obj* out_data)
+AGAINST_RESULT link_materials_to_graphics_primitives (scene_graphics* out_data)
 {
     OutputDebugString (L"link_materials_to_graphics_primitives\n");
 
@@ -1306,7 +1306,7 @@ AGAINST_RESULT link_materials_to_graphics_primitives (scene_graphics_obj* out_da
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_meshes (cgltf_data** datas, size_t num_datas, scene_graphics_obj* out_data)
+AGAINST_RESULT import_meshes (cgltf_data** datas, size_t num_datas, scene_graphics* out_data)
 {
     OutputDebugString (L"import_meshes\n");
 
@@ -1417,7 +1417,7 @@ AGAINST_RESULT import_meshes (cgltf_data** datas, size_t num_datas, scene_graphi
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT link_graphics_primitives_to_meshes (scene_graphics_obj* out_data)
+AGAINST_RESULT link_graphics_primitives_to_meshes (scene_graphics* out_data)
 {
     OutputDebugString (L"link_graphics_primitives_to_meshes\n");
 
@@ -1546,7 +1546,7 @@ AGAINST_RESULT link_graphics_primitives_to_meshes (scene_graphics_obj* out_data)
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_skins (cgltf_data** datas, size_t num_datas, scene_graphics_obj* out_data)
+AGAINST_RESULT import_skins (cgltf_data** datas, size_t num_datas, scene_graphics* out_data)
 {
     OutputDebugString (L"import_skins\n");
 
@@ -1635,7 +1635,7 @@ AGAINST_RESULT import_skins (cgltf_data** datas, size_t num_datas, scene_graphic
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT link_skinned_meshes_to_skins (scene_graphics_obj* out_data)
+AGAINST_RESULT link_skinned_meshes_to_skins (scene_graphics* out_data)
 {
     OutputDebugString (L"link_skinned_meshes_to_skins\n");
 
@@ -1665,7 +1665,7 @@ AGAINST_RESULT link_skinned_meshes_to_skins (scene_graphics_obj* out_data)
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_animations (cgltf_data** datas, size_t num_datas, scene_graphics_obj* out_data)
+AGAINST_RESULT import_animations (cgltf_data** datas, size_t num_datas, scene_graphics* out_data)
 {
     OutputDebugString (L"import_animations\n");
 
@@ -1839,7 +1839,7 @@ AGAINST_RESULT import_animations (cgltf_data** datas, size_t num_datas, scene_gr
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT link_animations_to_skins (scene_graphics_obj* out_data)
+AGAINST_RESULT link_animations_to_skins (scene_graphics* out_data)
 {
     OutputDebugString (L"link_animations_to_skins\n");
 
@@ -1870,7 +1870,7 @@ AGAINST_RESULT link_animations_to_skins (scene_graphics_obj* out_data)
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_static_meshes (cgltf_data** datas, size_t num_datas, scene_graphics_obj* out_data)
+AGAINST_RESULT import_static_meshes (cgltf_data** datas, size_t num_datas, scene_graphics* out_data)
 {
     OutputDebugString (L"import_static_meshes\n");
 
@@ -1929,35 +1929,35 @@ AGAINST_RESULT import_static_meshes (cgltf_data** datas, size_t num_datas, scene
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_physics_primitives (cgltf_data** datas, size_t num_datas, scene_physics_obj* out_data)
+AGAINST_RESULT import_physics_primitives (cgltf_data** datas, size_t num_datas, scene_physics* out_data)
 {
     OutputDebugString (L"import_physics_primitives\n");
 
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT link_physics_primitives_to_meshes (scene_physics_obj* out_data)
+AGAINST_RESULT link_physics_primitives_to_meshes (scene_physics* out_data)
 {
     OutputDebugString (L"link_physics_primitives_to_meshes\n");
 
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_static_physics_primitives (cgltf_data** datas, size_t num_datas, scene_physics_obj* out_data)
+AGAINST_RESULT import_static_physics_primitives (cgltf_data** datas, size_t num_datas, scene_physics* out_data)
 {
     OutputDebugString (L"import_static_graphics_primitives\n");
 
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT link_static_physics_primitives_to_static_meshes (scene_physics_obj* out_data)
+AGAINST_RESULT link_static_physics_primitives_to_static_meshes (scene_physics* out_data)
 {
     OutputDebugString (L"link_static_physics_primitives_to_static_meshes\n");
 
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_graphics_from_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_graphics_obj* out_data)
+AGAINST_RESULT import_graphics_from_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_graphics* out_data)
 {
     OutputDebugString (L"import_graphics_from_gltf_datas\n");
 
@@ -1977,7 +1977,7 @@ AGAINST_RESULT import_graphics_from_gltf_datas (const char* full_folder_path, cg
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT import_physics_from_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_physics_obj* out_data)
+AGAINST_RESULT import_physics_from_gltf_datas (const char* full_folder_path, cgltf_data** datas, size_t num_datas, scene_physics* out_data)
 {
     OutputDebugString (L"import_physics_from_gltf_datas\n");
 
@@ -2014,7 +2014,7 @@ AGAINST_RESULT gather_gltf_datas (const char* full_file_path, cgltf_data** datas
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT gltf_import_scene_data_from_files_from_folder (const char* partial_folder_path, scene_obj* out_data)
+AGAINST_RESULT gltf_import_scene_data_from_files_from_folder (const char* partial_folder_path, scene* out_data)
 {
     OutputDebugString (L"gltf_import_scene_data_from_files_from_folder\n");
     
@@ -2041,8 +2041,8 @@ AGAINST_RESULT gltf_import_scene_data_from_files_from_folder (const char* partia
     utils_free (file_paths);
     file_paths = NULL;
 
-    CHECK_AGAINST_RESULT (import_graphics_from_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, out_data->graphics), result);
-    CHECK_AGAINST_RESULT (import_physics_from_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, out_data->physics), result);
+    CHECK_AGAINST_RESULT (import_graphics_from_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, scene_get_graphics (out_data)), result);
+    CHECK_AGAINST_RESULT (import_physics_from_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, scene_get_physics (out_data)), result);
 
     for (size_t d = 0; d < num_gltf_datas; ++d)
     {
@@ -2092,7 +2092,7 @@ AGAINST_RESULT gltf_import_scene_data_from_files_from_folder (const char* partia
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT glt_import_physics_from_files_from_folder (const char* partial_folder_path, scene_physics_obj* out_data)
+AGAINST_RESULT glt_import_physics_from_files_from_folder (const char* partial_folder_path, scene_physics* out_data)
 {
     return AGAINST_SUCCESS;
 }

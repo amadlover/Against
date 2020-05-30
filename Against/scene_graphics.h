@@ -3,7 +3,7 @@
 #include "error.h"
 #include "vk_asset.h"
 
-typedef struct _scene_graphics_obj
+typedef struct _scene_graphics
 {
     VkBuffer vb_ib;
     VkDeviceMemory vb_ib_memory;
@@ -41,8 +41,8 @@ typedef struct _scene_graphics_obj
     size_t num_animations;
 
     VkDescriptorPool descriptor_pool;
-} scene_graphics_obj;
+} scene_graphics;
 
-AGAINST_RESULT scene_graphics_init (scene_graphics_obj* scene_graphics_data);
+AGAINST_RESULT scene_graphics_init (scene_graphics* scene_graphics_data);
 AGAINST_RESULT scene_graphics_main_loop (void);
-void scene_graphics_shutdown (scene_graphics_obj* scene_graphics_data);
+void scene_graphics_shutdown (scene_graphics* scene_graphics_data);

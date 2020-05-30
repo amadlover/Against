@@ -3,14 +3,14 @@
 #include "vk_utils.h"
 #include "common_graphics.h"
 
-AGAINST_RESULT create_skybox_graphics_pipeline (scene_graphics_obj* scene, vk_skybox_graphics_pipeline** out_graphics_pipeline)
+AGAINST_RESULT create_skybox_graphics_pipeline (scene_graphics* scene, vk_skybox_graphics_pipeline** out_graphics_pipeline)
 {
     OutputDebugString (L"create_skybox_graphics_pipeine\n");
 
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT create_skinned_opaque_graphics_pipeline (scene_graphics_obj* scene, vk_skinned_opaque_graphics_pipeline** out_graphics_pipeline)
+AGAINST_RESULT create_skinned_opaque_graphics_pipeline (scene_graphics* scene, vk_skinned_opaque_graphics_pipeline** out_graphics_pipeline)
 {
     OutputDebugString (L"create_skinned_opaque_graphics_pipeline\n");
 

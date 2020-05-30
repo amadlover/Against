@@ -5,13 +5,24 @@
 #include "vk_utils.h"
 #include "common_graphics.h"
 
+struct _scene {
+    scene_graphics* graphics;
+    scene_physics* physics;
+
+    skinned_actor* skinned_actors;
+    size_t num_skinned_actors;
+
+    static_actor* static_actors;
+    size_t num_static_actors;
+};
+
 char** image_names = NULL;
 size_t num_image_names = 0;
 
 char** mesh_names = NULL;
 size_t num_mesh_names = 0;
 
-scene_obj* scene = NULL;
+scene* scene_obj = NULL;
 
 AGAINST_RESULT scene_import_image (const char* image_name)
 {
@@ -63,11 +74,12 @@ AGAINST_RESULT scene_commit_assets (void)
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT scene_init (const char* partial_folder_path, scene_obj* scene_obj)
+AGAINST_RESULT scene_init (const char* partial_folder_path)
 {
     AGAINST_RESULT result = AGAINST_SUCCESS;
-    scene_obj->graphics = (scene_graphics_obj*)utils_calloc (1, sizeof (scene_graphics_obj));
-    scene_obj->physics = (scene_physics_obj*)utils_calloc (1, sizeof (scene_physics_obj));
+    scene_obj = (scene*) utils_calloc (1, sizeof (scene));
+    scene_obj->graphics = (scene_graphics*)utils_calloc (1, sizeof (scene_graphics));
+    scene_obj->physics = (scene_physics*)utils_calloc (1, sizeof (scene_physics));
     
     CHECK_AGAINST_RESULT (gltf_import_scene_data_from_files_from_folder (partial_folder_path, scene_obj), result);
     CHECK_AGAINST_RESULT (scene_graphics_init (scene_obj->graphics), result);
@@ -88,13 +100,23 @@ AGAINST_RESULT scene_main_loop (void)
     return AGAINST_SUCCESS;
 }
 
+scene_graphics* scene_get_graphics (scene* scene_obj)
+{
+    return scene_obj->graphics;
+}
+
+scene_physics* scene_get_physics (scene* scene_obj)
+{
+    return scene_obj->physics;
+}
+
 void scene_shutdown ()
 {
-    scene_graphics_shutdown (scene->graphics);
-    utils_free (scene->graphics);
+    scene_graphics_shutdown (scene_obj->graphics);
+    utils_free (scene_obj->graphics);
     
-    scene_physics_shutdown (scene->physics);
-    
-    utils_free (scene->physics);
-    utils_free (scene);
+    scene_physics_shutdown (scene_obj->physics);
+    utils_free (scene_obj->physics);
+
+    utils_free (scene_obj);
 }

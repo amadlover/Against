@@ -121,7 +121,7 @@ AGAINST_RESULT record_command_buffers ()
     return AGAINST_SUCCESS;
 }
 
-AGAINST_RESULT scene_graphics_init (scene_graphics_obj* scene_graphics_data)
+AGAINST_RESULT scene_graphics_init (scene_graphics* scene_graphics_data)
 {
     AGAINST_RESULT result = AGAINST_SUCCESS;
     
@@ -212,7 +212,7 @@ AGAINST_RESULT scene_graphics_main_loop (void)
     return AGAINST_SUCCESS;
 }
 
-void scene_graphics_cleanpup_data (scene_graphics_obj* obj)
+void scene_graphics_cleanpup_data (scene_graphics* obj)
 {
     OutputDebugString (L"scene_graphics_cleanpup_data\n");
 
@@ -297,7 +297,7 @@ void scene_graphics_cleanpup_data (scene_graphics_obj* obj)
     }
 }
 
-void scene_graphics_shutdown (scene_graphics_obj* scene_graphics_data)
+void scene_graphics_shutdown (scene_graphics* scene_graphics_data)
 {
     vkQueueWaitIdle (graphics_queue);
 
