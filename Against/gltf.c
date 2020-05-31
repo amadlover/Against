@@ -2041,8 +2041,8 @@ AGAINST_RESULT gltf_import_scene_data_from_files_from_folder (const char* partia
     utils_free (file_paths);
     file_paths = NULL;
 
-    CHECK_AGAINST_RESULT (import_graphics_from_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, scene_get_graphics (out_data)), result);
-    CHECK_AGAINST_RESULT (import_physics_from_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, scene_get_physics (out_data)), result);
+    CHECK_AGAINST_RESULT (import_graphics_from_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, out_data->graphics), result);
+    CHECK_AGAINST_RESULT (import_physics_from_gltf_datas (full_folder_path, gltf_datas, num_gltf_datas, out_data->physics), result);
 
     for (size_t d = 0; d < num_gltf_datas; ++d)
     {
