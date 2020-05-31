@@ -19,7 +19,13 @@ AGAINST_RESULT scene_init (const char* partial_folder_path);
 AGAINST_RESULT scene_process_keyboard_input (WPARAM w_param, LPARAM l_param);
 AGAINST_RESULT scene_main_loop (void);
 
-scene_graphics* scene_get_graphics (scene* scene);
-scene_physics* scene_get_physics (scene* scene);
+AGAINST_RESULT scene_spawn_skinned_actor (const char* name);
+AGAINST_RESULT scene_destroy_skinned_actor (skinned_actor* actor);
+
+AGAINST_RESULT scene_spawn_static_actor (static_actor* actor);
+AGAINST_RESULT scene_destroy_static_actor (static_actor* actor);
+
+scene_graphics* scene_get_graphics ();
+scene_physics* scene_get_physics ();
 
 void scene_shutdown ();

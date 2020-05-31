@@ -18,3 +18,13 @@ struct _static_actor {
     phy_static_primitive** physics_primitives;
     size_t num_physics_primitives;
 };
+
+size_t actor_get_skinned_actor_size ()
+{
+    return sizeof (_skinned_actor);
+}
+
+size_t actor_get_static_actor_size ()
+{
+    return sizeof (_static_actor);
+}
