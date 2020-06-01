@@ -21,8 +21,3 @@ typedef struct _static_actor {
     phy_static_primitive** physics_primitives;
     size_t num_physics_primitives;
 } static_actor;
-
-skinned_actor* actor_make_skinned_actor_obj ();
-
-size_t actor_get_skinned_actor_size ();
-size_t actor_get_static_actor_size ();
