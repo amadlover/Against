@@ -11,14 +11,14 @@
 
 bool is_validation_needed;
 
-const char* requested_instance_layers[16];
-size_t num_requested_instance_layer;
+char** requested_instance_layers = NULL;
+size_t num_requested_instance_layer = 0;
 
-const char* requested_instance_extensions[16];
-size_t num_requested_instance_extension;
+char** requested_instance_extensions = NULL;
+size_t num_requested_instance_extension = 0;
 
-const char* requested_device_extensions[16];
-size_t num_requested_device_extension;
+char** requested_device_extensions = NULL;
+size_t num_requested_device_extension = 0;
 
 VkInstance instance;
 VkDebugUtilsMessengerEXT debug_utils_messenger;
@@ -95,7 +95,19 @@ AGAINST_RESULT populate_instance_layers_and_extensions ()
 		{
 			if (strcmp (layer_properties[l].layerName, "VK_LAYER_LUNARG_standard_validation") == 0)
 			{
-				requested_instance_layers[num_requested_instance_layer++] = ("VK_LAYER_LUNARG_standard_validation");
+				if (requested_instance_layers == NULL)
+				{
+					requested_instance_layers = (char**)utils_calloc (1, sizeof (char*));
+				}
+				else
+				{
+					requested_instance_layers = (char**)utils_realloc_zero (requested_instance_layers, sizeof (char*) * num_requested_instance_layer, sizeof (char*) * (num_requested_instance_layer + 1));
+				}
+
+				requested_instance_layers[num_requested_instance_layer] = (char*) utils_calloc (strlen("VK_LAYER_LUNARG_standard_validation") + 1, sizeof (char));
+				strcpy (requested_instance_layers[num_requested_instance_layer], "VK_LAYER_LUNARG_standard_validation");
+				++num_requested_instance_layer;
+
 				break;
 			}
 		}
@@ -113,18 +125,51 @@ AGAINST_RESULT populate_instance_layers_and_extensions ()
 	{
 		if (strcmp (extension_properties[e].extensionName, VK_KHR_SURFACE_EXTENSION_NAME) == 0)
 		{
-			requested_instance_extensions[num_requested_instance_extension++] = VK_KHR_SURFACE_EXTENSION_NAME;
+			if (requested_instance_extensions == NULL)
+			{
+				requested_instance_extensions = (char**)utils_calloc (1, sizeof (char*));
+			}
+			else
+			{
+				requested_instance_extensions = (char**)utils_realloc_zero (requested_instance_extensions, sizeof (char*) * num_requested_instance_extension, sizeof (char*) * (num_requested_instance_extension + 1));
+			}
+
+			requested_instance_extensions[num_requested_instance_extension] = (char*)utils_calloc (strlen (VK_KHR_SURFACE_EXTENSION_NAME) + 1, sizeof (char));
+			strcpy (requested_instance_extensions[num_requested_instance_extension], VK_KHR_SURFACE_EXTENSION_NAME);
+			++num_requested_instance_extension;
 		}
 		else if (strcmp (extension_properties[e].extensionName, "VK_KHR_win32_surface") == 0)
 		{
-			requested_instance_extensions[num_requested_instance_extension++] = "VK_KHR_win32_surface";
+			if (requested_instance_extensions == NULL)
+			{
+				requested_instance_extensions = (char**)utils_calloc (1, sizeof (char*));
+			}
+			else
+			{
+				requested_instance_extensions = (char**)utils_realloc_zero (requested_instance_extensions, sizeof (char*) * num_requested_instance_extension, sizeof (char*) * (num_requested_instance_extension + 1));
+			}
+
+			requested_instance_extensions[num_requested_instance_extension] = (char*)utils_calloc (strlen ("VK_KHR_win32_surface") + 1, sizeof (char));
+			strcpy (requested_instance_extensions[num_requested_instance_extension], "VK_KHR_win32_surface");
+			++num_requested_instance_extension;
 		}
 
 		if (is_validation_needed)
 		{
 			if (strcmp (extension_properties[e].extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
 			{
-				requested_instance_extensions[num_requested_instance_extension++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+				if (requested_instance_extensions == NULL)
+				{
+					requested_instance_extensions = (char**)utils_calloc (1, sizeof (char*));
+				}
+				else
+				{
+					requested_instance_extensions = (char**)utils_realloc_zero (requested_instance_extensions, sizeof (char*) * num_requested_instance_extension, sizeof (char*) * (num_requested_instance_extension + 1));
+				}
+
+				requested_instance_extensions[num_requested_instance_extension] = (char*)utils_calloc (strlen (VK_EXT_DEBUG_UTILS_EXTENSION_NAME) + 1, sizeof (char));
+				strcpy (requested_instance_extensions[num_requested_instance_extension], VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+				++num_requested_instance_extension;
 			}
 		}
 	}
@@ -142,7 +187,7 @@ AGAINST_RESULT create_instance ()
 
 	application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	application_info.pEngineName = "AGE";
-	application_info.apiVersion = VK_API_VERSION_1_1;
+	application_info.apiVersion = VK_API_VERSION_1_2;
 	application_info.applicationVersion = VK_MAKE_VERSION (1, 0, 0);
 	application_info.engineVersion = VK_MAKE_VERSION (1, 0, 0);
 	application_info.pApplicationName = "Against";
@@ -159,8 +204,32 @@ AGAINST_RESULT create_instance ()
 
 	if (vkCreateInstance (&create_info, NULL, &instance) != VK_SUCCESS)
 	{
+		for (size_t i = 0; i < num_requested_instance_layer; ++i)
+		{
+			utils_free (requested_instance_layers[i]);
+		}
+		utils_free (requested_instance_layers);
+
+		for (size_t i = 0; i < num_requested_instance_extension; ++i)
+		{
+			utils_free (requested_instance_extensions[i]);
+		}
+		utils_free (requested_instance_extensions);
+
 		return AGAINST_ERROR_GRAPHICS_CREATE_INSTANCE;
 	}
+
+	for (size_t i = 0; i < num_requested_instance_layer; ++i)
+	{
+		utils_free (requested_instance_layers[i]);
+	}
+	utils_free (requested_instance_layers);
+
+	for (size_t i = 0; i < num_requested_instance_extension; ++i)
+	{
+		utils_free (requested_instance_extensions[i]);
+	}
+	utils_free (requested_instance_extensions);
 
 	return AGAINST_SUCCESS;
 }
@@ -308,7 +377,19 @@ AGAINST_RESULT populate_graphics_device_extensions ()
 	{
 		if (strcmp (extension_properties[e].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
 		{
-			requested_device_extensions[num_requested_device_extension++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+			if (requested_device_extensions == NULL)
+			{
+				requested_device_extensions = (char**)utils_calloc (1, sizeof (char*));
+			}
+			else
+			{
+				requested_device_extensions = (char**)utils_realloc_zero (requested_device_extensions, sizeof (char*) * num_requested_device_extension, sizeof (char*) * (num_requested_device_extension + 1));
+			}
+
+			requested_device_extensions[num_requested_device_extension] = (char*)utils_calloc (strlen (VK_KHR_SWAPCHAIN_EXTENSION_NAME) + 1, sizeof (char));
+			strcpy (requested_device_extensions[num_requested_device_extension], VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+			++num_requested_device_extension;
+
 			break;
 		}
 	}
@@ -424,8 +505,20 @@ AGAINST_RESULT create_graphics_device ()
 
 	if (vkCreateDevice (physical_device, &create_info, NULL, &graphics_device) != VK_SUCCESS)
 	{
+		for (size_t i = 0; i < num_requested_device_extension; ++i)
+		{
+			utils_free (requested_device_extensions[i]);
+		}
+		utils_free (requested_device_extensions);
+
 		return AGAINST_ERROR_GRAPHICS_CREATE_GRAPHICS_DEVICE;
 	}
+
+	for (size_t i = 0; i < num_requested_device_extension; ++i)
+	{
+		utils_free (requested_device_extensions[i]);
+	}
+	utils_free (requested_device_extensions);
 
 	return AGAINST_SUCCESS;
 }

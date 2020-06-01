@@ -10,7 +10,7 @@ typedef struct _skinned_actor {
     
     phy_skinned_primitive** physics_primitives;
     size_t num_physics_primitives;
-}skinned_actor;
+} skinned_actor;
 
 typedef struct _static_actor {
     char name[1024];

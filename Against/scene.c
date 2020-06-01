@@ -29,7 +29,7 @@ AGAINST_RESULT scene_import_image (const char* image_name)
         image_names = (char**)utils_realloc_zero (image_names, sizeof (char*) * num_image_names, sizeof (char*) * (num_image_names + 1));
     }
     
-    image_names[num_image_names] = (char*)utils_calloc (strlen (image_name), sizeof (char));
+    image_names[num_image_names] = (char*)utils_calloc (strlen (image_name) + 5, sizeof (char));
     strcpy (image_names[num_image_names], image_name);
     strcat (image_names[num_image_names], ".tga");
 
@@ -51,7 +51,7 @@ AGAINST_RESULT scene_import_mesh (const char* mesh_name)
         mesh_names = (char**)utils_realloc_zero (mesh_names, sizeof (char*) * num_mesh_names, sizeof (char*) * (num_mesh_names + 1));
     }
 
-    mesh_names[num_mesh_names] = (char*)utils_calloc (strlen (mesh_name), sizeof (char));
+    mesh_names[num_mesh_names] = (char*)utils_calloc (strlen (mesh_name) + 6, sizeof (char));
     strcpy (mesh_names[num_mesh_names], mesh_name);
     strcat (mesh_names[num_mesh_names], ".gltf");
 
@@ -121,7 +121,7 @@ AGAINST_RESULT scene_spawn_skinned_actor (const char* name)
     
     skinned_actor* current_actor = scene_obj->skinned_actors + scene_obj->num_skinned_actors;
 
-    current_actor = (skinned_actor*) utils_calloc (1, sizeof (actor_get_skinned_actor_size()));
+    current_actor = (skinned_actor*) utils_calloc (1, sizeof (skinned_actor));
     strcpy (current_actor->name, name);
 
     return AGAINST_SUCCESS;
